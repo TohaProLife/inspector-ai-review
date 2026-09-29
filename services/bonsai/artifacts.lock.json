@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "bonsai-artifact-lock-v1",
+  "modelId": "prism-ml/Ternary-Bonsai-2-27B-gguf",
+  "revision": "6ed5e12bf84b7a63069882c91dd9e9218647d17b",
+  "sourceBaseUrl": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf/resolve/6ed5e12bf84b7a63069882c91dd9e9218647d17b",
+  "artifacts": [
+    {
+      "filename": "Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+      "role": "language_model",
+      "size": 5946648928,
+      "sha256": "53107f530aa52eb00912263ab1ee29bd199261c87cd7b4ad4ca1318c1fe33ee3"
+    },
+    {
+      "filename": "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+      "role": "vision_projector",
+      "size": 629246976,
+      "sha256": "6807ede61d570bb86ba34b756a0fa109edc33668604de867c6ea6d8f1d631903"
+    },
+    {
+      "filename": "LICENSE",
+      "role": "license",
+      "size": 10174,
+      "sha256": "69849221bfb90053de2134ef5e6d540287b4b98062326492f1f96f5da685524b"
+    },
+    {
+      "filename": "NOTICE.txt",
+      "role": "notice",
+      "size": 411,
+      "sha256": "de0e0c48fb6f691a31e74f338e3ccf93f9ecdfe2866ab769c4bf8b79a7636a30"
+    }
+  ]
+}

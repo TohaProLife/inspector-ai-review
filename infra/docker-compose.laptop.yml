@@ -1,0 +1,270 @@
+name: inspector-ai
+
+x-runtime-security: &runtime-security
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+
+x-init-security: &init-security
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: "no"
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317
+
+  pgvector-init:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - >-
+        PGPASSWORD="$${POSTGRES_PASSWORD}" psql
+        --host=postgres --username="$${POSTGRES_USER}" --dbname="$${POSTGRES_DB}"
+        --set=ON_ERROR_STOP=1
+        --command='CREATE EXTENSION IF NOT EXISTS vector;'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inspector}
+      POSTGRES_USER: ${POSTGRES_USER:-inspector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    profiles: [laptop]
+    restart: "no"
+
+  migrate:
+    depends_on:
+      pgvector-init: { condition: service_completed_successfully }
+
+  provider-volume-init-laptop:
+    image: alpine:3.22.1@sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f
+    command:
+      - /bin/sh
+      - -ec
+      - >-
+        chown 10001:10001 /volumes/bonsai /volumes/document /volumes/qwen
+    user: "0:0"
+    network_mode: none
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    volumes:
+      - bonsai-models:/volumes/bonsai
+      - document-models-laptop:/volumes/document
+      - provider-models-laptop:/volumes/qwen
+    profiles: [laptop]
+    <<: *init-security
+
+  hf-model-init-laptop:
+    image: inspector-ai/model-store:1.0.0
+    build:
+      context: ../services/model-store
+    environment:
+      MODEL_STORE_LOCK: /opt/model-store/locks/laptop.json
+      MODEL_STORE_ROOT: /models
+      MODEL_STORE_BASE_URL: ${MODEL_STORE_BASE_URL:-}
+      MODEL_STORE_SAFETY_BYTES: ${MODEL_STORE_SAFETY_BYTES:-1073741824}
+    volumes:
+      - provider-models-laptop:/models
+    depends_on:
+      provider-volume-init-laptop: { condition: service_completed_successfully }
+    networks: [artifact-download]
+    tmpfs: [/tmp:size=64m,mode=1777]
+    profiles: [laptop]
+    <<: *init-security
+
+  document-model-init-laptop:
+    image: inspector-ai/document-ai:paddle3.2.1-cpu-v1
+    build:
+      context: ../services/document-ai
+      args:
+        DOCUMENT_AI_BASE_IMAGE: paddlepaddle/paddle:3.2.1@sha256:8254635f7ce817f2b4c31405a107e617a45f2038023dd2bd23201385080cf081
+    command: ["python", "/opt/document-ai/provision.py"]
+    environment: &document-laptop-environment
+      DOCUMENT_AI_PROFILE: /opt/document-ai/profiles/laptop.json
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      HOME: /tmp
+      FLAGS_allocator_strategy: auto_growth
+      PADDLE_PDX_MODEL_SOURCE: ${PADDLE_PDX_MODEL_SOURCE:-BOS}
+      PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
+    volumes:
+      - document-models-laptop:/models
+    depends_on:
+      provider-volume-init-laptop: { condition: service_completed_successfully }
+    networks: [artifact-download]
+    tmpfs: [/tmp:size=1g,mode=1777]
+    profiles: [laptop]
+    <<: *init-security
+
+  document-ai-laptop:
+    image: inspector-ai/document-ai:paddle3.2.1-cpu-v1
+    build:
+      context: ../services/document-ai
+      args:
+        DOCUMENT_AI_BASE_IMAGE: paddlepaddle/paddle:3.2.1@sha256:8254635f7ce817f2b4c31405a107e617a45f2038023dd2bd23201385080cf081
+    environment:
+      <<: *document-laptop-environment
+      DOCUMENT_AI_PRELOAD: "1"
+      DOCUMENT_AI_MAX_LOADED_PIPELINES: "1"
+      DOCUMENT_AI_MAX_UPLOAD_BYTES: ${DOCUMENT_AI_MAX_UPLOAD_BYTES:-67108864}
+      DOCUMENT_AI_MAX_RENDER_PIXELS: 40000000
+      DOCUMENT_AI_MAX_IMAGE_SIDE: 20000
+    volumes:
+      - document-models-laptop:/models:ro
+    depends_on:
+      document-model-init-laptop: { condition: service_completed_successfully }
+    networks:
+      provider-runtime:
+        aliases: [document-ai]
+    ports: ["127.0.0.1:${DOCUMENT_AI_PORT:-8090}:8080"]
+    tmpfs: [/tmp:size=1g,mode=1777]
+    shm_size: 2gb
+    mem_limit: ${LAPTOP_DOCUMENT_MEMORY_LIMIT:-8g}
+    profiles: [laptop]
+    stop_grace_period: 2m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  embedding-laptop:
+    image: inspector-ai/text-inference:st6.1.0-cpu-v1
+    build:
+      context: ../services/text-inference
+      target: cpu
+    environment:
+      TEXT_RUNTIME_KIND: embedding
+      TEXT_RUNTIME_MODEL_PATH: /models/qwen3-embedding-0.6b
+      TEXT_RUNTIME_MODEL_ALIAS: inspector-qwen3-embedding-0.6b
+      TEXT_RUNTIME_DEVICE: cpu
+      TEXT_RUNTIME_OUTPUT_DIMENSIONS: 1024
+      TEXT_RUNTIME_MAX_INPUT_TOKENS: 4096
+      TEXT_RUNTIME_BATCH_SIZE: ${LAPTOP_EMBEDDING_BATCH_SIZE:-8}
+      TEXT_RUNTIME_MAX_ITEMS: 32
+      TEXT_RUNTIME_PRELOAD: "1"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HOME: /tmp
+    volumes:
+      - provider-models-laptop:/models:ro
+    depends_on:
+      hf-model-init-laptop: { condition: service_completed_successfully }
+    networks:
+      provider-runtime:
+        aliases: [embedding]
+    ports: ["127.0.0.1:${EMBEDDING_PORT:-8091}:8080"]
+    tmpfs: [/tmp:size=512m,mode=1777]
+    shm_size: 1gb
+    mem_limit: ${LAPTOP_EMBEDDING_MEMORY_LIMIT:-4g}
+    profiles: [laptop]
+    stop_grace_period: 2m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  bonsai-model-init:
+    image: inspector-ai/bonsai-model-init:2-27b-v1
+    build:
+      context: ../services/bonsai
+      dockerfile: Dockerfile.model-init
+    environment:
+      BONSAI_MODEL_DIR: /models
+      BONSAI_MODEL_BASE_URL: ${BONSAI_MODEL_BASE_URL:-}
+      BONSAI_DOWNLOAD_SAFETY_BYTES: ${BONSAI_DOWNLOAD_SAFETY_BYTES:-1073741824}
+    volumes:
+      - bonsai-models:/models
+    depends_on:
+      provider-volume-init-laptop: { condition: service_completed_successfully }
+    networks: [artifact-download]
+    tmpfs: [/tmp:size=64m,mode=1777]
+    profiles: [laptop]
+    <<: *init-security
+
+  bonsai-vlm-cuda:
+    image: inspector-ai/bonsai-runtime:prism-b10685-cuda12.4-v1
+    build:
+      context: ../services/bonsai
+      dockerfile: Dockerfile.cuda
+    environment: &bonsai-environment
+      BONSAI_MODEL_DIR: /models
+      BONSAI_MODEL_ALIAS: inspector-bonsai-2-27b
+      BONSAI_PORT: 8080
+      BONSAI_CONTEXT_SIZE: ${BONSAI_CONTEXT_SIZE:-8192}
+      BONSAI_PARALLEL: 1
+      BONSAI_MAX_OUTPUT_TOKENS: ${BONSAI_MAX_OUTPUT_TOKENS:-2048}
+      BONSAI_IMAGE_MAX_TOKENS: ${BONSAI_IMAGE_MAX_TOKENS:-4096}
+      BONSAI_BATCH_SIZE: ${BONSAI_BATCH_SIZE:-512}
+      BONSAI_UBATCH_SIZE: ${BONSAI_UBATCH_SIZE:-128}
+      BONSAI_THREADS: ${BONSAI_THREADS:-8}
+      BONSAI_MMPROJ_CPU: 1
+      BONSAI_VERIFY_SHA256_ON_START: ${BONSAI_VERIFY_SHA256_ON_START:-1}
+      BONSAI_NGL: 99
+      NVIDIA_VISIBLE_DEVICES: ${LAPTOP_GPU_DEVICE:-0}
+      CUDA_VISIBLE_DEVICES: "0"
+    volumes:
+      - bonsai-models:/models:ro
+    depends_on:
+      bonsai-model-init: { condition: service_completed_successfully }
+    networks:
+      provider-runtime:
+        aliases: [vlm]
+    ports: ["127.0.0.1:${VLM_PORT:-8081}:8080"]
+    runtime: nvidia
+    shm_size: 1gb
+    mem_limit: ${LAPTOP_VLM_MEMORY_LIMIT:-10g}
+    tmpfs: [/tmp:size=256m,mode=1777]
+    profiles: [laptop]
+    stop_grace_period: 2m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-mobile-v1
+      PZ002_MAX_OCR_PAGES: ${PZ002_MAX_OCR_PAGES:-2}
+      PZ002_MAX_TABLE_PAGES: ${PZ002_MAX_TABLE_PAGES:-8}
+      PZ002_MAX_TABLE_OCR_PAGES: ${PZ002_MAX_TABLE_OCR_PAGES:-2}
+    depends_on:
+      document-ai-laptop: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+  document-worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      RENDERER_PROFILE_ID: renderer-pdfium-5.12.1-linux-x86_64-v1
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-mobile-v1
+    depends_on:
+      document-ai-laptop: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+  extract-worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-mobile-v1
+      VLM_BASE_URL: http://vlm:8080/v1
+      VLM_MODEL: inspector-bonsai-2-27b
+      METADATA_PROFILE_ID: metadata-hybrid-bonsai2-27b-ptq1-v1
+      ENTITY_PROFILE_ID: entity-bonsai2-27b-ptq1-v1
+    depends_on:
+      document-ai-laptop: { condition: service_healthy }
+      bonsai-vlm-cuda:
+        condition: service_healthy
+    networks: [default, provider-runtime]
+
+  link-worker:
+    environment:
+      EMBEDDING_BASE_URL: http://embedding:8080/v1
+      EMBEDDING_MODEL: inspector-qwen3-embedding-0.6b
+      EMBEDDING_DIMENSIONS: 1024
+      LINKING_PROFILE_ID: linking-policy-v1-qwen3-embed-06b-pgvector-v1
+      RERANKER_ENABLED: "0"
+    depends_on:
+      embedding-laptop: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+volumes:
+  bonsai-models:
+  document-models-laptop:
+  provider-models-laptop:
+
+networks:
+  artifact-download:
+  provider-runtime:
+    internal: true

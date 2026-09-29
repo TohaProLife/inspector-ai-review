@@ -1,0 +1,139 @@
+name: inspector-ai-local-model-probe
+
+# Local qualification services only. The application analysis release remains SCAFFOLD.
+# Point MODEL_CACHE_ROOT at the already provisioned, checksum-verified host cache.
+services:
+  qwen-model-verify:
+    image: inspector-ai/model-store:1.0.0
+    command: ["--verify-only"]
+    environment:
+      MODEL_STORE_LOCK: /opt/model-store/locks/laptop.json
+      MODEL_STORE_ROOT: /models
+    volumes:
+      - ${MODEL_CACHE_ROOT:-../model-cache}/qwen:/models:ro
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=64m]
+    mem_limit: 1g
+    cpus: 2
+    restart: "no"
+
+  embedding:
+    image: inspector-ai/text-inference:st6.1.0-cpu-v1
+    build:
+      context: ../services/text-inference
+      target: cpu
+    environment:
+      TEXT_RUNTIME_KIND: embedding
+      TEXT_RUNTIME_MODEL_PATH: /models/qwen3-embedding-0.6b
+      TEXT_RUNTIME_MODEL_ALIAS: inspector-qwen3-embedding-0.6b
+      TEXT_RUNTIME_DEVICE: cpu
+      TEXT_RUNTIME_OUTPUT_DIMENSIONS: "1024"
+      TEXT_RUNTIME_MAX_INPUT_TOKENS: "4096"
+      TEXT_RUNTIME_BATCH_SIZE: "4"
+      TEXT_RUNTIME_MAX_ITEMS: "32"
+      TEXT_RUNTIME_PRELOAD: "1"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HOME: /tmp
+    volumes:
+      - ${MODEL_CACHE_ROOT:-../model-cache}/qwen:/models:ro
+    depends_on:
+      qwen-model-verify: { condition: service_completed_successfully }
+    ports:
+      - "127.0.0.1:${EMBEDDING_PROBE_PORT:-18085}:8080"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=512m]
+    shm_size: 1gb
+    mem_limit: 4g
+    cpus: 4
+    restart: unless-stopped
+
+  document-model-verify:
+    image: inspector-ai/document-ai:paddle3.2.1-cpu-v1
+    command: ["python", "/opt/document-ai/provision.py"]
+    environment:
+      DOCUMENT_AI_PROFILE: /opt/document-ai/profiles/homeserver.json
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
+      HOME: /tmp
+    volumes:
+      - ${MODEL_CACHE_ROOT:-../model-cache}/paddlex:/models/paddlex:ro
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=256m]
+    mem_limit: 1g
+    cpus: 2
+    restart: "no"
+
+  document-ai:
+    image: inspector-ai/document-ai:paddle3.2.1-cpu-v1
+    build:
+      context: ../services/document-ai
+      args:
+        DOCUMENT_AI_BASE_IMAGE: paddlepaddle/paddle:3.2.1@sha256:8254635f7ce817f2b4c31405a107e617a45f2038023dd2bd23201385080cf081
+    environment:
+      DOCUMENT_AI_PROFILE: /opt/document-ai/profiles/homeserver.json
+      DOCUMENT_AI_PRELOAD: "1"
+      DOCUMENT_AI_MAX_LOADED_PIPELINES: "1"
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      PADDLE_PDX_MODEL_SOURCE: BOS
+      PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
+      HOME: /tmp
+      FLAGS_allocator_strategy: auto_growth
+    volumes:
+      - ${MODEL_CACHE_ROOT:-../model-cache}/paddlex:/models/paddlex:ro
+    depends_on:
+      document-model-verify: { condition: service_completed_successfully }
+    ports:
+      - "127.0.0.1:${DOCUMENT_AI_PROBE_PORT:-18084}:8080"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=1g]
+    shm_size: 1gb
+    mem_limit: 4g
+    cpus: 8
+    restart: unless-stopped
+
+  bonsai-vlm:
+    image: inspector-ai/bonsai-runtime:homeserver-smoke
+    build:
+      context: ../services/bonsai
+      dockerfile: Dockerfile.cuda
+    environment:
+      BONSAI_MODEL_DIR: /models
+      BONSAI_MODEL_ALIAS: inspector-bonsai-2-27b
+      BONSAI_CONTEXT_SIZE: "8192"
+      BONSAI_PARALLEL: "1"
+      BONSAI_NGL: "99"
+      BONSAI_MMPROJ_CPU: "1"
+      BONSAI_MAX_OUTPUT_TOKENS: "1024"
+      BONSAI_IMAGE_MAX_TOKENS: "4096"
+      BONSAI_BATCH_SIZE: "256"
+      BONSAI_UBATCH_SIZE: "64"
+      BONSAI_THREADS: "8"
+      BONSAI_VERIFY_SHA256_ON_START: "1"
+      LLAMA_ARG_REASONING: "off"
+      LLAMA_ARG_THINK_BUDGET: "0"
+      NVIDIA_VISIBLE_DEVICES: ${LAPTOP_GPU_DEVICE:-0}
+      CUDA_VISIBLE_DEVICES: "0"
+    volumes:
+      - ${MODEL_CACHE_ROOT:-../model-cache}/bonsai:/models:ro
+    ports:
+      - "127.0.0.1:${BONSAI_PROBE_PORT:-18082}:8080"
+    runtime: nvidia
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=256m]
+    shm_size: 1gb
+    mem_limit: 6g
+    cpus: 8
+    restart: unless-stopped

@@ -1,0 +1,2651 @@
+{
+  "schemaVersion": "parameter-candidate-rules-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "registrySha256": "fdc6a69544e06513ee37baa20ad21a1c5c1bc711b04907491becc3283604a87a",
+  "disposition": "REVIEW_ONLY",
+  "executionPolicy": "DEFINITION_ONLY",
+  "rules": [
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-002",
+      "version": "1",
+      "parameterCode": "PZ-002",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "BUILDING_TOTAL_AREA",
+          "canonicalUnit": "m2"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_SCOPE",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "BUILDING_TOTAL_AREA"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "1",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-008",
+      "version": "1",
+      "parameterCode": "PZ-008",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "BUILDING_HEIGHT",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_HEIGHT_DATUM",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "BUILDING_HEIGHT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-010",
+      "version": "1",
+      "parameterCode": "PZ-010",
+      "family": "DIFFERENT",
+      "factType": "INTEGER",
+      "attributes": [
+        {
+          "key": "APARTMENT_COUNT",
+          "canonicalUnit": "count"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "HOUSING_UNIT_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "!=",
+        "attributeKeys": [
+          "APARTMENT_COUNT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-012",
+      "version": "1",
+      "parameterCode": "PZ-012",
+      "family": "DECREASE",
+      "factType": "INTEGER",
+      "attributes": [
+        {
+          "key": "UNDERGROUND_PARKING_COUNT",
+          "canonicalUnit": "count"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "UNDERGROUND_PARKING_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "UNDERGROUND_PARKING_COUNT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-014",
+      "version": "1",
+      "parameterCode": "PZ-014",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "DESIGN_ELECTRIC_POWER",
+          "canonicalUnit": "kW"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "EOM"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "EOM"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "TECHNICAL_CONDITIONS_LIMIT",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "DESIGN_ELECTRIC_POWER"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-015",
+      "version": "1",
+      "parameterCode": "PZ-015",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "POWER_SUPPLY_RELIABILITY_CATEGORY",
+          "canonicalUnit": "reliability_category"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "EOM"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "EOM"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "CONSUMER_IDENTITY",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "POWER_SUPPLY_RELIABILITY_CATEGORY"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-016",
+      "version": "1",
+      "parameterCode": "PZ-016",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "DAILY_WATER_CONSUMPTION",
+          "canonicalUnit": "m3/day"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "VK"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "VK"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "WATER_SUPPLY_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "DAILY_WATER_CONSUMPTION"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-017",
+      "version": "1",
+      "parameterCode": "PZ-017",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "TOTAL_HEATING_LOAD",
+          "canonicalUnit": "Gcal/h"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "OV"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "OV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "HEATING_LOAD_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "TOTAL_HEATING_LOAD"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-018",
+      "version": "1",
+      "parameterCode": "PZ-018",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "MAX_HOURLY_GAS_FLOW",
+          "canonicalUnit": "m3/h"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "GSV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "GAS_SUPPLY_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "MAX_HOURLY_GAS_FLOW"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-021",
+      "version": "1",
+      "parameterCode": "PZ-021",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "ENERGY_EFFICIENCY_CLASS",
+          "canonicalUnit": "energy_class"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR",
+        "OV"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR",
+        "OV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_SCOPE",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "ENERGY_EFFICIENCY_CLASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-022",
+      "version": "1",
+      "parameterCode": "PZ-022",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "FIRE_RESISTANCE_DEGREE",
+          "canonicalUnit": "fire_resistance_degree"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR",
+        "KR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR",
+        "KR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_SCOPE",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "FIRE_RESISTANCE_DEGREE"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pz-023",
+      "version": "1",
+      "parameterCode": "PZ-023",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "STRUCTURAL_FIRE_HAZARD_CLASS",
+          "canonicalUnit": "structural_fire_hazard_class"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR",
+        "KR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PZ"
+      ],
+      "requiredActualDrawingSections": [
+        "AR",
+        "KR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_SCOPE",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "STRUCTURAL_FIRE_HAZARD_CLASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-spzu-024",
+      "version": "1",
+      "parameterCode": "SPZU-024",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "EXCAVATION_VOLUME",
+          "canonicalUnit": "m3"
+        },
+        {
+          "key": "BACKFILL_VOLUME",
+          "canonicalUnit": "m3"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SPZU"
+      ],
+      "requiredActualDrawingSections": [
+        "PP"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "EARTHWORK_SCOPE",
+        "VOLUME_COMPONENT_IDENTITY",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "EXCAVATION_VOLUME",
+          "BACKFILL_VOLUME"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "5",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-spzu-025",
+      "version": "1",
+      "parameterCode": "SPZU-025",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "HARD_SURFACE_AREA",
+          "canonicalUnit": "m2"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SPZU"
+      ],
+      "requiredActualDrawingSections": [
+        "PP"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "SURFACE_TYPE_IDENTITY",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "HARD_SURFACE_AREA"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "5",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-spzu-030",
+      "version": "1",
+      "parameterCode": "SPZU-030",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "FIRE_ACCESS_ROAD_WIDTH",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SPZU"
+      ],
+      "requiredActualDrawingSections": [
+        "PP"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "FIRE_ACCESS_ROAD_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "FIRE_ACCESS_ROAD_WIDTH"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "4.2",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-spzu-037",
+      "version": "1",
+      "parameterCode": "SPZU-037",
+      "family": "DECREASE",
+      "factType": "INTEGER",
+      "attributes": [
+        {
+          "key": "SURFACE_PARKING_COUNT",
+          "canonicalUnit": "count"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SPZU"
+      ],
+      "requiredActualDrawingSections": [
+        "PP"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "SURFACE_PARKING_SCOPE",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "SURFACE_PARKING_COUNT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-spzu-039",
+      "version": "1",
+      "parameterCode": "SPZU-039",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "DRAINAGE_MEASURE_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SPZU"
+      ],
+      "requiredActualDrawingSections": [
+        "NVK"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "DRAINAGE_ZONE_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "DRAINAGE_MEASURE_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ar-040",
+      "version": "1",
+      "parameterCode": "AR-040",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "EVACUATION_CORRIDOR_WIDTH",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "AR"
+      ],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "CORRIDOR_IDENTITY",
+        "FLOOR_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "EVACUATION_CORRIDOR_WIDTH"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "1.2",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ar-041",
+      "version": "1",
+      "parameterCode": "AR-041",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "AR"
+      ],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "DOOR_IDENTITY",
+        "EVACUATION_ROUTE_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "EVACUATION_DOOR_CLEAR_WIDTH"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "0.9",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ar-049",
+      "version": "1",
+      "parameterCode": "AR-049",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "ROOF_BALCONY_GUARD_HEIGHT",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "AR"
+      ],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "GUARD_LOCATION_IDENTITY",
+        "GUARD_TYPE_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "ROOF_BALCONY_GUARD_HEIGHT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "1.2",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ar-050",
+      "version": "1",
+      "parameterCode": "AR-050",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "FINISH_FIRE_CLASS",
+          "canonicalUnit": "finish_fire_class"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "AR"
+      ],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "FINISH_LOCATION_IDENTITY",
+        "EVACUATION_ROUTE_IDENTITY",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "FINISH_FIRE_CLASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ar-053",
+      "version": "1",
+      "parameterCode": "AR-053",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "NOISE_PROTECTION_MEASURE_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "AR"
+      ],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "PARTITION_JOINT_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "NOISE_PROTECTION_MEASURE_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-kr-061",
+      "version": "1",
+      "parameterCode": "KR-061",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "LOAD_BEARING_MONOLITHIC_WALL_THICKNESS",
+          "canonicalUnit": "mm"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "KR"
+      ],
+      "requiredActualSections": [
+        "KR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "KR"
+      ],
+      "requiredActualDrawingSections": [
+        "KJ"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "WALL_IDENTITY",
+        "ZONE_IDENTITY",
+        "FLOOR_IDENTITY",
+        "THICKNESS_MEASUREMENT_BASIS",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "LOAD_BEARING_MONOLITHIC_WALL_THICKNESS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-kr-062",
+      "version": "1",
+      "parameterCode": "KR-062",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "LONGITUDINAL_REBAR_DIAMETER",
+          "canonicalUnit": "mm"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "KR"
+      ],
+      "requiredActualSections": [
+        "KR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "KR"
+      ],
+      "requiredActualDrawingSections": [
+        "KJ"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "COLUMN_OR_PYLON_IDENTITY",
+        "ZONE_IDENTITY",
+        "FLOOR_IDENTITY",
+        "REBAR_ROLE_IDENTITY",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "LONGITUDINAL_REBAR_DIAMETER"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-kr-067",
+      "version": "1",
+      "parameterCode": "KR-067",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "CONCRETE_VOLUME",
+          "canonicalUnit": "m3"
+        },
+        {
+          "key": "STEEL_MASS",
+          "canonicalUnit": "t"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "KR"
+      ],
+      "requiredActualSections": [
+        "KR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "KR"
+      ],
+      "requiredActualDrawingSections": [
+        "KJ",
+        "KM"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "STRUCTURE_SCOPE",
+        "MATERIAL_COMPONENT_IDENTITY",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "CONCRETE_VOLUME",
+          "STEEL_MASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "2",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ios2-071",
+      "version": "1",
+      "parameterCode": "IOS2-071",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "WATER_PIPE_DIAMETER",
+          "canonicalUnit": "mm"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "VK"
+      ],
+      "requiredExpectedDrawingSections": [
+        "IOS2"
+      ],
+      "requiredActualDrawingSections": [
+        "VK"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "PIPE_SYSTEM_IDENTITY",
+        "PIPE_RUN_IDENTITY",
+        "DIAMETER_BASIS",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "WATER_PIPE_DIAMETER"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ios3-074",
+      "version": "1",
+      "parameterCode": "IOS3-074",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "SEWER_PIPE_DIAMETER",
+          "canonicalUnit": "mm"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "VK"
+      ],
+      "requiredExpectedDrawingSections": [
+        "IOS3"
+      ],
+      "requiredActualDrawingSections": [
+        "VK"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "SEWER_SYSTEM_IDENTITY",
+        "OUTLET_IDENTITY",
+        "DIAMETER_BASIS",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "SEWER_PIPE_DIAMETER"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pos-082",
+      "version": "1",
+      "parameterCode": "POS-082",
+      "family": "RELATIVE_INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "CRITICAL_CONSTRUCTION_STAGE_DURATION",
+          "canonicalUnit": "day"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "POS"
+      ],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POS"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "CRITICAL_STAGE_IDENTITY",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "CRITICAL_CONSTRUCTION_STAGE_DURATION"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "10",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pos-086",
+      "version": "1",
+      "parameterCode": "POS-086",
+      "family": "INCREASE",
+      "factType": "INTEGER",
+      "attributes": [
+        {
+          "key": "PEAK_PERSONNEL_COUNT",
+          "canonicalUnit": "count"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "POS"
+      ],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POS"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "WORKFORCE_SCOPE",
+        "SITE_CAMP_CAPACITY_BASIS",
+        "DRAWING_SECTION_VERIFIED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "PEAK_PERSONNEL_COUNT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pos-088",
+      "version": "1",
+      "parameterCode": "POS-088",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "TEMPORARY_POWER_DEMAND",
+          "canonicalUnit": "kW"
+        },
+        {
+          "key": "TEMPORARY_RESOURCE_VOLUME",
+          "canonicalUnit": "m3"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [
+        "POS"
+      ],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POS"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "EXACT_CATEGORY",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "RESOURCE_TYPE_IDENTITY",
+        "TEMPORARY_NETWORK_IDENTITY",
+        "DRAWING_SECTION_VERIFIED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "TEMPORARY_POWER_DEMAND"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pod-092",
+      "version": "1",
+      "parameterCode": "POD-092",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "LIVE_UTILITY_PROTECTION_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POD"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "UTILITY_IDENTITY",
+        "MACHINE_WORK_ZONE",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "LIVE_UTILITY_PROTECTION_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pod-093",
+      "version": "1",
+      "parameterCode": "POD-093",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "DEMOLITION_VOLUME_BY_TYPE",
+          "canonicalUnit": "m3"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POD"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "DEMOLITION_MATERIAL_TYPE",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "DEMOLITION_VOLUME_BY_TYPE"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "5",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-pod-095",
+      "version": "1",
+      "parameterCode": "POD-095",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "DUST_NOISE_SUPPRESSION_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "POD"
+      ],
+      "requiredActualDrawingSections": [
+        "PPR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "DEMOLITION_ZONE_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "DUST_NOISE_SUPPRESSION_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ppm-103",
+      "version": "1",
+      "parameterCode": "PPM-103",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "FIRE_DOOR_RATING",
+          "canonicalUnit": "fire_rating"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PPM"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "DOOR_IDENTITY",
+        "FIRE_RATING_NOTATION",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "FIRE_DOOR_RATING"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ppm-104",
+      "version": "1",
+      "parameterCode": "PPM-104",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "EVACUATION_PASSAGE_WIDTH",
+          "canonicalUnit": "m"
+        },
+        {
+          "key": "EVACUATION_PASSAGE_HEIGHT",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PPM"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "PASSAGE_IDENTITY",
+        "EVACUATION_ROUTE_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "EVACUATION_PASSAGE_WIDTH"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "1.2",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ppm-105",
+      "version": "1",
+      "parameterCode": "PPM-105",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "EXTERNAL_EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PPM"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "EXTERNAL_DOOR_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "EXTERNAL_EVACUATION_DOOR_CLEAR_WIDTH"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "0.9",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-ppm-107",
+      "version": "1",
+      "parameterCode": "PPM-107",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "FINISH_FIRE_CLASS",
+          "canonicalUnit": "finish_fire_class"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "PPM"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "FINISH_LOCATION_IDENTITY",
+        "EVACUATION_ROUTE_IDENTITY",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "FINISH_FIRE_CLASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-odi-118",
+      "version": "1",
+      "parameterCode": "ODI-118",
+      "family": "UPPER_BOUND",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "ACCESSIBLE_DOOR_THRESHOLD_HEIGHT",
+          "canonicalUnit": "m"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ODI"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ACCESSIBLE_DOOR_IDENTITY",
+        "NORM_APPLICABILITY_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "ACCESSIBLE_DOOR_THRESHOLD_HEIGHT"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "0.014",
+          "unit": "m",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-odi-120",
+      "version": "1",
+      "parameterCode": "ODI-120",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "ACCESSIBLE_GRAB_RAIL_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ODI"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ACCESSIBLE_TOILET_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "ACCESSIBLE_GRAB_RAIL_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-odi-122",
+      "version": "1",
+      "parameterCode": "ODI-122",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "TACTILE_WARNING_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "GP",
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ODI"
+      ],
+      "requiredActualDrawingSections": [
+        "GP",
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "STAIR_OR_DOOR_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "TACTILE_WARNING_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-odi-123",
+      "version": "1",
+      "parameterCode": "ODI-123",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "ASSISTANCE_CALL_SYSTEM_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "SS"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ODI"
+      ],
+      "requiredActualDrawingSections": [
+        "SS"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ACCESSIBLE_FACILITY_IDENTITY",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "ASSISTANCE_CALL_SYSTEM_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-zu-124",
+      "version": "1",
+      "parameterCode": "ZU-124",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "attributes": [
+        {
+          "key": "ENERGY_EFFICIENCY_CLASS",
+          "canonicalUnit": "energy_class"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR",
+        "OV"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ZU"
+      ],
+      "requiredActualDrawingSections": [
+        "AR",
+        "OV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_SCOPE",
+        "ORDERED_DOMAIN_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "ENERGY_EFFICIENCY_CLASS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-zu-126",
+      "version": "1",
+      "parameterCode": "ZU-126",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "WALL_INSULATION_THERMAL_CONDUCTIVITY",
+          "canonicalUnit": "W/(m*C)"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ZU"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "INSULATION_MATERIAL_IDENTITY",
+        "WALL_ASSEMBLY_IDENTITY",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "WALL_INSULATION_THERMAL_CONDUCTIVITY"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-zu-128",
+      "version": "1",
+      "parameterCode": "ZU-128",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "ROOF_INSULATION_THICKNESS",
+          "canonicalUnit": "mm"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "AR"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ZU",
+        "AR"
+      ],
+      "requiredActualDrawingSections": [
+        "AR"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ROOF_ASSEMBLY_IDENTITY",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": "<",
+        "attributeKeys": [
+          "ROOF_INSULATION_THICKNESS"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-zu-129",
+      "version": "1",
+      "parameterCode": "ZU-129",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "attributes": [
+        {
+          "key": "ENERGY_METER_SET",
+          "canonicalUnit": "set"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "ZU"
+      ],
+      "requiredActualDrawingSections": [
+        "IOS1",
+        "IOS2",
+        "OV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ENERGY_CARRIER_IDENTITY",
+        "METER_SCOPE",
+        "ENUMERATION_COMPLETE",
+        "SEARCH_SCOPE_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": null,
+        "attributeKeys": [
+          "ENERGY_METER_SET"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-zu-131",
+      "version": "1",
+      "parameterCode": "ZU-131",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "ANNUAL_SPECIFIC_HEATING_ENERGY",
+          "canonicalUnit": "kWh/m2"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [
+        "OV"
+      ],
+      "requiredExpectedDrawingSections": [
+        "ZU"
+      ],
+      "requiredActualDrawingSections": [
+        "OV"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "EXACT_CATEGORY"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "BUILDING_AREA_BASIS",
+        "ANNUAL_PERIOD_BASIS",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "ANNUAL_SPECIFIC_HEATING_ENERGY"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": null,
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    },
+    {
+      "schemaVersion": "parameter-candidate-rule-v1",
+      "ruleId": "candidate-sm-132",
+      "version": "1",
+      "parameterCode": "SM-132",
+      "family": "RELATIVE_INCREASE",
+      "factType": "DECIMAL",
+      "attributes": [
+        {
+          "key": "CONSTRUCTION_TOTAL_COST",
+          "canonicalUnit": "thousand_rub"
+        }
+      ],
+      "expectedStage": "PD",
+      "allowedActualStages": [
+        "RD"
+      ],
+      "requiredExpectedSections": [],
+      "requiredActualSections": [],
+      "requiredExpectedDrawingSections": [
+        "SM"
+      ],
+      "requiredActualDrawingSections": [
+        "SM"
+      ],
+      "manifestSectionStatus": {
+        "expected": "UNKNOWN_ABSTAIN",
+        "actual": "UNKNOWN_ABSTAIN"
+      },
+      "requiredContext": [
+        "SOURCE_STAGE_VERIFIED",
+        "SOURCE_REVISION_CURRENT",
+        "SOURCE_APPROVAL_CONFIRMED",
+        "FACT_ENTITY_LINK_REVIEWED",
+        "TEXT_OR_OCR_LOCATOR_VERIFIED",
+        "ESTIMATE_SCOPE",
+        "PRICE_BASE_DATE",
+        "COST_COMPONENT_SCOPE",
+        "RELATIVE_DENOMINATOR_VERIFIED",
+        "DRAWING_SECTION_VERIFIED",
+        "EXPECTED_MANIFEST_SECTION_UNRESOLVED",
+        "ACTUAL_MANIFEST_SECTION_UNRESOLVED"
+      ],
+      "comparison": {
+        "operator": ">",
+        "attributeKeys": [
+          "CONSTRUCTION_TOTAL_COST"
+        ],
+        "aggregation": "PER_ATTRIBUTE",
+        "threshold": {
+          "value": "5",
+          "unit": "percent",
+          "strict": true
+        },
+        "relativeBasis": null
+      },
+      "evaluationPolicy": "NON_EXECUTING_ABSTAIN",
+      "missingEvidenceDisposition": "ABSTAIN"
+    }
+  ]
+}

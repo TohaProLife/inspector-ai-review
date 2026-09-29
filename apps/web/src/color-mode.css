@@ -1,0 +1,71 @@
+/* The theme control and the original glass wordmark belong to the site's footer. */
+.landing--antimetal .landing-footer {
+  display: block;
+  padding: 0;
+  color: #ecf3ff;
+  border-top: 0;
+  --theme-backdrop-day: linear-gradient(180deg, #061447 0%, #020821 48%, #01051a 100%);
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+.landing--antimetal .landing-footer__inner { display: block; padding: 38px 0 0; border-top: 0; }
+.landing-footer__top { display: flex; align-items: start; justify-content: space-between; gap: 50px; }
+.landing-footer__top .ds-brand { color: #fff; }
+.landing-footer__top p { margin-top: 13px !important; color: #9eadd1 !important; font-size: 13px !important; }
+.landing-footer__top nav { display: flex; gap: clamp(18px, 3vw, 45px); }
+.landing-footer__top nav a { color: #b8c8ee; }
+.landing-footer__top nav a:hover { color: #fff; }
+.landing-footer__utility { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 70px; padding-block: 20px; border-top: 1px solid #b4c8ef24; color: #8095c0; font-size: 11px; letter-spacing: .015em; }
+.color-mode-control { display: inline-flex; align-items: center; gap: 2px; width: max-content; padding: 3px; border: 1px solid #d8e6ff30; border-radius: 999px; color: #b6c9f0; background: #dce9ff0d; box-shadow: inset 0 1px 1px #ffffff19, 0 5px 24px #00000013; backdrop-filter: blur(18px) saturate(1.7); }
+.color-mode-control button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 999px; color: inherit; background: transparent; cursor: pointer; transition: color 160ms, background 160ms, box-shadow 160ms; }
+.color-mode-control button:hover { color: white; background: #ffffff1b; }
+.color-mode-control button.is-selected { color: white; background: linear-gradient(145deg, #e6f4ff32, #8bbaff14 55%, #08143b54); box-shadow: inset 0 1px 2px #ffffff69, inset 0 -2px 4px #21458b7a, 0 1px 6px #8ab8ff35; }
+.color-mode-control button:focus-visible { outline: 2px solid var(--action-primary); outline-offset: 3px; }
+.landing-footer__glassmark { display: flex; align-items: center; justify-content: center; gap: clamp(12px, 2vw, 28px); min-height: 210px; padding-bottom: 43px; overflow: hidden; user-select: none; }
+.landing-footer__glassmark-text { position: relative; display: flex; gap: .09em; width: max-content; color: transparent; --glass-fill: linear-gradient(180deg, #e1f5ff91 0%, #93aee646 25%, #738bc938 47%, #b2d3ff61 73%, #2c4c894a 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1px #d8e7ff69; font: 650 clamp(54px, 9.3vw, 134px)/.94 var(--font-body); font-kerning: none; font-variant-ligatures: none; letter-spacing: 0; white-space: nowrap; text-shadow: 0 12px 30px #00091b7a; filter: drop-shadow(0 -2px 2px #d7efff15) drop-shadow(0 7px 7px #000c2a8c); }
+.landing-footer__glassmark-letter { position: relative; display: block; flex: none; background: var(--glass-fill); background-clip: text; -webkit-background-clip: text; }
+.landing-footer__glassmark-letter::before,
+.landing-footer__glassmark-letter::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; white-space: nowrap; }
+.landing-footer__glassmark-letter::before { color: #7ebaff; -webkit-text-fill-color: #7ebaff; opacity: .19; filter: blur(9px); transform: translateY(5px); }
+.landing-footer__glassmark-letter::after { color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1px #f6fbff94; opacity: .72; mask-image: linear-gradient(180deg, #000 0%, transparent 43%); }
+.landing-footer__glassmark-symbol { display: flex; align-items: end; justify-content: center; gap: clamp(5px, .65vw, 10px); width: clamp(40px, 7vw, 98px); height: clamp(50px, 8vw, 115px); flex: 0 0 auto; transform: skewY(-11deg); filter: drop-shadow(0 5px 5px #000d2b); }
+.landing-footer__glassmark-symbol i { display: block; width: 22%; border: 1px solid #d8edff66; border-radius: 5px; background: linear-gradient(145deg, #ecf9ff5c, #8cb6f224 36%, #4364a018 67%, #c8e6ff45); box-shadow: inset 1px 2px 4px #ffffff5e, inset -3px -4px 7px #071340a8, 0 0 12px #9fc7ff20; }
+.landing-footer__glassmark-symbol i:nth-child(1) { height: 68%; }
+.landing-footer__glassmark-symbol i:nth-child(2) { height: 100%; }
+.landing-footer__glassmark-symbol i:nth-child(3) { height: 84%; }
+
+/* Workspace appearance controls follow the active surface tokens. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-color-transition="true"],
+  html[data-color-transition="true"] :is(body, #root, .landing, .app-shell, .search-overlay, .ds-page),
+  html[data-color-transition="true"] :is(.landing, .app-shell, .search-overlay, .ds-page) :is(section, header, footer, aside, nav, article, table, thead, tbody, tr, th, td, button, input, textarea, select, a, p, h1, h2, h3, span, strong, small, label, svg, .surface, .preview-window, .preview-drawing, .specimen-page, .decision-example, .setting-row, .color-mode-control, .filter-search, .source-reference, .source-pane, .source-toolbar, .search-dialog, .object-tabs, .candidate-row, .user-card) {
+    transition-property: color, background-color, border-color;
+    transition-duration: 220ms;
+    transition-timing-function: ease-in-out;
+  }
+  html[data-color-transition="true"] .landing-theme-backdrop::after {
+    transition: opacity 220ms ease-in-out;
+  }
+}
+
+.app-shell .setting-row--color .color-mode-control { color: var(--ink-soft); background: var(--surface-raised); border-color: var(--line-strong); flex: 0 0 auto; }
+.app-shell .setting-row--color .color-mode-control button:hover { color: var(--ink); background: var(--surface-selected); }
+.app-shell .setting-row--color .color-mode-control button.is-selected { color: var(--ink); background: var(--surface); box-shadow: inset 0 1px 1px #ffffff20, 0 1px 5px #00000012; }
+
+@media (max-width: 700px) {
+  .landing--antimetal .landing-footer__inner { display: block; padding: 32px 0 0; }
+  .landing-footer__top { flex-direction: column; gap: 21px; }
+  .landing-footer__top nav { gap: 8px 20px; }
+  .landing-footer__utility { margin-top: 36px; }
+  .landing-footer__glassmark { gap: 10px; min-height: 145px; padding-bottom: 20px; }
+  .landing-footer__glassmark-text { font-size: clamp(36px, 10.2vw, 70px); }
+  .landing-footer__glassmark-symbol { width: 36px; height: 44px; }
+  .app-shell .setting-row--color { gap: 15px; }
+}
+@media (max-width: 390px) {
+  .landing-footer__glassmark-text { font-size: 10.4vw; }
+  .landing-footer__glassmark-symbol { width: 29px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .color-mode-control button { transition: none; } }
+@media (prefers-reduced-transparency: reduce) { .color-mode-control { backdrop-filter: none; background: #11234d; } }

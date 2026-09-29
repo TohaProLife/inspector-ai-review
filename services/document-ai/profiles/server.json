@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "document-ai-profile-v1",
+  "profileId": "ocr-paddle-3.7.0-ru-en-server-v1",
+  "device": "gpu:0",
+  "scripts": ["eslav", "latin"],
+  "modelOptions": {
+    "layout_detection_model_name": "PP-DocLayout-L",
+    "layout_threshold": 0.5,
+    "layout_nms": true,
+    "text_detection_model_name": "PP-OCRv5_server_det",
+    "text_det_limit_side_len": 2048,
+    "text_det_limit_type": "max",
+    "text_det_thresh": 0.3,
+    "text_det_box_thresh": 0.6,
+    "text_det_unclip_ratio": 1.5,
+    "text_recognition_batch_size": 8,
+    "textRecognitionModels": {
+      "eslav": "eslav_PP-OCRv5_mobile_rec",
+      "latin": "latin_PP-OCRv5_mobile_rec"
+    },
+    "use_doc_orientation_classify": true,
+    "use_doc_unwarping": false,
+    "use_textline_orientation": true,
+    "use_table_recognition": true,
+    "use_formula_recognition": true,
+    "use_chart_recognition": true,
+    "use_seal_recognition": true
+  },
+  "predictionOptions": {
+    "use_doc_orientation_classify": true,
+    "use_doc_unwarping": false,
+    "use_textline_orientation": true,
+    "use_table_recognition": true,
+    "use_formula_recognition": true,
+    "use_chart_recognition": true,
+    "use_seal_recognition": true,
+    "layout_threshold": 0.5,
+    "layout_nms": true,
+    "text_det_limit_side_len": 2048,
+    "text_det_limit_type": "max",
+    "text_det_thresh": 0.3,
+    "text_det_box_thresh": 0.6,
+    "text_det_unclip_ratio": 1.5
+  }
+}

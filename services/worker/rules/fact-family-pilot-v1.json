@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "fact-family-pack-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "disposition": "REVIEW_ONLY",
+  "rules": [
+    {
+      "schemaVersion": "fact-comparison-rule-v1",
+      "ruleId": "pilot-pz-004-building-volume",
+      "version": "1",
+      "parameterCode": "PZ-004",
+      "attribute": "BUILDING_VOLUME",
+      "expectedStage": "PD",
+      "actualStage": "RD",
+      "canonicalUnit": "m3",
+      "comparator": {"family": "DIFFERENT", "operator": "!=", "threshold": "0"},
+      "requiredContext": ["APPROVED_CHANGE_STATUS", "EXTERNAL_VOLUME_GEOMETRY"],
+      "requiredActualSection": ["AR", "KR"]
+    },
+    {
+      "schemaVersion": "fact-comparison-rule-v1",
+      "ruleId": "pilot-pz-007-floor-count",
+      "version": "1",
+      "parameterCode": "PZ-007",
+      "attribute": "ABOVE_GROUND_FLOOR_COUNT",
+      "expectedStage": "PD",
+      "actualStage": "RD",
+      "canonicalUnit": "count",
+      "comparator": {"family": "DIFFERENT", "operator": "!=", "threshold": "0"},
+      "requiredContext": ["FLOOR_COUNT_CONVENTION", "BUILDING_SCOPE"],
+      "requiredActualSection": ["AR"]
+    },
+    {
+      "schemaVersion": "fact-comparison-rule-v1",
+      "ruleId": "pilot-kr-055-concrete-class",
+      "version": "1",
+      "parameterCode": "KR-055",
+      "attribute": "CONCRETE_CLASS",
+      "expectedStage": "PD",
+      "actualStage": "RD",
+      "canonicalUnit": "B_CLASS",
+      "comparator": {"family": "CLASS_DECREASE", "operator": ">", "threshold": "0"},
+      "requiredContext": ["ELEMENT_IDENTITY", "MATERIAL_CLASS_BASIS"],
+      "requiredActualSection": ["KR"]
+    },
+    {
+      "schemaVersion": "fact-comparison-rule-v1",
+      "ruleId": "pilot-kr-058-foundation-thickness",
+      "version": "1",
+      "parameterCode": "KR-058",
+      "attribute": "FOUNDATION_THICKNESS",
+      "expectedStage": "PD",
+      "actualStage": "RD",
+      "canonicalUnit": "mm",
+      "comparator": {"family": "DECREASE", "operator": ">", "threshold": "0"},
+      "requiredContext": ["FOUNDATION_ZONE_IDENTITY", "THICKNESS_MEASUREMENT_BASIS"],
+      "requiredActualSection": ["KR"]
+    },
+    {
+      "schemaVersion": "fact-comparison-rule-v1",
+      "ruleId": "pilot-kr-059-slab-thickness",
+      "version": "1",
+      "parameterCode": "KR-059",
+      "attribute": "SLAB_THICKNESS",
+      "expectedStage": "PD",
+      "actualStage": "RD",
+      "canonicalUnit": "mm",
+      "comparator": {"family": "DECREASE", "operator": ">", "threshold": "0"},
+      "requiredContext": ["SLAB_FLOOR_ZONE_IDENTITY", "THICKNESS_MEASUREMENT_BASIS"],
+      "requiredActualSection": ["KR"]
+    }
+  ]
+}

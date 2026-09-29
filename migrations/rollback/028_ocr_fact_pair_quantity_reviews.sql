@@ -1,0 +1,5 @@
+DROP TRIGGER IF EXISTS ocr_fact_pair_quantity_decisions_immutable
+  ON ocr_fact_pair_quantity_decisions;
+DROP TABLE IF EXISTS ocr_fact_pair_quantity_decisions;
+ALTER TABLE run_ocr_fact_pair_snapshots
+  DROP CONSTRAINT IF EXISTS run_ocr_fact_pair_snapshots_quantity_key;

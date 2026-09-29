@@ -1,0 +1,19 @@
+services:
+  pz006-review:
+    profiles: [pz006-review]
+    build:
+      context: ../..
+      dockerfile: infra/pz006-review/Dockerfile
+    image: inspector-ai/pz006-poppler-review:25.12.0-v1
+    user: "1000:1000"
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - ${INSPECTOR_PUBLIC_F0101_PDF:?Set path to SHA-verified public F0101 PDF}:/input/F0101.pdf:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 512m
+    cpus: 1.0

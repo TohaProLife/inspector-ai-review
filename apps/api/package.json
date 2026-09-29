@@ -1,0 +1,42 @@
+{
+  "name": "@inspector-ai/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:migrate": "tsx src/migrate.ts",
+    "outbox:relay": "tsx src/outbox-relay.ts",
+    "user:provision": "tsx src/provision-user.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --maxWorkers=1",
+    "test:postgres": "vitest run --maxWorkers=1 postgres"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1132.0",
+    "@fastify/cookie": "11.1.2",
+    "@fastify/cors": "11.3.0",
+    "@fastify/multipart": "^10.1.1",
+    "@fastify/rate-limit": "11.2.0",
+    "@inspector-ai/contracts": "0.1.0",
+    "@types/yauzl": "^3.4.0",
+    "amqplib": "^0.10.9",
+    "fastify": "5.12.4",
+    "pg": "^8.23.0",
+    "saxes": "^6.0.0",
+    "yauzl": "^3.4.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/node": "26.5.1",
+    "@types/pg": "^8.23.1",
+    "@types/yazl": "^3.3.1",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0",
+    "yazl": "^3.3.1"
+  }
+}

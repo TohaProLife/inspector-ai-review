@@ -1,0 +1,239 @@
+import { randomUUID } from "node:crypto";
+import { Pool } from "pg";
+import { describe, expect, it } from "vitest";
+import { canonicalJson, sha256 } from "../src/canonical-json.js";
+import { runDatabaseMigrations } from "../src/database-migrations.js";
+import { boundedOcrConfigHashV5, boundedOcrProfileIdV5,
+  boundedOcrProfileV5 } from "../src/ocr-layout.js";
+import { PostgresInspectionRepository } from "../src/postgres-repository.js";
+import { loadReferenceData } from "../src/reference-data.js";
+import { provisionLocalUser } from "../src/user-provisioning.js";
+import type { AuthenticatedActor } from "../src/identity.js";
+
+const adminUrl = process.env.INSPECTOR_POSTGRES_ADMIN_URL;
+const databaseSuite = adminUrl ? describe : describe.skip;
+
+function workerJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(workerJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const row = value as Record<string, unknown>;
+    return `{${Object.keys(row).sort().map((key) =>
+      `${JSON.stringify(key)}:${workerJson(row[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+databaseSuite("PostgreSQL OCR row transcription reviews", () => {
+  it("pins synthetic transcription to stages, deduplicates command and rejects tampering", async () => {
+    const name = `inspector_ocr_review_${randomUUID().replaceAll("-", "")}`;
+    const admin = new Pool({ connectionString: adminUrl!, max: 1 });
+    let database: Pool | undefined;
+    let repository: PostgresInspectionRepository | undefined;
+    const previous = Object.fromEntries([
+      "INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE", "INSPECTOR_OCR_HEAT_ROW_PROFILE",
+      "INSPECTOR_FACT_FAMILY_PROFILE", "INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE",
+      "INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE",
+      "INSPECTOR_CANDIDATE_FAMILY_OCR_OBSERVATIONS_PROFILE",
+      "INSPECTOR_OCR_TABLE_ROWS_PROFILE",
+    ].map((key) => [key, process.env[key]]));
+    try {
+      await admin.query(`CREATE DATABASE "${name}"`);
+      const url = new URL(adminUrl!);
+      url.pathname = `/${name}`;
+      await runDatabaseMigrations(url.toString());
+      database = new Pool({ connectionString: url.toString(), max: 2 });
+      process.env.INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE = "v5";
+      process.env.INSPECTOR_OCR_HEAT_ROW_PROFILE = "v1";
+      process.env.INSPECTOR_FACT_FAMILY_PROFILE = "v1";
+      process.env.INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE = "v1";
+      process.env.INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE = "v1";
+      process.env.INSPECTOR_CANDIDATE_FAMILY_OCR_OBSERVATIONS_PROFILE = "v1";
+      process.env.INSPECTOR_OCR_TABLE_ROWS_PROFILE = "v1";
+      const organizationSlug = `ocr-review-${randomUUID()}`;
+      repository = await PostgresInspectionRepository.create({
+        connectionString: url.toString(), parameters: (await loadReferenceData()).parameters,
+        organizationSlug, analysisProfile: "PILOT_PZ002_PZ017",
+      });
+      const object = await repository.createObject({ name: "Synthetic OCR review", address: "Test" });
+      const file = { id: `FIL-${randomUUID()}`, name: "fixture.pdf", size: 120,
+        stage: "RD" as const, mimeType: "application/pdf", sha256: "a".repeat(64),
+        scanStatus: "CLEAN" as const, status: "STORED" as const,
+        storageKey: `objects/${object.id}/originals/${"a".repeat(64)}/fixture.pdf` };
+      await repository.registerIngestedFiles(object.id, [file]);
+      const user = await provisionLocalUser(database, {
+        organizationSlug, login: `ocr-review-${randomUUID()}`, displayName: "OCR Reviewer",
+        password: "Synthetic-Test-Only-2026!", role: "INSPECTOR",
+        capabilities: ["REVIEW_DECIDE"], objectApiIds: [object.id],
+        objectPermissions: ["READ", "REVIEW_DECIDE"],
+      });
+      const actor: AuthenticatedActor = { sessionId: randomUUID(), userId: user.id,
+        displayName: "OCR Reviewer", organizationId: user.organizationId,
+        roles: ["INSPECTOR"], capabilities: ["REVIEW_DECIDE"],
+        csrfHash: "b".repeat(64), expiresAt: new Date(Date.now() + 60_000).toISOString() };
+      const check = await repository.startCheck(object.id);
+      expect(check).toBeDefined();
+      const run = (await database.query<{ id: string; object_id: string;
+        organization_id: string; inspection_id: string;
+        manifest_hash: string; release_id: string }>(
+        `SELECT run.id, run.object_id, object.organization_id, run.inspection_id,
+                manifest.sha256 AS manifest_hash, run.release_id
+         FROM analysis_runs run
+         JOIN objects object ON object.id = run.object_id
+         JOIN input_manifests manifest ON manifest.id = run.manifest_id
+         WHERE run.api_id = $1`, [check!.id])).rows[0];
+      const manifestHash = run.manifest_hash.trim();
+      const lines = [
+        { text: "Наименование", bboxPx: [250, 100, 430, 130], score: 0.98 },
+        { text: "Значение", bboxPx: [600, 100, 730, 130], score: 0.97 },
+        { text: "Площадь помещения", bboxPx: [250, 150, 510, 178], score: 0.96 },
+        { text: "84,9 м²", bboxPx: [620, 151, 700, 178], score: 0.95 },
+      ];
+      const page: Record<string, unknown> = {
+        schemaVersion: "document-ocr-page-v1", sourceFileId: file.id,
+        inputSha256: file.sha256, pageNumber: 9,
+        render: { sha256: "c".repeat(64), widthPx: 1000, heightPx: 1400,
+          dpi: 120, rendererProfileId: boundedOcrProfileV5.rendererProfileId },
+        provider: { profileId: boundedOcrProfileV5.ocrProviderProfileIds[0], script: "eslav" },
+        lines,
+      };
+      page.contentHash = sha256(canonicalJson(page));
+      const ocrContent = { schemaVersion: "analysis-stage-result-v2",
+        jobType: "DOCUMENT_OCR_LAYOUT", inputManifestHash: manifestHash,
+        disposition: "OCR_LAYOUT_BOUNDED", reasonCode: "BOUNDED_OCR_ONLY",
+        providerKind: "OCR_LAYOUT", providerProfileId: boundedOcrProfileIdV5,
+        providerConfigHash: boundedOcrConfigHashV5, outputCount: 1,
+        analysis: { schemaVersion: "bounded-ocr-layout-analysis-v5", objectId: run.object_id,
+          inputManifestHash: manifestHash, profile: boundedOcrProfileV5,
+          sourceCount: 1, processedPageCount: 1,
+          sources: [{ sourceFileId: file.id, sourceSha256: file.sha256,
+            processedPageCount: 1, pages: [page] }] } };
+      const ocrHash = sha256(canonicalJson(ocrContent));
+      const evidence = (index: number, role: string) => ({ role, lineIndex: index,
+        text: lines[index].text, bboxPx: lines[index].bboxPx, score: lines[index].score });
+      const proposal = { sourceFileId: file.id, inputSha256: file.sha256,
+        pageNumber: 9, ocrPageContentHash: page.contentHash, renderSha256: "c".repeat(64),
+        headerEvidence: [evidence(0, "labelHeader"), evidence(1, "valueHeader")],
+        labelEvidence: evidence(2, "rowLabel"), valueEvidence: evidence(3, "rawValue") };
+      const tableRows: Record<string, unknown> = {
+        schemaVersion: "ocr-table-row-proposals-v1",
+        profileId: "conservative-ocr-table-rows-v1", ocrStageSha256: ocrHash,
+        inputManifestHash: manifestHash, proposals: [proposal], abstentions: [],
+        findingCount: 0,
+      };
+      tableRows.contentHash = sha256(workerJson(tableRows));
+      const release = (await database.query<{ content_json: Record<string, any> }>(
+        `SELECT content_json FROM analysis_releases WHERE release_id = $1`,
+        [run.release_id])).rows[0].content_json;
+      const ruleSlot = release.providerSlots.find(
+        (slot: Record<string, unknown>) => slot.stageJobType === "RULE_EVALUATION");
+      const ruleContent = { schemaVersion: "analysis-stage-result-v2",
+        jobType: "RULE_EVALUATION", inputManifestHash: manifestHash,
+        disposition: "RULES_EVALUATED", providerProfileId: ruleSlot.profileId,
+        providerConfigHash: ruleSlot.configHash, outputCount: 8,
+        ocrTableRows: tableRows };
+      for (const [jobType, content, disposition, configHash, profile] of [
+        ["DOCUMENT_OCR_LAYOUT", ocrContent, "OCR_LAYOUT_BOUNDED", boundedOcrConfigHashV5,
+          boundedOcrProfileIdV5],
+        ["RULE_EVALUATION", ruleContent, "RULES_EVALUATED", ruleSlot.configHash,
+          ruleSlot.profileId],
+      ] as const) {
+        let job = (await database.query<{ id: string }>(
+          `UPDATE analysis_jobs SET state = 'SUCCEEDED', completed_at = now()
+           WHERE run_id = $1 AND job_type = $2 RETURNING id`,
+          [run.id, jobType])).rows[0];
+        // OCR job is normally inserted after text quality finds OCR_REQUIRED.
+        // This repository fixture stores a synthetic committed page directly.
+        if (!job && jobType === "DOCUMENT_OCR_LAYOUT") {
+          job = (await database.query<{ id: string }>(
+            `INSERT INTO analysis_jobs (
+               organization_id, object_id, inspection_id, run_id, queue_name,
+               job_type, scope_type, state, semantic_key, input_manifest_hash,
+               release_id, completed_at
+             ) VALUES ($1, $2, $3, $4, 'documents.render', $5, 'ANALYSIS',
+               'SUCCEEDED', $6, $7, $8, now()) RETURNING id`,
+            [run.organization_id, run.object_id, run.inspection_id, run.id,
+              jobType, sha256(randomUUID()), manifestHash, run.release_id])).rows[0];
+        }
+        expect(job).toBeDefined();
+        const canonical = canonicalJson(content);
+        await database.query(
+          `INSERT INTO analysis_stage_artifacts (
+             id, job_id, run_id, job_type, schema_version, disposition,
+             reason_code, provider_kind, provider_profile_id, provider_config_hash,
+             output_count, input_manifest_hash, content_hash, byte_size, content_json
+           ) VALUES ($1, $2, $3, $4, 'analysis-stage-result-v2', $5,
+             'SYNTHETIC_TEST_ONLY', 'TEST', $6, $7, $8, $9, $10, $11, $12::jsonb)`,
+          [randomUUID(), job.id, run.id, jobType, disposition,
+            profile, configHash, jobType === "RULE_EVALUATION" ? 8 : 1,
+            manifestHash, sha256(canonical), Buffer.byteLength(canonical, "utf8"), canonical]);
+      }
+      await database.query(
+        `UPDATE analysis_runs SET run_state = 'PARTIAL' WHERE id = $1`, [run.id]);
+      const read = await repository.getOcrRowTranscriptionReviews(check!.id, actor);
+      expect(read && typeof read === "object" ? read.candidates : null).toHaveLength(1);
+      expect(await repository.getOcrRowTranscriptionReviews(check!.id,
+        { ...actor, userId: randomUUID() })).toBeUndefined();
+      if (!read || typeof read === "string") throw new Error("No OCR candidates");
+      expect(read.candidates[0].rowFingerprint).toBe(sha256(canonicalJson(proposal)));
+      const input = { schemaVersion: "ocr-row-transcription-review-v1" as const,
+        ocrStageSha256: ocrHash, rowFingerprint: read.candidates[0].rowFingerprint,
+        decision: "REJECTED" as const, reviewedLabel: null, reviewedValue: null,
+        reviewedUnit: null, basis: "Synthetic test row only; no human approval." };
+      const command = { actor, idempotencyKey: randomUUID(),
+        requestId: randomUUID(), traceId: randomUUID() };
+      expect((await repository.recordOcrRowTranscriptionReviewCommand(check!.id,
+        input, { ...command, actor: { ...actor, capabilities: [] } })).kind)
+        .toBe("forbidden");
+      expect((await repository.recordOcrRowTranscriptionReviewCommand(check!.id,
+        { ...input, rowFingerprint: "d".repeat(64) }, command)).kind).toBe("invalid_state");
+      const first = await repository.recordOcrRowTranscriptionReviewCommand(
+        check!.id, input, command);
+      expect(first.kind).toBe("success");
+      const replay = await repository.recordOcrRowTranscriptionReviewCommand(
+        check!.id, input, command);
+      expect(replay).toMatchObject({ kind: "success", replayed: true });
+      const conflict = await repository.recordOcrRowTranscriptionReviewCommand(
+        check!.id, { ...input, basis: "Different synthetic basis." }, command);
+      expect(conflict.kind).toBe("idempotency_conflict");
+      const secondKey = await repository.recordOcrRowTranscriptionReviewCommand(
+        check!.id, input, { ...command, idempotencyKey: randomUUID() });
+      expect(secondKey).toMatchObject({ kind: "success", replayed: true });
+      const after = await repository.getOcrRowTranscriptionReviews(check!.id, actor);
+      expect(after && typeof after === "object" ? after.items : null).toHaveLength(1);
+      const count = await database.query<{ decisions: string; audits: string }>(
+        `SELECT (SELECT count(*)::text FROM ocr_row_transcription_decisions) AS decisions,
+                (SELECT count(*)::text FROM audit_events WHERE action = 'OCR_ROW_TRANSCRIPTION_REVIEW') AS audits`);
+      expect(count.rows[0]).toEqual({ decisions: "1", audits: "1" });
+      await expect(database.query(
+        `UPDATE ocr_row_transcription_decisions SET review_json = '{}'::jsonb`))
+        .rejects.toThrow();
+      // Simulate a bad DB import: append-only permits INSERT, so GET must verify
+      // payload against the original immutable OCR and rule artifacts again.
+      await database.query(
+        `INSERT INTO ocr_row_transcription_decisions (
+           object_id, run_id, ocr_stage_artifact_id, rule_stage_artifact_id,
+           source_file_id, source_sha256, row_fingerprint_sha256, review_json,
+           actor_id, content_hash
+         ) SELECT object_id, run_id, ocr_stage_artifact_id, rule_stage_artifact_id,
+                  source_file_id, source_sha256, row_fingerprint_sha256,
+                  jsonb_set(review_json, '{provenance,sourceSha256}',
+                    to_jsonb($1::text)), actor_id, $2
+           FROM ocr_row_transcription_decisions WHERE content_hash = $3`,
+        ["d".repeat(64), "e".repeat(64),
+          first.kind === "success" ? first.value.contentHash : "f".repeat(64)]);
+      await expect(repository.getOcrRowTranscriptionReviews(check!.id, actor))
+        .rejects.toThrow(/OCR transcription review integrity/);
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key]; else process.env[key] = value;
+      }
+      await repository?.close();
+      await database?.end();
+      await admin.query(
+        `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+         WHERE datname = $1 AND pid <> pg_backend_pid()`, [name]);
+      await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
+      await admin.end();
+    }
+  }, 60_000);
+});

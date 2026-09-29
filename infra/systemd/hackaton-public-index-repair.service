@@ -1,0 +1,10 @@
+[Unit]
+Description=Inspector AI repair of failed public PDF sources
+After=hackaton-public-index-v3.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker run --rm --name hackaton-public-index-repair --network none --workdir /workspace --user 1000:1000 --cpus 2 --memory 3g --memory-swap 3g --mount type=bind,src=/home/freetok/Projects/inspector-ai-homeserver-smoke,dst=/workspace,readonly --mount type=bind,src=/mnt/edberries-backup-disk/inspector-ai-dataset-20260924/archives,dst=/data/archives,readonly --mount type=bind,src=/mnt/edberries-backup-disk/inspector-ai-public-document-index-v3-20260927,dst=/data/index --env PYTHONPATH=/workspace/services/worker --entrypoint python3 inspector-ai-homeserver-smoke-worker /workspace/scripts/build-public-document-index.py repair-failed --manifest /workspace/datasets/reference_methodology/hackathon_gold_20260811/УЧАСТНИКАМ_БЕЗ_ОТВЕТОВ/data/document_manifest.jsonl --archive /data/archives/01_ПАКЕТ_УЧАСТНИКАМ_3_ОБЪЕКТА.zip --output /data/index --workers 1
+ExecStopPost=-/usr/bin/docker rm -f hackaton-public-index-repair
+TimeoutStartSec=0
+Restart=on-abnormal

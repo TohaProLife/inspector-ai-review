@@ -1,0 +1,77 @@
+/* Evidence motion: document-like entrances, precise controls, no scroll hijacking. */
+:root {
+  --motion-ease: cubic-bezier(.22,1,.36,1);
+  --motion-enter: 240ms;
+  --motion-feedback: 160ms;
+}
+@keyframes evidence-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes evidence-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes evidence-dialog {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes architecture-arrive {
+  from { opacity: 0; transform: translateY(18px) scale(1.025); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .landing-nav { animation: evidence-fade 320ms ease-out both; }
+  .landing-hero__content > * { animation: evidence-enter 560ms var(--motion-ease) backwards; }
+  .landing-hero__content > :nth-child(2) { animation-delay: 40ms; }
+  .landing-hero__content > :nth-child(3) { animation-delay: 80ms; }
+  .landing-hero__content > :nth-child(4) { animation-delay: 120ms; }
+  .hero-architecture { animation: architecture-arrive 800ms var(--motion-ease) backwards; }
+  .product-preview { animation: evidence-enter 640ms 120ms var(--motion-ease) backwards; }
+  .preview-document { animation: evidence-fade 220ms ease-out; }
+  .document-source-image { animation: evidence-fade 180ms ease-out; }
+  .app-shell .main > .content, .evidence-screen, .ds-page { animation: evidence-enter var(--motion-enter) var(--motion-ease); }
+  .search-overlay { animation: evidence-fade 160ms ease-out; }
+  .search-dialog { animation: evidence-dialog 280ms var(--motion-ease); }
+  .inline-error, .inline-message, .table-empty, .source-image-empty { animation: evidence-fade 180ms ease-out; }
+  .landing-nav__links.is-open { animation: evidence-enter 240ms var(--motion-ease); }
+
+  .button, .catalog-feature, .nav-item, .preview-queue button, .candidate-rail button,
+  .segmented button, .icon-button, .decision-button, .dropzone, .object-card {
+    transition: color var(--motion-feedback), background-color var(--motion-feedback), border-color var(--motion-feedback), box-shadow var(--motion-feedback), transform 200ms var(--motion-ease);
+  }
+  .button > svg, .landing-inline-link > svg, .catalog-feature svg, .candidate-open svg,
+  .row-action svg { transition: transform 240ms var(--motion-ease); }
+  .faq-list { --disclosure-duration: 360ms; --disclosure-ease: cubic-bezier(.22,1,.36,1); }
+  @supports (transition-timing-function: linear(0,1)) {
+    /* Normalized critically damped response: 1 - (1 + wt) * exp(-wt), wt=7.6.
+       No overshoot: following questions never bounce or overlap. */
+    .faq-list { --disclosure-ease: linear(0, .0565, .1777, .317, .4508, .5687, .6674, .7472, .8102, .8591, .8965, .9247, .9459, .9616, .9733, .9818, .9881, .9926, .9959, .9983, 1); }
+  }
+  .faq-answer { transition: grid-template-rows var(--disclosure-duration) var(--disclosure-ease); }
+  .faq-trigger svg { transition: transform var(--disclosure-duration) var(--disclosure-ease); }
+  .faq-answer p { transition: opacity 220ms ease-out, transform var(--disclosure-duration) var(--disclosure-ease); }
+  .switch span { transition: transform 240ms var(--motion-ease); }
+  .landing-account__label { display: inline-block; transform-origin: center; transition: transform 180ms var(--navigation-spring, var(--motion-ease)); }
+  .landing-account:focus-visible .landing-account__label { transform: scale(1.06); }
+  .filter-search, .ds-field input, .field-grid input, .decision-actions textarea {
+    transition: border-color 180ms, box-shadow 180ms, background 180ms;
+  }
+  .button:active:not(:disabled):not([aria-disabled="true"]), .catalog-feature:active { transform: translateY(1px) scale(.99); }
+  @media (hover: hover) and (pointer: fine) {
+    .landing-account:hover .landing-account__label { transform: scale(1.06); }
+    .landing-account:active .landing-account__label { transform: scale(1.02); }
+    .landing .button:hover:not(:active):not(:disabled):not([aria-disabled="true"]) { transform: translateY(-2px); }
+    .button:hover:not(:disabled) > :is(.ui-icon--arrow-right,.ui-icon--arrow-up-right),
+    .landing-inline-link:hover > svg, .candidate-row:hover .candidate-open svg,
+    .table-row--button:hover .row-action svg { transform: translateX(3px); }
+    .catalog-feature:hover:not(:active) { transform: translateY(-3px); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }
+}
+@media print {
+  *, *::before, *::after { animation: none!important; transition: none!important; }
+}

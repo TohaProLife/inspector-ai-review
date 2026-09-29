@@ -1,0 +1,58 @@
+{
+  "attribute": "BUILDING_TOTAL_AREA",
+  "canonicalUnit": "m2",
+  "disposition": "REVIEW_ONLY_ABSTAIN",
+  "label": "Общая площадь здания, в т.ч.:",
+  "parameterCode": "PZ-002",
+  "publicManifestSha256": "853225daec1888fbed19bbeb45e958154135f069799cea883dcd3c754c6c4ee7",
+  "schemaVersion": "numeric-table-row-labels-v1",
+  "unit": "м ²",
+  "verifiedSample": {
+    "manifestSection": "OTHER",
+    "pageArtifactSha256": "fdde24e67721ff333ad48325780fcdf48a5e083242de60bcfcc34c1a6283922a",
+    "pageNumber": 26,
+    "roles": {
+      "label": {
+        "bboxMilliPoints": [
+          111740,
+          567388,
+          270050,
+          579388
+        ],
+        "blockIndex": 19,
+        "lineIndex": 2,
+        "lineTextSha256": "ab54eafda1063308931789e8e282909356d0af1f6ed099213364c0ff72b3241e",
+        "text": "Общая площадь здания, в т.ч.:"
+      },
+      "unit": {
+        "bboxMilliPoints": [
+          343030,
+          568948,
+          360190,
+          580948
+        ],
+        "blockIndex": 21,
+        "lineIndex": 0,
+        "lineTextSha256": "65474a9ab976f8097bc094820224a4633e71c164727ef99dcbcc0d01ece191ae",
+        "text": "м ²"
+      },
+      "value": {
+        "bboxMilliPoints": [
+          406510,
+          567388,
+          454510,
+          579388
+        ],
+        "blockIndex": 20,
+        "lineIndex": 2,
+        "lineTextSha256": "d56f18d72a2e8c3e2b98238d29333e3ab7acae4dc1e9d2d5bc4bd4d7d986c167",
+        "text": "11618,27"
+      }
+    },
+    "sourceFileId": "F0150",
+    "sourceGate": "SECTION_UNRESOLVED",
+    "sourceSha256": "30c456b308c9f9e7e5c7fb009217777b8ce754490ccc39d662f21ac30eab031b",
+    "stage": "PD"
+  },
+  "version": "1"
+}

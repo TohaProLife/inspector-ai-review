@@ -1,0 +1,4 @@
+DROP TRIGGER run_fact_entity_link_snapshots_immutable ON run_fact_entity_link_snapshots;
+DROP TABLE run_fact_entity_link_snapshots;
+DROP TRIGGER fact_entity_link_decisions_immutable ON fact_entity_link_decisions;
+DROP TABLE fact_entity_link_decisions;

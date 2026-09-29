@@ -1,0 +1,19 @@
+services:
+  zu127-review:
+    profiles: [zu127-review]
+    build:
+      context: ../..
+      dockerfile: infra/zu127-review/Dockerfile
+    image: inspector-ai/zu127-poppler-review:25.12.0-v1
+    user: "1000:1000"
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - ${INSPECTOR_PUBLIC_F0152_PDF:?Set path to SHA-verified public F0152 PDF}:/input/F0152.pdf:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 512m
+    cpus: 1.0

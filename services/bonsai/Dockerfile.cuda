@@ -1,0 +1,59 @@
+# syntax=docker/dockerfile:1.7
+FROM ubuntu:22.04@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986 AS llama-fetch
+
+ARG TARGETARCH
+ARG LLAMA_RELEASE_TAG=prism-b10685-7dffb15
+ARG LLAMA_ARCHIVE=llama-prism-b10685-7dffb15-bin-linux-cuda-12.4-x64.tar.gz
+ARG LLAMA_ARCHIVE_SHA256=29326793ab8a8d0b42d348bcd0ba0a5f4513220d29d1a1d40e943e357c666386
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && architecture="${TARGETARCH:-$(dpkg --print-architecture)}" \
+    && case "$architecture" in amd64) ;; *) echo "CUDA runtime supports linux/amd64 only" >&2; exit 1 ;; esac \
+    && curl --fail --location --retry 5 --retry-delay 2 \
+      "https://github.com/PrismML-Eng/llama.cpp/releases/download/${LLAMA_RELEASE_TAG}/${LLAMA_ARCHIVE}" \
+      --output /tmp/llama.tar.gz \
+    && echo "${LLAMA_ARCHIVE_SHA256}  /tmp/llama.tar.gz" | sha256sum --check --strict \
+    && mkdir -p /opt/llama \
+    && tar -xzf /tmp/llama.tar.gz -C /opt/llama --strip-components=1 \
+    && test -x /opt/llama/llama-server \
+    && rm -f /tmp/llama.tar.gz
+
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04@sha256:cff3a0d82d2c2b47bab252d67fa9b34a20ef4c50781d98501b5c7367ea9afd10
+
+LABEL org.opencontainers.image.title="Inspector AI Bonsai 2 27B CUDA runtime" \
+      org.opencontainers.image.source="https://github.com/PrismML-Eng/llama.cpp" \
+      org.opencontainers.image.revision="7dffb158de30ebb8ef9d64f33c6b0b2d7c1e6313" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      ai.inspector.profile="vlm-bonsai2-27b-ptq1-laptop-v1" \
+      ai.inspector.artifact-lock-sha256="e5f4e64b90cb2b9170021c0339db55fbf00bdfc5466bf6e3b1bf65f43e564e8f"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl libgomp1 tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 bonsai \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin bonsai
+
+COPY --from=llama-fetch /opt/llama /opt/llama
+COPY artifacts.lock.json runtime-profile.json /opt/bonsai/
+COPY entrypoint.sh /usr/local/bin/bonsai-entrypoint
+COPY smoke.sh /usr/local/bin/bonsai-smoke
+RUN chmod 0555 /usr/local/bin/bonsai-entrypoint /usr/local/bin/bonsai-smoke
+
+ENV BONSAI_MODEL_DIR=/models \
+    BONSAI_NGL=99 \
+    BONSAI_MMPROJ_CPU=1 \
+    BONSAI_CONTEXT_SIZE=8192 \
+    BONSAI_PARALLEL=1 \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+USER 10001:10001
+EXPOSE 8080
+STOPSIGNAL SIGTERM
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10m --retries=8 \
+  CMD curl --fail --silent --show-error http://127.0.0.1:8080/health >/dev/null || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/bonsai-entrypoint"]

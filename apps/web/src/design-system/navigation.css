@@ -1,0 +1,7 @@
+:root { --navigation-spring: cubic-bezier(.22,1,.36,1); }
+@supports (animation-timing-function: linear(0,1)) {
+  :root { --navigation-spring: linear(0, .0565, .1777, .317, .4508, .5687, .6674, .7472, .8102, .8591, .8965, .9247, .9459, .9616, .9733, .9818, .9881, .9926, .9959, .9983, 1); }
+}
+
+/* navigation.ts animates the live DOM. CSS entrances must not run a second time. */
+html[data-navigation-managed] :is(.landing-nav, .landing-hero__content > *, .hero-architecture, .product-preview, .main > .content, .evidence-screen, .document-source-image) { animation: none !important; }

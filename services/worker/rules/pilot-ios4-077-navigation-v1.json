@@ -1,0 +1,17 @@
+{
+  "ruleId": "pilot-ios4-077-navigation",
+  "version": "1",
+  "parameterCode": "IOS4-077",
+  "requiredStages": ["PD", "RD"],
+  "sectionCodes": ["OV"],
+  "subjectTerms": [
+    "радиатор",
+    "радиаторы",
+    "отопительный прибор",
+    "отопительные приборы",
+    "теплоотдача",
+    "количество секций"
+  ],
+  "locationTerms": [],
+  "visualFactRequired": true
+}

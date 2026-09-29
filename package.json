@@ -1,0 +1,31 @@
+{
+  "name": "inspector-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vertical MVP for AI-assisted construction document inspection",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @inspector-ai/api\" \"npm run dev -w @inspector-ai/web\"",
+    "dev:api": "npm run dev -w @inspector-ai/api",
+    "dev:web": "npm run dev -w @inspector-ai/web",
+    "db:migrate": "npm run db:migrate -w @inspector-ai/api",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && npm run test:python",
+    "test:python": "node scripts/run-python-tests.mjs",
+    "test:providers": "node scripts/run-python-tests.mjs bonsai model-store document-ai text-inference gpu-admission",
+    "compose:laptop:config": "./infra/stack.sh laptop config --quiet",
+    "compose:server:config": "./infra/stack.sh server config --quiet",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "9.2.4"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  }
+}

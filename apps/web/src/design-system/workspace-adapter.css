@@ -1,0 +1,111 @@
+/* Evidence 2.0 tokens from the design branch, fitted to the live inspector screens. */
+:root {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+body, .app-shell { color: var(--ink); background: var(--canvas); }
+.sidebar { width: 232px; background: var(--surface); }
+.sidebar--compact { width: 68px; }
+.brand-symbol { color: var(--on-accent); background: var(--accent); }
+.nav-item { border-radius: var(--radius-control); }
+.nav-item--active { border-color: var(--line-strong); }
+.nav-item em { display: inline-grid; min-width: 22px; place-items: center; padding: 1px 5px;
+  border-radius: 999px; background: var(--warning-soft); text-align: center; }
+.topbar { background: var(--surface); }
+.surface { border-radius: var(--radius-panel); }
+.button { border-radius: var(--radius-control); }
+.button--primary { color: var(--on-accent); }
+.button:focus-visible, .review-candidates-list button:focus-visible,
+.color-mode-control button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.object-heading h1, .page-title-row h1 { font-family: var(--font-heading); letter-spacing: -.035em; }
+.protocol-cover h2 { font-family: var(--font-display); }
+
+.color-mode-control { display: inline-flex; flex: none; align-items: center; gap: 2px;
+  padding: 3px; color: var(--ink-soft); background: var(--surface-raised);
+  border: 1px solid var(--line-strong); border-radius: 999px; }
+.color-mode-control button { display: grid; width: 34px; height: 34px; padding: 0;
+  place-items: center; color: inherit; background: transparent; border: 0;
+  border-radius: 999px; cursor: pointer; }
+.color-mode-control button:hover { color: var(--ink); background: var(--surface-selected); }
+.color-mode-control button.is-selected { color: var(--ink); background: var(--surface);
+  box-shadow: 0 1px 5px #00000012; }
+
+.review-candidates { box-shadow: var(--shadow-document); }
+.review-candidates-list button { padding: var(--space-sm); border-radius: var(--radius-control);
+  transition: background var(--duration-fast), border-color var(--duration-fast); }
+.review-candidates-list button:hover { background: var(--surface-raised); border-color: var(--line-strong); }
+.review-candidates-list button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.review-candidate-matrix { color: var(--ink-soft); font-size: .8125rem; line-height: 1.35; }
+.review-candidates-list .review-candidate-matrix { overflow-wrap: anywhere; }
+.review-candidates-detail h4 { font-family: var(--font-heading); letter-spacing: -.02em; }
+.review-candidates-preview { grid-template-columns: minmax(0, 1fr); }
+.review-candidates-preview figure { position: relative; overflow: hidden;
+  background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-control); }
+.review-candidates-preview .document-source-image { width: 100%; max-height: 500px;
+  object-fit: contain; background: #fff; transition: opacity var(--duration-reveal); }
+.review-candidates-preview .source-image-loading { position: absolute; inset: 0; z-index: 1; }
+.review-candidates-preview .source-image-empty { min-height: 180px; }
+.review-candidates-preview figcaption { padding: 8px var(--space-sm); background: var(--surface); }
+.app-shell .table-row { grid-template-columns: minmax(205px, 1.2fr) 125px minmax(250px, 1.55fr) 106px 132px 17px; min-width: 980px; }
+.app-shell .table-head > span { min-width: 0; }
+.app-shell .protocol-review-note { border-top: 1px solid var(--line); }
+.app-shell .protocol-review-note p { margin: 0 0 var(--space-sm); color: var(--ink-soft); font-size: .8125rem; line-height: 1.5; }
+
+html[data-color-resolved="dark"] .app-shell .missing-hero p { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell .missing-hero .kicker { color: var(--warning); }
+
+@media (max-width: 1120px) {
+  .review-candidates-layout { grid-template-columns: minmax(210px, 260px) minmax(0, 1fr); }
+}
+@media (max-width: 940px) {
+  .app-shell .protocol-layout { grid-template-columns: minmax(0, 1fr); }
+  .app-shell .object-card__metrics { display: grid; grid-row: 4; grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--line); }
+  .review-candidates-layout { grid-template-columns: minmax(0, 1fr); }
+  .review-candidates-list { display: grid; min-width: 0; }
+  .review-candidates-list button { min-width: 0; }
+}
+@media (max-width: 700px) {
+  .sidebar, .sidebar--compact { width: 100%; }
+  .app-shell .topbar-actions > .button--small { overflow: hidden; font-size: 0; gap: 0; padding: 0; }
+  .app-shell .topbar-actions > .button--small svg { flex: none; }
+  .topbar .color-mode-control button { width: 30px; height: 30px; }
+  .topbar .color-mode-control { padding: 2px; }
+  .review-candidates { padding: var(--space-md); }
+  .review-candidates-preview { grid-template-columns: 1fr; }
+}
+
+@media (width <= 900px) {
+  .landing--antimetal .landing-nav__links { display: none; }
+  .landing--antimetal .landing-nav__links.is-open { display: grid; }
+  .landing--antimetal .landing-menu { display: flex; }
+  .app-shell .sidebar--mobile-open:focus { outline: none; }
+}
+
+@media (width > 900px) {
+  .app-shell .sidebar { overflow-x: hidden; }
+  .app-shell .sidebar-top { min-width: 0; }
+  .app-shell .sidebar-search { flex: 1 1 auto; }
+  .app-shell .sidebar-search kbd { flex: none; }
+  .app-shell .sidebar-collapse { width: 100%; min-width: 0; }
+  .app-shell .sidebar--compact .sidebar-search,
+  .app-shell .sidebar--compact .sidebar-collapse {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+  }
+  .app-shell .sidebar--compact .sidebar-search .sidebar-copy { display: none; }
+}
+
+@media (width > 900px) and (width <= 1120px) {
+  .app-shell .review-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .app-shell .review-summary .summary-intro {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}

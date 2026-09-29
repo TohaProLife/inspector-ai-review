@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "typed-numeric-rule-v1",
+  "ruleId": "pilot-pz-002-area",
+  "version": "1",
+  "parameterCode": "PZ-002",
+  "expectedStage": "PD",
+  "actualStage": "RD",
+  "canonicalUnit": "m2",
+  "comparator": {
+    "family": "RELATIVE_DELTA",
+    "threshold": "0.01",
+    "operator": ">"
+  }
+}

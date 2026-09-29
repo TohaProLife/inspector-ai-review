@@ -1,0 +1,292 @@
+name: inspector-ai
+
+x-runtime-security: &runtime-security
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+
+x-init-security: &init-security
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: "no"
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317
+
+  pgvector-init:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - >-
+        PGPASSWORD="$${POSTGRES_PASSWORD}" psql
+        --host=postgres --username="$${POSTGRES_USER}" --dbname="$${POSTGRES_DB}"
+        --set=ON_ERROR_STOP=1
+        --command='CREATE EXTENSION IF NOT EXISTS vector;'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inspector}
+      POSTGRES_USER: ${POSTGRES_USER:-inspector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    profiles: [server]
+    restart: "no"
+
+  migrate:
+    depends_on:
+      pgvector-init: { condition: service_completed_successfully }
+
+  provider-volume-init-server:
+    image: alpine:3.22.1@sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f
+    command:
+      - /bin/sh
+      - -ec
+      - >-
+        chown 10001:10001 /volumes/document /volumes/qwen
+    user: "0:0"
+    network_mode: none
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    volumes:
+      - document-models-server:/volumes/document
+      - provider-models-server:/volumes/qwen
+    profiles: [server]
+    <<: *init-security
+
+  gpu-admission-server:
+    image: inspector-ai/gpu-admission:1.0.0
+    build:
+      context: ../services/gpu-admission
+    environment:
+      GPU_DEVICE: ${SERVER_GPU_DEVICE:-0}
+      GPU_ADMISSION_FRACTION: "0.85"
+      GPU_MIN_TOTAL_MIB: ${SERVER_GPU_MIN_TOTAL_MIB:-78000}
+      GPU_SERVICE_BUDGETS_MIB: '{"vlm":30720,"document":10240}'
+      NVIDIA_VISIBLE_DEVICES: ${SERVER_GPU_DEVICE:-0}
+      NVIDIA_DRIVER_CAPABILITIES: utility
+    network_mode: none
+    runtime: nvidia
+    profiles: [server]
+    <<: *init-security
+
+  hf-model-init-server:
+    image: inspector-ai/model-store:1.0.0
+    build:
+      context: ../services/model-store
+    environment:
+      MODEL_STORE_LOCK: /opt/model-store/locks/server.json
+      MODEL_STORE_ROOT: /models
+      MODEL_STORE_BASE_URL: ${MODEL_STORE_BASE_URL:-}
+      MODEL_STORE_SAFETY_BYTES: ${MODEL_STORE_SAFETY_BYTES:-5368709120}
+    volumes:
+      - provider-models-server:/models
+    depends_on:
+      provider-volume-init-server: { condition: service_completed_successfully }
+    networks: [artifact-download]
+    tmpfs: [/tmp:size=64m,mode=1777]
+    profiles: [server]
+    <<: *init-security
+
+  document-model-init-server:
+    image: inspector-ai/document-ai:paddle3.2.1-cuda12.6-v1
+    build:
+      context: ../services/document-ai
+      args:
+        DOCUMENT_AI_BASE_IMAGE: paddlepaddle/paddle:3.2.1-gpu-cuda12.6-cudnn9.5@sha256:04faf6b3573cd166e2a345eae072d3e58a4d257db6900eb2b428ab9389e56e72
+    command: ["python", "/opt/document-ai/provision.py"]
+    environment: &document-server-environment
+      DOCUMENT_AI_PROFILE: /opt/document-ai/profiles/server.json
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      HOME: /tmp
+      FLAGS_allocator_strategy: auto_growth
+      FLAGS_fraction_of_gpu_memory_to_use: "0.10"
+      NVIDIA_VISIBLE_DEVICES: ${SERVER_GPU_DEVICE:-0}
+      CUDA_VISIBLE_DEVICES: "0"
+      PADDLE_PDX_MODEL_SOURCE: ${PADDLE_PDX_MODEL_SOURCE:-BOS}
+      PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
+    volumes:
+      - document-models-server:/models
+    depends_on:
+      provider-volume-init-server: { condition: service_completed_successfully }
+      gpu-admission-server: { condition: service_completed_successfully }
+    networks: [artifact-download]
+    runtime: nvidia
+    tmpfs: [/tmp:size=1g,mode=1777]
+    profiles: [server]
+    <<: *init-security
+
+  document-ai-server:
+    image: inspector-ai/document-ai:paddle3.2.1-cuda12.6-v1
+    build:
+      context: ../services/document-ai
+      args:
+        DOCUMENT_AI_BASE_IMAGE: paddlepaddle/paddle:3.2.1-gpu-cuda12.6-cudnn9.5@sha256:04faf6b3573cd166e2a345eae072d3e58a4d257db6900eb2b428ab9389e56e72
+    environment:
+      <<: *document-server-environment
+      DOCUMENT_AI_PRELOAD: "1"
+      DOCUMENT_AI_MAX_LOADED_PIPELINES: "1"
+      DOCUMENT_AI_MAX_UPLOAD_BYTES: ${DOCUMENT_AI_MAX_UPLOAD_BYTES:-67108864}
+      DOCUMENT_AI_MAX_RENDER_PIXELS: 40000000
+      DOCUMENT_AI_MAX_IMAGE_SIDE: 20000
+    volumes:
+      - document-models-server:/models:ro
+    depends_on:
+      document-model-init-server: { condition: service_completed_successfully }
+      qwen-vlm-server: { condition: service_healthy }
+    networks:
+      provider-runtime:
+        aliases: [document-ai]
+    ports: ["127.0.0.1:${DOCUMENT_AI_PORT:-8090}:8080"]
+    runtime: nvidia
+    tmpfs: [/tmp:size=2g,mode=1777]
+    shm_size: 8gb
+    mem_limit: ${SERVER_DOCUMENT_MEMORY_LIMIT:-32g}
+    profiles: [server]
+    stop_grace_period: 5m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  qwen-vlm-server:
+    image: vllm/vllm-openai:v0.29.0@sha256:082ca6f035279109041ffd3fe0695cb568b29bc580b35c4f297a66a08b216c1b
+    command:
+      - --model
+      - /models/qwen3-vl-8b-instruct-fp8
+      - --served-model-name
+      - inspector-qwen3-vl-8b-fp8
+      - --tensor-parallel-size
+      - "1"
+      - --max-model-len
+      - "8192"
+      - --max-num-seqs
+      - "2"
+      - --gpu-memory-utilization
+      - "0.35"
+      - --enable-prefix-caching
+      - --limit-mm-per-prompt
+      - '{"image":2,"video":0}'
+      - --generation-config
+      - vllm
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      VLLM_NO_USAGE_STATS: "1"
+      NVIDIA_VISIBLE_DEVICES: ${SERVER_GPU_DEVICE:-0}
+      CUDA_VISIBLE_DEVICES: "0"
+      HOME: /tmp
+    volumes:
+      - provider-models-server:/models:ro
+    depends_on:
+      hf-model-init-server: { condition: service_completed_successfully }
+      document-model-init-server: { condition: service_completed_successfully }
+      gpu-admission-server: { condition: service_completed_successfully }
+    networks:
+      provider-runtime:
+        aliases: [vlm]
+    ports: ["127.0.0.1:${VLM_PORT:-8101}:8000"]
+    runtime: nvidia
+    ipc: host
+    mem_limit: ${SERVER_VLM_MEMORY_LIMIT:-48g}
+    tmpfs: [/tmp:size=2g,mode=1777]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"]
+      interval: 20s
+      timeout: 5s
+      start_period: 30m
+      retries: 6
+    profiles: [server]
+    stop_grace_period: 5m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  embedding-server:
+    image: inspector-ai/text-inference:st6.1.0-cpu-v1
+    build:
+      context: ../services/text-inference
+      target: cpu
+    environment:
+      TEXT_RUNTIME_KIND: embedding
+      TEXT_RUNTIME_MODEL_PATH: /models/qwen3-embedding-0.6b
+      TEXT_RUNTIME_MODEL_ALIAS: inspector-qwen3-embedding-0.6b
+      TEXT_RUNTIME_DEVICE: cpu
+      TEXT_RUNTIME_OUTPUT_DIMENSIONS: 1024
+      TEXT_RUNTIME_MAX_INPUT_TOKENS: 4096
+      TEXT_RUNTIME_BATCH_SIZE: ${SERVER_EMBEDDING_BATCH_SIZE:-8}
+      TEXT_RUNTIME_MAX_ITEMS: 32
+      TEXT_RUNTIME_PRELOAD: "1"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HOME: /tmp
+    volumes:
+      - provider-models-server:/models:ro
+    depends_on:
+      hf-model-init-server: { condition: service_completed_successfully }
+      document-ai-server: { condition: service_healthy }
+    networks:
+      provider-runtime:
+        aliases: [embedding]
+    ports: ["127.0.0.1:${EMBEDDING_PORT:-8102}:8080"]
+    shm_size: 1gb
+    mem_limit: ${SERVER_EMBEDDING_MEMORY_LIMIT:-8g}
+    tmpfs: [/tmp:size=512m,mode=1777]
+    profiles: [server]
+    stop_grace_period: 5m
+    restart: unless-stopped
+    <<: *runtime-security
+
+  worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-server-v1
+      PZ002_MAX_OCR_PAGES: ${PZ002_MAX_OCR_PAGES:-2}
+      PZ002_MAX_TABLE_PAGES: ${PZ002_MAX_TABLE_PAGES:-8}
+      PZ002_MAX_TABLE_OCR_PAGES: ${PZ002_MAX_TABLE_OCR_PAGES:-2}
+    depends_on:
+      document-ai-server: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+  document-worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      RENDERER_PROFILE_ID: renderer-pdfium-5.12.1-linux-x86_64-v1
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-server-v1
+    depends_on:
+      document-ai-server: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+  extract-worker:
+    environment:
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+      OCR_LAYOUT_PROFILE_ID: ocr-paddle-3.7.0-ru-en-server-v1
+      VLM_BASE_URL: http://vlm:8000/v1
+      VISUAL_VLM_BASE_URL: http://vlm:8000/v1
+      VLM_MODEL: inspector-qwen3-vl-8b-fp8
+      METADATA_PROFILE_ID: metadata-hybrid-qwen3vl8b-fp8-v1
+      ENTITY_PROFILE_ID: entity-qwen3vl8b-fp8-v1
+    depends_on:
+      document-ai-server: { condition: service_healthy }
+      qwen-vlm-server: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+  link-worker:
+    environment:
+      EMBEDDING_BASE_URL: http://embedding:8080/v1
+      EMBEDDING_MODEL: inspector-qwen3-embedding-0.6b
+      EMBEDDING_DIMENSIONS: 1024
+      RERANKER_ENABLED: "0"
+      LINKING_PROFILE_ID: linking-policy-v1-qwen3-embed-06b-pgvector-v1
+    depends_on:
+      embedding-server: { condition: service_healthy }
+    networks: [default, provider-runtime]
+
+volumes:
+  document-models-server:
+  provider-models-server:
+
+networks:
+  artifact-download:
+  provider-runtime:
+    internal: true

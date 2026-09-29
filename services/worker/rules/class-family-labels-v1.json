@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "class-family-labels-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "candidatePackSha256": "a3ad00a04865f04bfeef5c2f21f5a11054fec88dcab264590fdb66d70a968581",
+  "disposition": "REVIEW_ONLY",
+  "entries": [
+    {
+      "parameterCode": "PZ-015",
+      "catalogName": "Категория надежности электроснабжения",
+      "attribute": "POWER_SUPPLY_RELIABILITY_CATEGORY",
+      "canonicalUnit": "reliability_category",
+      "labels": [
+        "Категория надежности электроснабжения"
+      ],
+      "values": [
+        "1",
+        "2",
+        "3",
+        "I",
+        "II",
+        "III"
+      ]
+    },
+    {
+      "parameterCode": "PZ-021",
+      "catalogName": "Класс энергетической эффективности",
+      "attribute": "ENERGY_EFFICIENCY_CLASS",
+      "canonicalUnit": "energy_class",
+      "labels": [
+        "Класс энергетической эффективности"
+      ],
+      "values": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "А",
+        "В",
+        "С",
+        "Д",
+        "Е"
+      ]
+    },
+    {
+      "parameterCode": "PZ-022",
+      "catalogName": "Степень огнестойкости здания",
+      "attribute": "FIRE_RESISTANCE_DEGREE",
+      "canonicalUnit": "fire_resistance_degree",
+      "labels": [
+        "Степень огнестойкости здания"
+      ],
+      "values": [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V"
+      ]
+    },
+    {
+      "parameterCode": "PZ-023",
+      "catalogName": "Класс конструктивной пожарной опасности",
+      "attribute": "STRUCTURAL_FIRE_HAZARD_CLASS",
+      "canonicalUnit": "structural_fire_hazard_class",
+      "labels": [
+        "Класс конструктивной пожарной опасности"
+      ],
+      "values": [
+        "С0",
+        "С1",
+        "С2",
+        "С3",
+        "C0",
+        "C1",
+        "C2",
+        "C3"
+      ]
+    },
+    {
+      "parameterCode": "AR-050",
+      "catalogName": "Спецификация и типы внутренней отделки помещений",
+      "attribute": "FINISH_FIRE_CLASS",
+      "canonicalUnit": "finish_fire_class",
+      "labels": [
+        "Спецификация и типы внутренней отделки помещений"
+      ],
+      "values": [
+        "КМ0",
+        "КМ1",
+        "КМ2",
+        "КМ3",
+        "КМ4",
+        "КМ5",
+        "KM0",
+        "KM1",
+        "KM2",
+        "KM3",
+        "KM4",
+        "KM5"
+      ]
+    },
+    {
+      "parameterCode": "PPM-103",
+      "catalogName": "Пределы огнестойкости противопожарных дверей и ворот (EI)",
+      "attribute": "FIRE_DOOR_RATING",
+      "canonicalUnit": "fire_rating",
+      "labels": [
+        "Пределы огнестойкости противопожарных дверей и ворот (EI)"
+      ],
+      "values": [
+        "EI-15",
+        "EI-30",
+        "EI-45",
+        "EI-60",
+        "EI-90",
+        "EI-120",
+        "E-15",
+        "E-30",
+        "E-45",
+        "E-60",
+        "E-90",
+        "E-120",
+        "I-15",
+        "I-30",
+        "I-45",
+        "I-60",
+        "I-90",
+        "I-120"
+      ]
+    },
+    {
+      "parameterCode": "PPM-107",
+      "catalogName": "Класс пожарной опасности отделочных материалов",
+      "attribute": "FINISH_FIRE_CLASS",
+      "canonicalUnit": "finish_fire_class",
+      "labels": [
+        "Класс пожарной опасности отделочных материалов"
+      ],
+      "values": [
+        "КМ0",
+        "КМ1",
+        "КМ2",
+        "КМ3",
+        "КМ4",
+        "КМ5",
+        "KM0",
+        "KM1",
+        "KM2",
+        "KM3",
+        "KM4",
+        "KM5"
+      ]
+    },
+    {
+      "parameterCode": "ZU-124",
+      "catalogName": "Класс энергетической эффективности здания",
+      "attribute": "ENERGY_EFFICIENCY_CLASS",
+      "canonicalUnit": "energy_class",
+      "labels": [
+        "Класс энергетической эффективности здания"
+      ],
+      "values": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "А",
+        "В",
+        "С",
+        "Д",
+        "Е"
+      ]
+    }
+  ]
+}

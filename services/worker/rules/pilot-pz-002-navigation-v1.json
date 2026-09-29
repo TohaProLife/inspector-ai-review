@@ -1,0 +1,10 @@
+{
+  "ruleId": "pilot-pz-002-navigation",
+  "version": "1",
+  "parameterCode": "PZ-002",
+  "requiredStages": ["PD", "RD"],
+  "sectionCodes": ["PZ"],
+  "subjectTerms": ["общая площадь здания"],
+  "locationTerms": [],
+  "visualFactRequired": false
+}

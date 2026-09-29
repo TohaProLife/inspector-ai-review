@@ -1,0 +1,13 @@
+node_modules/
+**/node_modules/
+**/dist/
+downloads/
+datasets/
+tmp/
+output/
+docs/
+.git/
+*.log
+*.tsbuildinfo
+**/__pycache__/
+**/*.py[cod]

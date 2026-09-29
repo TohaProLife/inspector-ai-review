@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "inspector-model-lock-v1",
+  "profileId": "server-h100-80gb-v1",
+  "sourceBaseUrl": "https://huggingface.co",
+  "models": [
+    {
+      "modelId": "Qwen/Qwen3-VL-8B-Instruct-FP8",
+      "revision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+      "localDirectory": "qwen3-vl-8b-instruct-fp8",
+      "licenseId": "Apache-2.0",
+      "artifacts": [
+        {
+          "filename": "chat_template.json",
+          "size": 5497,
+          "sha256": "2c1437f11fc16ab501b984c000f6e291c599f0d28d2c9c6bf2c4533e65429b42"
+        },
+        {
+          "filename": "config.json",
+          "size": 12005,
+          "sha256": "8bbb7d41e722c000d4079c2520fd7d8438a5c13cf084c89784c0a2770cc9bf88"
+        },
+        {
+          "filename": "generation_config.json",
+          "size": 241,
+          "sha256": "a8aeb4072b54a2b54755557cad7f2dddc9f99ea858a6eccd704731180b788592"
+        },
+        {
+          "filename": "model-00001-of-00002.safetensors",
+          "size": 5363407552,
+          "sha256": "e2dea2e85e643ef7045c31a485a426631a1e0a84e463f8b2c7e9c6682a06eafd"
+        },
+        {
+          "filename": "model-00002-of-00002.safetensors",
+          "size": 5226891960,
+          "sha256": "3dc64ec934af27a7007d265014e907aff9e16658d409e5cd4cf79869bf2bd8c1"
+        },
+        {
+          "filename": "model.safetensors.index.json",
+          "size": 94475,
+          "sha256": "751e4b7c17b148d5cc8fb1296b281fe98a711c0182d88b8516f459186990f49d"
+        },
+        {
+          "filename": "preprocessor_config.json",
+          "size": 336,
+          "sha256": "6a970fd06f30e6943b3e2c14d5d3b42d49b06cf99b99103d56689bef462d90f8"
+        },
+        {
+          "filename": "tokenizer.json",
+          "size": 10179867,
+          "sha256": "ba85e4e5222d9f53d4bd00b303ef7e9743c8ac3d07e3c23f8498dbe17baa9a2d"
+        },
+        {
+          "filename": "tokenizer_config.json",
+          "size": 10868,
+          "sha256": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399"
+        },
+        {
+          "filename": "video_preprocessor_config.json",
+          "size": 331,
+          "sha256": "e203bc065dfcd75226838b8e937d624bec8f0eb6ef6630a397e9a675f2873ea6"
+        },
+        {
+          "filename": "vocab.json",
+          "size": 4957462,
+          "sha256": "7a0cfa95c65792d7510205839f80cfd8a3c8f6b1fdad5132d95cee481800374d"
+        }
+      ]
+    },
+    {
+      "modelId": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "localDirectory": "qwen3-embedding-0.6b",
+      "licenseId": "Apache-2.0",
+      "artifacts": [
+        {
+          "filename": "1_Pooling/config.json",
+          "size": 313,
+          "sha256": "37bf193fa101f19101bfad9c31d3eb0f786e247b7b1e5cb7f007d730eed1ddbd"
+        },
+        {
+          "filename": "config.json",
+          "size": 727,
+          "sha256": "b5bf1f51fc45be473a54718cef92448d90a1be001bf9b9a44b8c7f10a19feaa9"
+        },
+        {
+          "filename": "config_sentence_transformers.json",
+          "size": 215,
+          "sha256": "10667c72ddb772627bf1780cb7f86af8e2ae0032b8c243c731172064105c6961"
+        },
+        {
+          "filename": "generation_config.json",
+          "size": 117,
+          "sha256": "28396d421a2108acce96383f6a7de78008f7f1b17f807958f3c14c51dbfb65fb"
+        },
+        {
+          "filename": "merges.txt",
+          "size": 1671853,
+          "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5"
+        },
+        {
+          "filename": "model.safetensors",
+          "size": 1191586416,
+          "sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd"
+        },
+        {
+          "filename": "modules.json",
+          "size": 349,
+          "sha256": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf"
+        },
+        {
+          "filename": "tokenizer.json",
+          "size": 11423705,
+          "sha256": "def76fb086971c7867b829c23a26261e38d9d74e02139253b38aeb9df8b4b50a"
+        },
+        {
+          "filename": "tokenizer_config.json",
+          "size": 9706,
+          "sha256": "253153d0738ceb4c668d2eff957714dd2bea0b56de772a9fdccd96cbf517e6a0"
+        },
+        {
+          "filename": "vocab.json",
+          "size": 2776833,
+          "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+        }
+      ]
+    }
+  ]
+}

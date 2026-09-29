@@ -1,0 +1,162 @@
+/* Theme surfaces. Moon appearance verified in the final second of Mobbin's Antimetal footer
+   recording: /sites/sections/44dda7a3-0b2e-4935-a4a3-8dc42e605bb1.
+   Blue belongs to the daylight appearance. These are calibrated local tokens. */
+
+/* Landing: warm neutral surfaces and a continuous CTA/footer background. */
+html[data-color-resolved="dark"] .landing--antimetal {
+  --reference-ink: var(--night-text);
+  --landing-mist: var(--night-base);
+  --landing-haze: #181610;
+  --landing-sky: #242118;
+  --landing-after-interlude: var(--night-base);
+}
+.landing--antimetal .landing-hero { --theme-backdrop-night: radial-gradient(ellipse 65% 42% at 50% 68%, #58503925, transparent 85%), #0e0d0b; }
+html[data-color-resolved="dark"] .landing-theme-backdrop::after { opacity: 1; }
+html[data-color-resolved="dark"] .landing--antimetal :is(.landing-nav, .landing-nav--light) { color: var(--ink); background: #0e0d0be8; border-color: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-nav :is(.ds-brand, .landing-account, .landing-menu, .landing-nav__links a) { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal .ds-brand__ai { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-nav__links.is-open { background: var(--surface); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-nav .button { color: var(--ink); background: #f1e9ce0a; border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-nav .button:hover { background: #f1e9ce16; }
+html[data-color-resolved="dark"] .landing--antimetal .landing-announcement { color: var(--ink-soft); background: #f1e9ce06; border-color: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal .hero-description { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-brand-link { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal .evidence-feature .landing-inline-link { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal .source-reference { border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .landing--antimetal .particle-building__stage { filter: grayscale(1) sepia(.2); }
+/* Fade only the atmosphere before the hero clips it; the canvas stays intact. */
+html[data-color-resolved="dark"] .landing--antimetal .particle-building__atmosphere {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--halo-bleed) - 180px), #000b calc(100% - var(--halo-bleed) - 120px), #0003 calc(100% - var(--halo-bleed) - 48px), transparent calc(100% - var(--halo-bleed)));
+}
+html[data-color-resolved="dark"] .landing--antimetal .particle-building__replay { color: var(--ink); background: #171612ab; border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-intro h2, .workflow-section h2, .evidence-feature h2, .principle-section > h2, .faq-section h2, .decision-principle h3, .faq-trigger, .landing-inline-link) { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-intro > p, .section-heading-copy > p, .workflow-steps p, .decision-principle p, .evidence-feature__text > p, .faq-answer p, .landing-final p) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.landing-eyebrow, .workflow-number, .preview-caption, .preview-caption > span, .source-reference) { color: var(--ink-faint); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.workflow-section, .workflow-steps, .workflow-steps li, .missing-principle, .faq-item) { border-color: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal .principle-section > h2 span { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .evidence-feature { color: var(--ink); background: var(--night-base); border-color: transparent; }
+html[data-color-resolved="dark"] .landing--antimetal :is(.decision-example, .catalog-feature) { color: var(--ink); background: var(--surface); border-color: var(--line); box-shadow: none; }
+html[data-color-resolved="dark"] .landing--antimetal .decision-example :is(h3, strong),
+html[data-color-resolved="dark"] .landing--antimetal .catalog-feature__title { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal .decision-example { --decision-divider: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal .decision-example :is(.decision-example__top, .decision-example__top span, .decision-example__foot, .decision-example__values span),
+html[data-color-resolved="dark"] .landing--antimetal :is(.decision-example > p, .catalog-feature__count, .catalog-feature__action) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .catalog-feature:hover { background: var(--surface-raised); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-window, .preview-queue, .preview-document, .evidence-specimen) { color: var(--ink); background: var(--surface); border-color: var(--line); box-shadow: none; }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-titlebar, .preview-result, .preview-document__header, .preview-value, .specimen-toolbar, .evidence-specimen figcaption) { color: var(--ink); background: var(--surface-raised); border-color: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-titlebar strong, .preview-document__identity strong, .preview-value p, .preview-result p, .preview-queue button strong, .evidence-specimen figcaption strong) { color: var(--ink); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.preview-titlebar span, .preview-queue button, .preview-document__identity span, .preview-document__open, .preview-result p span, .evidence-specimen figcaption span) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-queue { --preview-underline: var(--night-lime); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-queue button[aria-pressed="true"] { color: var(--night-lime); background: var(--surface-raised); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-queue button:hover { background: var(--surface-raised); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-comparison { background: var(--line); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-result .button { color: var(--night-base); background: var(--night-lime); border-color: var(--night-lime); }
+html[data-color-resolved="dark"] .landing--antimetal .preview-result .button:hover { background: var(--action-primary-hover); border-color: var(--action-primary-hover); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.landing-final h2, .landing-final h2 span) { color: var(--night-text); }
+html[data-color-resolved="dark"] .landing--antimetal .specimen-toolbar .segmented { background: var(--surface); }
+html[data-color-resolved="dark"] .landing--antimetal .specimen-toolbar .segmented button { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing--antimetal .specimen-toolbar .segmented button.active { color: var(--ink); background: var(--surface-selected); border-color: var(--line-strong); }
+.landing--antimetal .landing-interlude { --theme-backdrop-night: radial-gradient(ellipse 70% 50% at 50% 50%, #443c231f, transparent), #0e0d0b; }
+.landing--antimetal .landing-closing { --theme-backdrop-night: linear-gradient(180deg, #0e0d0b, #15130e 48%, #11100c); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.landing-interlude, .landing-closing)::before { background: repeating-radial-gradient(ellipse at 50% 50%, transparent 0 88px, #e9e0c50d 89px 90px, transparent 91px 176px); }
+html[data-color-resolved="dark"] .landing--antimetal :is(.landing-interlude, .landing-closing)::after { background-image: radial-gradient(circle, #e9e0c5 0.8px, transparent 1.3px); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-final .landing-eyebrow { color: var(--ink-soft); }
+.landing--antimetal .landing-footer { --theme-backdrop-night: linear-gradient(180deg, #11100c, #0d0c0a 70%, #0b0a09); }
+html[data-color-resolved="dark"] .landing--antimetal .landing-footer { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing-footer__top p { color: var(--ink-faint) !important; }
+html[data-color-resolved="dark"] .landing-footer__top nav a { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .landing-footer__top nav a:hover { color: var(--ink); }
+html[data-color-resolved="dark"] .landing-footer__utility { color: var(--ink-faint); border-color: var(--line); }
+html[data-color-resolved="dark"] .color-mode-control { color: var(--night-soft); background: #efe6c909; border-color: var(--night-line-strong); backdrop-filter: blur(18px); }
+html[data-color-resolved="dark"] .color-mode-control button:hover { color: var(--night-text); background: #efe6c916; }
+html[data-color-resolved="dark"] .color-mode-control button.is-selected { color: var(--night-text); background: linear-gradient(145deg, #eee9d726, #aea58b0d 55%, #08070448); box-shadow: inset 0 1px 2px #fffae342, inset 0 -2px 4px #00000060, 0 1px 5px #00000030; }
+html[data-color-resolved="dark"] .landing-footer__glassmark-text { --glass-fill: linear-gradient(180deg, #e2dcc64a, #aca38a19 25%, #8c806016 47%, #c5baa435 73%, #40392618); -webkit-text-stroke-color: #ded5b935; text-shadow: 0 10px 25px #0006; filter: drop-shadow(0 -1px 1px #f6ecd90c) drop-shadow(0 5px 5px #0007); }
+html[data-color-resolved="dark"] .landing-footer__glassmark-letter::before { color: #c4bfa4; -webkit-text-fill-color: #c4bfa4; opacity: .06; }
+html[data-color-resolved="dark"] .landing-footer__glassmark-letter::after { -webkit-text-stroke-color: #f2ead75c; opacity: .52; }
+html[data-color-resolved="dark"] .landing-footer__glassmark-symbol { filter: drop-shadow(0 5px 5px #0008); }
+html[data-color-resolved="dark"] .landing-footer__glassmark-symbol i { border-color: #e5dabe33; background: linear-gradient(145deg, #e9e1c938, #aaa18a10 36%, #635b4810 67%, #d0c7af28); box-shadow: inset 1px 2px 4px #fff4d733, inset -3px -4px 7px #0009; }
+
+/* Workspace chrome; original document images remain on paper. */
+html[data-color-resolved="dark"] .app-shell :is(.main, .evidence-screen) { background: var(--canvas); }
+html[data-color-resolved="dark"] .app-shell :is(.document-workspace, .page-canvas) { background: #292822; }
+html[data-color-resolved="dark"] .app-shell .document-pane { border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell :is(.topbar, .sidebar, .object-tabs, .evidence-topbar) { color: var(--ink); background: var(--night-recessed); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell :is(.topbar-brand, .sidebar-bottom) { border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell :is(.breadcrumbs, .workspace-chip, .topbar-brand .ds-brand__ai, .sidebar-search, .search-button, .search-button kbd, .sidebar-search kbd, .sidebar-collapse, .workspace-mode small, .user-card small, .nav-item svg, .object-tabs__tab) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.breadcrumbs strong, .topbar-brand .ds-brand, .workspace-mode, .user-card strong, .nav-item, .topbar-menu, .evidence-decision-link) { color: var(--ink); }
+html[data-color-resolved="dark"] .app-shell .nav-label { color: var(--ink-faint); }
+html[data-color-resolved="dark"] .app-shell .account-button { color: var(--ink); background: #f1e9ce08; border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell .avatar { color: var(--on-accent); }
+html[data-color-resolved="dark"] .app-shell .sidebar-collapse:hover,
+html[data-color-resolved="dark"] .app-shell .object-index__row:focus-visible { color: var(--ink); background: var(--surface-raised); }
+html[data-color-resolved="dark"] .app-shell .button--danger { color: var(--night-base); }
+html[data-color-resolved="dark"] .app-shell :is(.sidebar-search, .search-button, .user-card, .topbar-menu) { background: #f1e9ce08; border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell :is(.nav-item, .sidebar-search, .search-button, .user-card, .topbar-menu):hover { background: var(--surface-raised); }
+html[data-color-resolved="dark"] .app-shell :is(.nav-item--active, .nav-item--sub.nav-item--active) { color: var(--ink); background: var(--surface-selected); box-shadow: inset 3px 0 var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell .nav-item--active svg { color: var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell .nav-item em { color: var(--ink); background: #f1e9ce16; }
+html[data-color-resolved="dark"] .app-shell .object-tabs__tab--active { color: var(--ink); border-color: var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell :is(.object-heading__label, .content--tabbed .page-title-row--compact .kicker) { color: var(--ink-faint); }
+html[data-color-resolved="dark"] .app-shell :is(.surface, .register-summary, .object-index, .object-index__card, .object-index__row, .inspection-metrics, .settings-card, .identity-form-panel, .profile-card, .decision-panel, .parameter-table, .coverage-explainer, .protocol-cover) { color: var(--ink); background: var(--surface); border-color: var(--line); box-shadow: none; }
+html[data-color-resolved="dark"] .app-shell :is(.inspection-metrics__title, .document-register__footer, .filterbar, .catalog-toolbar, .content--coverage .coverage-toolbar, .table-head, .object-index__columns, .parameter-table thead, .parameter-table thead th, .decision-actions, .candidate-rail) { color: var(--ink-soft); background: var(--surface-raised); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell :is(.table-row--button, .object-index__row, .document-register__row, .coverage-row, .parameter-table tbody tr) { color: var(--ink); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell :is(.table-row--button, .object-index__row, .object-index__card, .document-register__row, .coverage-row, .parameter-table tbody tr):hover { background: var(--surface-raised); }
+html[data-color-resolved="dark"] .app-shell .table-row--button:hover { box-shadow: inset 3px 0 var(--accent); }
+html[data-color-resolved="dark"] .app-shell :is(.results-title h2, .document-register__heading h2, .coverage-explainer h2, .protocol-cover h2, .inspection-metrics__title h2, .inspection-next h2, .object-index__identity strong, .parameter-cell strong, .settings-card h2, .settings-card strong, .identity-form-panel h2, .profile-card h2, .decision-heading h1) { color: var(--ink); }
+html[data-color-resolved="dark"] .app-shell :is(.inspection-metrics span, .register-summary span, .object-index__identity small, .settings-card p, .setting-row span, .table-row--button > span, .object-index__measure small, .object-index__updated, .candidate-location, .document-register__row > span, .decision-heading p, .comparison-box span, .reasoning > span, .source-list > span) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.inspection-metrics strong, .register-summary strong, .object-index__measure, .object-index__pending, .comparison-box strong, .source-list strong, .source-list small, .decision-actions label > span) { color: var(--ink); }
+html[data-color-resolved="dark"] .app-shell :is(.parameter-cell em, .value-pair small, .document-register__row code, .coverage-row code, .parameter-table code, .candidate-open, .document-register__footer button, .inspection-metrics button small) { color: var(--accent); }
+html[data-color-resolved="dark"] .app-shell .inspection-metrics > :is(div, button):not(.inspection-metrics__title) { color: var(--ink); background: var(--surface); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell .inspection-metrics > button:hover { background: var(--surface-raised) !important; }
+html[data-color-resolved="dark"] .app-shell .inspection-next { border-top-color: var(--accent); }
+html[data-color-resolved="dark"] .app-shell :is(.candidate-total, .catalog-total, .object-index__glyph, .object-heading__icon) { color: var(--ink-soft); background: var(--surface-raised); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell :is(.candidate-total strong, .catalog-total strong) { color: var(--ink); }
+html[data-color-resolved="dark"] .app-shell .comparison-box > div:first-child { background: var(--night-recessed); }
+html[data-color-resolved="dark"] .app-shell .candidate-comparison :is(small, strong) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.candidate-rail > div button.active, .catalog-sections button.is-selected, .filterbar .segmented button.active) { color: var(--ink); background: var(--surface-selected); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell .candidate-rail > div button.active { box-shadow: inset 3px 0 var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell :is(.catalog-sections button:not(.is-selected), .filterbar .segmented button, .candidate-rail button em) { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.filterbar .segmented, .protocol-summary, .document-pane > header, .settings-footer) { color: var(--ink-soft); background: var(--surface-raised); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell .document-pane header :is(.document-kind, small, strong, .document-open) { color: inherit; }
+html[data-color-resolved="dark"] .app-shell :is(.candidate-rail button, .filterbar .segmented button):hover { color: var(--ink); background: var(--surface-selected); }
+html[data-color-resolved="dark"] .app-shell .decision-panel__scroll { color: var(--ink); background: var(--surface); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell :is(.comparison-box, .register-summary > div) { border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell .reasoning p { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.button--secondary, .decision-button:not(.decision-button--confirm)) { color: var(--ink); background: var(--surface-raised); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell :is(.button--secondary, .decision-button:not(.decision-button--confirm)):hover:not(:disabled) { color: var(--ink); background: var(--surface-selected); border-color: var(--ink-faint); }
+html[data-color-resolved="dark"] .app-shell :is(.filter-search, input, textarea, select) { color: var(--ink); background: var(--night-recessed); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell :is(input, textarea)::placeholder { color: var(--ink-faint); }
+html[data-color-resolved="dark"] .app-shell .filter-search input { background: transparent; border: 0; }
+html[data-color-resolved="dark"] .app-shell .identity-intro { color: var(--ink); background: linear-gradient(145deg, var(--night-recessed), var(--surface-raised)); border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell .identity-intro :is(h1, h2, p) { color: inherit; }
+html[data-color-resolved="dark"] .app-shell .identity-intro > .kicker { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell .identity-intro .identity-note { color: var(--ink-soft); background: #f1e9ce08; border-color: var(--line); }
+html[data-color-resolved="dark"] .app-shell .identity-intro .identity-note svg { color: inherit; }
+html[data-color-resolved="dark"] .app-shell .dropzone { color: var(--ink-soft); background: var(--surface); border-color: var(--line-strong); }
+html[data-color-resolved="dark"] .app-shell .dropzone:hover,
+html[data-color-resolved="dark"] .app-shell .dropzone:focus-within { color: var(--ink); background: var(--surface-selected); border-color: var(--ink-faint); }
+html[data-color-resolved="dark"] .app-shell .dropzone__code { color: var(--accent); }
+html[data-color-resolved="dark"] .app-shell .dropzone--filled { color: var(--success); background: var(--success-soft); border-color: var(--success); }
+html[data-color-resolved="dark"] .app-shell .processing-hero { background: linear-gradient(110deg, var(--night-recessed), var(--surface-raised)); }
+html[data-color-resolved="dark"] .app-shell .processing-hero .kicker { color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell .processing-hero__heading > strong { color: var(--ink); }
+html[data-color-resolved="dark"] .app-shell :is(.processing-hero__progress, .processing-progress) { accent-color: var(--night-lime); color: var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell :is(.processing-hero__progress, .processing-progress)::-webkit-progress-value { background: var(--night-lime); }
+html[data-color-resolved="dark"] .app-shell .switch { background: #635e53; background-clip: padding-box; }
+html[data-color-resolved="dark"] .app-shell .switch[aria-checked="true"] { background: var(--night-lime); background-clip: padding-box; }
+html[data-color-resolved="dark"] .app-shell .switch[aria-checked="true"] span { background: #24281c; }
+html[data-color-resolved="dark"] .app-shell .settings-footer span { color: var(--success); }
+html[data-color-resolved="dark"] .app-shell .coverage-label { color: var(--warning); background: var(--warning-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.status-badge--candidate, .status-badge--review_required, .status-badge--not_comparable, .status-badge--clarification, .status-badge--partial) { color: var(--warning); }
+html[data-color-resolved="dark"] .app-shell :is(.status-badge--confirmed_violation, .status-badge--finalized, .status-badge--ready_to_finalize) { color: var(--success); }
+html[data-color-resolved="dark"] :is(.app-shell, .search-dialog, .landing--antimetal, .ds-page) :is(button, a, input, textarea, select):focus-visible { outline-color: var(--ink-soft); }
+html[data-color-resolved="dark"] .app-shell :is(.button--primary, .decision-button--confirm):disabled { color: var(--ink-faint); background: var(--surface-selected); border-color: var(--line-strong); opacity: 1; }
+html[data-color-resolved="dark"] .search-overlay { background: #080705c9; }
+html[data-color-resolved="dark"] .search-dialog { background: var(--surface); border-color: var(--line-strong); box-shadow: 0 28px 90px #0009; }
+html[data-color-resolved="dark"] :is(.search-dialog__input, .search-dialog__footer) { background: var(--surface-raised); border-color: var(--line); }
+html[data-color-resolved="dark"] .search-dialog__input input { color: var(--ink); background: transparent; }
+html[data-color-resolved="dark"] .search-dialog__input input::placeholder { color: var(--ink-faint); }
+@media (prefers-reduced-transparency: reduce) {
+  html[data-color-resolved="dark"] .color-mode-control,
+  html[data-color-resolved="dark"] .landing--antimetal .landing-nav { backdrop-filter: none; background: var(--night-recessed); }
+}

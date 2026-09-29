@@ -1,0 +1,692 @@
+{
+  "schemaVersion": "numeric-family-labels-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "candidatePackSha256": "a3ad00a04865f04bfeef5c2f21f5a11054fec88dcab264590fdb66d70a968581",
+  "disposition": "REVIEW_ONLY",
+  "entries": [
+    {
+      "parameterCode": "PZ-002",
+      "catalogName": "Общая площадь здания",
+      "family": "RELATIVE_DELTA",
+      "attributes": [
+        {
+          "key": "BUILDING_TOTAL_AREA",
+          "canonicalUnit": "m2",
+          "labels": [
+            "Общая площадь здания",
+            "Общая площадь здания S"
+          ],
+          "unitAliases": [
+            "м²",
+            "м2",
+            "кв.м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-008",
+      "catalogName": "Высота здания",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "BUILDING_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота здания",
+            "Высота здания h"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-010",
+      "catalogName": "Количество квартир",
+      "family": "DIFFERENT",
+      "attributes": [
+        {
+          "key": "APARTMENT_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество квартир"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-012",
+      "catalogName": "Количество машино-мест (подземных)",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "UNDERGROUND_PARKING_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество подземных машино-мест",
+            "Количество машино-мест (подземных)"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-014",
+      "catalogName": "Расчетная электрическая мощность",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "DESIGN_ELECTRIC_POWER",
+          "canonicalUnit": "kW",
+          "labels": [
+            "Расчетная электрическая мощность"
+          ],
+          "unitAliases": [
+            "кВт"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-016",
+      "catalogName": "Суточный расход водопотребления",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "DAILY_WATER_CONSUMPTION",
+          "canonicalUnit": "m3/day",
+          "labels": [
+            "Суточный расход водопотребления"
+          ],
+          "unitAliases": [
+            "м³/сут",
+            "м3/сут"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-017",
+      "catalogName": "Суммарная тепловая нагрузка",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "TOTAL_HEATING_LOAD",
+          "canonicalUnit": "Gcal/h",
+          "labels": [
+            "Суммарная тепловая нагрузка"
+          ],
+          "unitAliases": [
+            "Гкал/ч"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-018",
+      "catalogName": "Максимальный часовой расход газа",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "MAX_HOURLY_GAS_FLOW",
+          "canonicalUnit": "m3/h",
+          "labels": [
+            "Максимальный часовой расход газа"
+          ],
+          "unitAliases": [
+            "м³/ч",
+            "м3/ч"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-024",
+      "catalogName": "Объем грунта (выемка/насыпь)",
+      "family": "RELATIVE_DELTA",
+      "attributes": [
+        {
+          "key": "EXCAVATION_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем грунта (выемка)",
+            "Объем выемки грунта",
+            "Объем выемки грунта (геометрический)"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ]
+        },
+        {
+          "key": "BACKFILL_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем обратной засыпки",
+            "Объем грунта (обратная засыпка)"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-025",
+      "catalogName": "Площадь асфальтобетонного покрытия",
+      "family": "RELATIVE_DELTA",
+      "attributes": [
+        {
+          "key": "HARD_SURFACE_AREA",
+          "canonicalUnit": "m2",
+          "labels": [
+            "Площадь асфальтобетонного покрытия"
+          ],
+          "unitAliases": [
+            "м²",
+            "м2"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-030",
+      "catalogName": "Ширина внутриплощадочных дорог и проездов",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "FIRE_ACCESS_ROAD_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина пожарного проезда"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-037",
+      "catalogName": "Количество и разметка парковочных мест на участке",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "SURFACE_PARKING_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество наземных парковочных мест"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-040",
+      "catalogName": "Ширина магистральных эвакуационных коридоров",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "EVACUATION_CORRIDOR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационного коридора"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-041",
+      "catalogName": "Ширина эвакуационных выходов (дверей)",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационной двери в свету"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-049",
+      "catalogName": "Высота и тип ограждений лестниц, балкона, кровли",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "ROOF_BALCONY_GUARD_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота ограждения кровли",
+            "Высота ограждения балкона"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-061",
+      "catalogName": "Толщина несущих монолитных стен (ядра жесткости)",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "LOAD_BEARING_MONOLITHIC_WALL_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина несущей монолитной стены",
+            "Толщина стены ядра жесткости"
+          ],
+          "unitAliases": [
+            "мм"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-062",
+      "catalogName": "Диаметр продольной (рабочей) арматуры в колоннах/пилонах",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "LONGITUDINAL_REBAR_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр продольной рабочей арматуры"
+          ],
+          "unitAliases": [
+            "мм"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-067",
+      "catalogName": "Ведомости расхода материалов (бетон, сталь)",
+      "family": "RELATIVE_DELTA",
+      "attributes": [
+        {
+          "key": "CONCRETE_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем бетона"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ]
+        },
+        {
+          "key": "STEEL_MASS",
+          "canonicalUnit": "t",
+          "labels": [
+            "Масса стали"
+          ],
+          "unitAliases": [
+            "т"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS2-071",
+      "catalogName": "Диаметры стояков и разводящих трубопроводов В1/Т3",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "WATER_PIPE_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр стояка В1",
+            "Диаметр стояка Т3",
+            "Диаметр магистрали В1",
+            "Диаметр магистрали Т3"
+          ],
+          "unitAliases": [
+            "мм"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS3-074",
+      "catalogName": "Диаметры выпусков и магистралей К1/К2",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "SEWER_PIPE_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр выпуска К1",
+            "Диаметр выпуска К2",
+            "Диаметр магистрали К1",
+            "Диаметр магистрали К2"
+          ],
+          "unitAliases": [
+            "мм"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-082",
+      "catalogName": "Продолжительность этапов строительства (Календарный график)",
+      "family": "RELATIVE_INCREASE",
+      "attributes": [
+        {
+          "key": "CRITICAL_CONSTRUCTION_STAGE_DURATION",
+          "canonicalUnit": "day",
+          "labels": [
+            "Продолжительность критического этапа строительства"
+          ],
+          "unitAliases": [
+            "дни",
+            "день",
+            "дня"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-086",
+      "catalogName": "Потребность в кадрах (Максимальная численность)",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "PEAK_PERSONNEL_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Максимальная численность рабочих",
+            "Пиковая численность персонала"
+          ],
+          "unitAliases": [
+            "чел.",
+            "чел"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-088",
+      "catalogName": "Точки подключения и мощности временных ресурсов",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "TEMPORARY_POWER_DEMAND",
+          "canonicalUnit": "kW",
+          "labels": [
+            "Потребность во временном электроснабжении",
+            "Мощность временного электроснабжения"
+          ],
+          "unitAliases": [
+            "кВт"
+          ]
+        },
+        {
+          "key": "TEMPORARY_RESOURCE_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем временного ресурса"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POD-093",
+      "catalogName": "Общие объемы демонтируемых конструкций (по типам)",
+      "family": "RELATIVE_DELTA",
+      "attributes": [
+        {
+          "key": "DEMOLITION_VOLUME_BY_TYPE",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем демонтируемых конструкций"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-104",
+      "catalogName": "Ширина и высота эвакуационных проходов",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "EVACUATION_PASSAGE_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационного прохода"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        },
+        {
+          "key": "EVACUATION_PASSAGE_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота эвакуационного прохода"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-105",
+      "catalogName": "Ширина эвакуационных дверей наружных выходов",
+      "family": "LOWER_BOUND",
+      "attributes": [
+        {
+          "key": "EXTERNAL_EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина наружной эвакуационной двери в свету"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ODI-118",
+      "catalogName": "Высота порогов в дверных проемах на путях МГН",
+      "family": "UPPER_BOUND",
+      "attributes": [
+        {
+          "key": "ACCESSIBLE_DOOR_THRESHOLD_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота порога на пути МГН"
+          ],
+          "unitAliases": [
+            "м"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-126",
+      "catalogName": "Коэффициент теплопроводности (λ) утеплителя стен",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "WALL_INSULATION_THERMAL_CONDUCTIVITY",
+          "canonicalUnit": "W/(m*C)",
+          "labels": [
+            "Коэффициент теплопроводности утеплителя стен"
+          ],
+          "unitAliases": [
+            "Вт/(м·С)",
+            "Вт/(м·°С)"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-128",
+      "catalogName": "Толщина утеплителя чердачных перекрытий / кровли",
+      "family": "DECREASE",
+      "attributes": [
+        {
+          "key": "ROOF_INSULATION_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина утеплителя кровли",
+            "Толщина утеплителя чердачного перекрытия"
+          ],
+          "unitAliases": [
+            "мм"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-131",
+      "catalogName": "Удельный годовой расход тепловой энергии на отопление",
+      "family": "INCREASE",
+      "attributes": [
+        {
+          "key": "ANNUAL_SPECIFIC_HEATING_ENERGY",
+          "canonicalUnit": "kWh/m2",
+          "labels": [
+            "Удельный годовой расход тепловой энергии на отопление"
+          ],
+          "unitAliases": [
+            "кВт·ч/м²",
+            "кВт·ч/м2"
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SM-132",
+      "catalogName": "Итоговая стоимость по Сводному сметному расчету (ССР)",
+      "family": "RELATIVE_INCREASE",
+      "attributes": [
+        {
+          "key": "CONSTRUCTION_TOTAL_COST",
+          "canonicalUnit": "thousand_rub",
+          "labels": [
+            "Итоговая стоимость строительства",
+            "Итоговая стоимость по Сводному сметному расчету (ССР)"
+          ],
+          "unitAliases": [
+            "тыс. руб.",
+            "тыс руб."
+          ]
+        }
+      ]
+    }
+  ],
+  "publicManifestSha256": "853225daec1888fbed19bbeb45e958154135f069799cea883dcd3c754c6c4ee7",
+  "verifiedAliasEvidence": [
+    {
+      "parameterCode": "PZ-002",
+      "attribute": "BUILDING_TOTAL_AREA",
+      "label": "Общая площадь здания S",
+      "unitAlias": "кв.м",
+      "samples": [
+        {
+          "sourceFileId": "F0201",
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "stage": "RD_ID_MIXED",
+          "manifestSection": "OV",
+          "pageNumber": 14,
+          "blockIndex": 50,
+          "lineIndex": 5,
+          "pageArtifactSha256": "d4568ff11fc9793dc5c217e68589ec1344b3d6ae0b61c4c5ebab8eb6120c9448",
+          "lineText": "Общая площадь здания S=11030,3 кв.м;",
+          "lineTextSha256": "34c95d90829a537326394aeba555b66f0e20d3dc9c2eaa93b67e6600e42c9426",
+          "sourceGate": "INELIGIBLE_STAGE"
+        },
+        {
+          "sourceFileId": "F0202",
+          "sourceSha256": "632379a0e541f0c81e6b03e5528946730b4433939c796db4fdc1e5c3fc8b71ee",
+          "stage": "RD_ID_MIXED",
+          "manifestSection": "OV",
+          "pageNumber": 14,
+          "blockIndex": 41,
+          "lineIndex": 5,
+          "pageArtifactSha256": "9765c5134ac34258bc4d115d3f6c0d246bc014e87efc76e813b2985a812b677d",
+          "lineText": "Общая площадь здания S=11030,3 кв.м;",
+          "lineTextSha256": "34c95d90829a537326394aeba555b66f0e20d3dc9c2eaa93b67e6600e42c9426",
+          "sourceGate": "INELIGIBLE_STAGE"
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-008",
+      "attribute": "BUILDING_HEIGHT",
+      "label": "Высота здания h",
+      "unitAlias": "м",
+      "samples": [
+        {
+          "sourceFileId": "F0106",
+          "sourceSha256": "ae8b16439650526a5ef6e1975c852fa38c2ab4466cd73ab725a47bcb32a6b655",
+          "stage": "PD",
+          "manifestSection": "KR",
+          "pageNumber": 63,
+          "blockIndex": 24,
+          "lineIndex": 4,
+          "pageArtifactSha256": "a739dda11c527ade9cd9b010f2e67737fff9ba5d750b97a0df438c4739ef03e3",
+          "lineText": "Высота здания h=73.6м",
+          "lineTextSha256": "53553cf8d4effd88926b8f6e6403757650005f7da285dcfd4f9089009e6cb412",
+          "sourceGate": "SECTION_UNRESOLVED"
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-024",
+      "attribute": "EXCAVATION_VOLUME",
+      "label": "Объем выемки грунта (геометрический)",
+      "unitAlias": "м3",
+      "samples": [
+        {
+          "sourceFileId": "F0145",
+          "sourceSha256": "0be3a646cc793b86257e3ce4aeb9d0f15326369aa8a37a9205670e82635eaa05",
+          "stage": "RD",
+          "manifestSection": "OTHER",
+          "pageNumber": 4,
+          "blockIndex": 64,
+          "lineIndex": 0,
+          "pageArtifactSha256": "8f00d76cae017147ee2de7a725fd8a7329a34178c96c2df3efd407112270ee5a",
+          "lineText": "Объем выемки грунта (геометрический): 19060 м3.",
+          "lineTextSha256": "5f2bb5b9d47b6a7ae1d7e58c4698d119fa3aa49e11ff0b155b5c8ab600d7922f",
+          "sourceGate": "SECTION_UNRESOLVED"
+        }
+      ]
+    }
+  ]
+}

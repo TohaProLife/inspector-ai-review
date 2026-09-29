@@ -1,0 +1,846 @@
+{
+  "schemaVersion": "unresolved-parameter-strategy-v1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "registrySha256": "fdc6a69544e06513ee37baa20ad21a1c5c1bc711b04907491becc3283604a87a",
+  "executionPolicy": "DESIGN_ONLY",
+  "entries": [
+    {
+      "parameterCode": "PZ-001",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "контур здания, площадь его проекции и привязку к БТИ или РД"
+    },
+    {
+      "parameterCode": "PZ-003",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE"
+      ],
+      "specificProofDependency": "полезное назначение площадей и перевод конкретных помещений в технические зоны"
+    },
+    {
+      "parameterCode": "PZ-005",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "подземный контур, отметки и объём того же паркинга или подвала"
+    },
+    {
+      "parameterCode": "PZ-006",
+      "candidateExtractorFamily": "BUILDING_LEVELS",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "TABLE",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "число этажей, включая технический, а также связь этого триггера с указанным в каталоге объёмом"
+    },
+    {
+      "parameterCode": "PZ-009",
+      "candidateExtractorFamily": "COORDINATE_ALIGNMENT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "абсолютную отметку 0.000 и единый высотный репер геоподосновы"
+    },
+    {
+      "parameterCode": "PZ-011",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE"
+      ],
+      "specificProofDependency": "структуру квартир по типам и помещениям, а не только общее число квартир"
+    },
+    {
+      "parameterCode": "PZ-013",
+      "candidateExtractorFamily": "FUNCTIONAL_CAPACITY",
+      "evidenceKinds": [
+        "TABLE",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "назначение объекта и единицу его технологической мощности или вместимости"
+    },
+    {
+      "parameterCode": "PZ-019",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE",
+        "NORM"
+      ],
+      "specificProofDependency": "расчёт КЗ и утверждённое применимое предельное значение"
+    },
+    {
+      "parameterCode": "PZ-020",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE",
+        "NORM"
+      ],
+      "specificProofDependency": "расчёт КИТ и утверждённую для участка рамку плотности"
+    },
+    {
+      "parameterCode": "SPZU-026",
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "изменённый объём мощения и запись согласования заказчика"
+    },
+    {
+      "parameterCode": "SPZU-027",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE",
+        "NORM"
+      ],
+      "specificProofDependency": "площадь озеленения и применимое минимальное требование ГПЗУ"
+    },
+    {
+      "parameterCode": "SPZU-028",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE",
+        "NORM"
+      ],
+      "specificProofDependency": "вид площадки, её площадь и применимое требование для состава объекта"
+    },
+    {
+      "parameterCode": "SPZU-029",
+      "candidateExtractorFamily": "SPECIFICATION_SET",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "каждую позицию МАФ, количество и качество заменяющего изделия"
+    },
+    {
+      "parameterCode": "SPZU-031",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "радиус конкретного поворота пожарного проезда и применимую норму"
+    },
+    {
+      "parameterCode": "SPZU-032",
+      "candidateExtractorFamily": "LAYER_ASSEMBLY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "состав дорожного пирога, толщину и материал каждого слоя"
+    },
+    {
+      "parameterCode": "SPZU-033",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM",
+        "COMPOSITE"
+      ],
+      "specificProofDependency": "уклон участка дороги, направление стока и проектные отметки"
+    },
+    {
+      "parameterCode": "SPZU-034",
+      "candidateExtractorFamily": "COORDINATE_ALIGNMENT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "координату конкретной точки подключения, ТУ и систему координат"
+    },
+    {
+      "parameterCode": "SPZU-035",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "границу охранной зоны и контур размещаемого объекта"
+    },
+    {
+      "parameterCode": "SPZU-036",
+      "candidateExtractorFamily": "SITE_FEATURE_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "тип, назначение и высоту конкретного участка ограждения"
+    },
+    {
+      "parameterCode": "SPZU-038",
+      "candidateExtractorFamily": "PARKING_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "TABLE",
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "число мест МГН, общее число мест и применимость долевого требования"
+    },
+    {
+      "parameterCode": "AR-042",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "тип проёма или коридора, чистую высоту и применимую норму"
+    },
+    {
+      "parameterCode": "AR-043",
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "сторону открывания конкретной эвакуационной двери и соседний поток"
+    },
+    {
+      "parameterCode": "AR-044",
+      "candidateExtractorFamily": "LAYER_ASSEMBLY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "каждый слой кровли, его класс и наличие пароизоляции"
+    },
+    {
+      "parameterCode": "AR-045",
+      "candidateExtractorFamily": "ROOF_DRAINAGE_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "уклон конкретного ската и расстановку водоприёмных воронок"
+    },
+    {
+      "parameterCode": "AR-046",
+      "candidateExtractorFamily": "AREA_PROGRAM",
+      "evidenceKinds": [
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "TABLE"
+      ],
+      "specificProofDependency": "набор окон конкретных помещений и площадь их остекления"
+    },
+    {
+      "parameterCode": "AR-047",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "геометрию конкретного тамбура и применимость требования для коляски"
+    },
+    {
+      "parameterCode": "AR-048",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "число ступеней и размеры проступи и подступенка конкретного марша"
+    },
+    {
+      "parameterCode": "AR-051",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "NORM",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "конфигурацию переплётов и расчёт влияния на светопропускание"
+    },
+    {
+      "parameterCode": "AR-052",
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "цвет и материал конкретного фасада и документ согласования замены"
+    },
+    {
+      "parameterCode": "KR-054",
+      "candidateExtractorFamily": "COORDINATE_ALIGNMENT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "оси и привязку колонн в одной координатной системе"
+    },
+    {
+      "parameterCode": "KR-056",
+      "candidateExtractorFamily": "MATERIAL_CLASS",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "NORM",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "марку стали конкретного элемента и сравнительную прочность марок"
+    },
+    {
+      "parameterCode": "KR-057",
+      "candidateExtractorFamily": "MATERIAL_CLASS",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "NORM",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "класс арматуры конкретного элемента и требуемую пластичность"
+    },
+    {
+      "parameterCode": "KR-060",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "оба размера поперечного сечения той же несущей колонны или пилона"
+    },
+    {
+      "parameterCode": "KR-063",
+      "candidateExtractorFamily": "STRUCTURAL_DETAIL",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "место шва и конструктивную схему его исполнения"
+    },
+    {
+      "parameterCode": "KR-064",
+      "candidateExtractorFamily": "COORDINATE_ALIGNMENT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "VISUAL_SYMBOL"
+      ],
+      "specificProofDependency": "контур шахты, положение закладных и монтажный контекст лифта"
+    },
+    {
+      "parameterCode": "KR-065",
+      "candidateExtractorFamily": "STRUCTURAL_DETAIL",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "контур проёма и наличие обрамляющего армирования в том же узле"
+    },
+    {
+      "parameterCode": "KR-066",
+      "candidateExtractorFamily": "MATERIAL_CLASS",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "NORM",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "состав защиты конкретной конструкции и подтверждённый предел REI"
+    },
+    {
+      "parameterCode": "IOS1-068",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "назначение аппарата, ток уставки и согласование с защищаемой цепью"
+    },
+    {
+      "parameterCode": "IOS1-069",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION",
+        "NORM"
+      ],
+      "specificProofDependency": "сечение, марку и назначение каждой кабельной линии"
+    },
+    {
+      "parameterCode": "IOS1-070",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "связность контура и количество элементов заземления и молниезащиты"
+    },
+    {
+      "parameterCode": "IOS2-072",
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "материал трубы, класс давления и перерасчёт теплового расширения"
+    },
+    {
+      "parameterCode": "IOS2-073",
+      "candidateExtractorFamily": "EQUIPMENT_SPEC",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "модель насоса, расход, напор и режим конкретной станции"
+    },
+    {
+      "parameterCode": "IOS3-075",
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "тип, материал и свойство малошумности конкретной трубы"
+    },
+    {
+      "parameterCode": "IOS4-076",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "диаметры Т1/Т2 и гидравлическую схему соответствующих ветвей"
+    },
+    {
+      "parameterCode": "IOS4-077",
+      "candidateExtractorFamily": "EQUIPMENT_SPEC",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "тип радиатора, число секций и расчётную теплоотдачу"
+    },
+    {
+      "parameterCode": "IOS4-078",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "форму и размеры воздуховода и площадь живого сечения в той же ветви"
+    },
+    {
+      "parameterCode": "IOS4-079",
+      "candidateExtractorFamily": "EQUIPMENT_SPEC",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "модель вентилятора, производительность и требуемую кратность воздухообмена"
+    },
+    {
+      "parameterCode": "IOS5-080",
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "извещатели, зоны контроля и расстояния между конкретными приборами"
+    },
+    {
+      "parameterCode": "POS-081",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "положение крана, рабочий радиус и контур опасной зоны относительно границы участка"
+    },
+    {
+      "parameterCode": "POS-083",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "контуры временных зданий, охранных зон и пожарных разрывов"
+    },
+    {
+      "parameterCode": "POS-084",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "чистую ширину участка дороги и применимый нормативный класс проезда"
+    },
+    {
+      "parameterCode": "POS-085",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT",
+        "COMPOSITE",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "контур складирования, массу груза и несущую способность либо границу откоса"
+    },
+    {
+      "parameterCode": "POS-087",
+      "candidateExtractorFamily": "METHOD_SEQUENCE",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "описание технологических операций и согласование изменения метода"
+    },
+    {
+      "parameterCode": "POS-089",
+      "candidateExtractorFamily": "SITE_FEATURE_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "место мойки колес, схему выезда и наличие оборотного водоснабжения"
+    },
+    {
+      "parameterCode": "POD-090",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "расчётную зону развала относительно границы и пешеходных зон"
+    },
+    {
+      "parameterCode": "POD-091",
+      "candidateExtractorFamily": "METHOD_SEQUENCE",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "описание метода демонтажа и согласование изменения технологии"
+    },
+    {
+      "parameterCode": "POD-094",
+      "candidateExtractorFamily": "WASTE_MATERIAL_CHAIN",
+      "evidenceKinds": [
+        "TABLE",
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "массу, класс опасности и маршрут конкретной партии отходов"
+    },
+    {
+      "parameterCode": "POD-096",
+      "candidateExtractorFamily": "STRUCTURAL_DETAIL",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "узел расчленения, размеры подпорок и акт их устройства"
+    },
+    {
+      "parameterCode": "POD-097",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "площадку лома, бровку котлована и расположение действующих сетей"
+    },
+    {
+      "parameterCode": "OOS-098",
+      "candidateExtractorFamily": "EXTERNAL_EVENT_CHAIN",
+      "evidenceKinds": [
+        "EXTERNAL_REGISTRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "действующее разрешение в АИС ОСИГ к моменту начала работ"
+    },
+    {
+      "parameterCode": "OOS-099",
+      "candidateExtractorFamily": "EXTERNAL_EVENT_CHAIN",
+      "evidenceKinds": [
+        "EXTERNAL_REGISTRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "регистрацию автомобиля в РНИС и телеметрию его конкретного рейса"
+    },
+    {
+      "parameterCode": "OOS-100",
+      "candidateExtractorFamily": "EXTERNAL_EVENT_CHAIN",
+      "evidenceKinds": [
+        "EXTERNAL_REGISTRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "QR-код и запись мобильного КПТС для конкретного выезда"
+    },
+    {
+      "parameterCode": "OOS-101",
+      "candidateExtractorFamily": "EXTERNAL_EVENT_CHAIN",
+      "evidenceKinds": [
+        "EXTERNAL_REGISTRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "маршрут партии, полигон и действующую лицензию ГРОО"
+    },
+    {
+      "parameterCode": "PPM-102",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "границы пожарного отсека, непрерывность стены и его площадь"
+    },
+    {
+      "parameterCode": "PPM-106",
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "направление открывания двери и свободную траекторию эвакуации"
+    },
+    {
+      "parameterCode": "PPM-108",
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "извещатели, зоны контроля и расстояния между приборами"
+    },
+    {
+      "parameterCode": "PPM-109",
+      "candidateExtractorFamily": "MATERIAL_CLASS",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "NORM",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "марку конкретного кабеля и требуемый индекс огнестойкости"
+    },
+    {
+      "parameterCode": "PPM-110",
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "расстановку динамиков и табло относительно путей эвакуации"
+    },
+    {
+      "parameterCode": "PPM-111",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "пересечение воздуховода с преградой и клапан нужного предела"
+    },
+    {
+      "parameterCode": "PPM-112",
+      "candidateExtractorFamily": "EQUIPMENT_SPEC",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "модель вентилятора, расход и давление в режиме ДУ или подпора"
+    },
+    {
+      "parameterCode": "PPM-113",
+      "candidateExtractorFamily": "NETWORK_TOPOLOGY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "GEOMETRY",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "диаметр кольцевой сети и количество пожарных кранов"
+    },
+    {
+      "parameterCode": "PPM-114",
+      "candidateExtractorFamily": "BOUNDARY_OVERLAY",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "NORM",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "координаты ПГ, радиус действия и наиболее удалённую точку здания"
+    },
+    {
+      "parameterCode": "ODI-115",
+      "candidateExtractorFamily": "EQUIPMENT_SPEC",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "наличие подъемника, его модель и режим автоматического управления"
+    },
+    {
+      "parameterCode": "ODI-116",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "чистую ширину коридора МГН и применимый нормативный случай"
+    },
+    {
+      "parameterCode": "ODI-117",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "ширину двери в свету, а не ширину полотна, и применимую норму"
+    },
+    {
+      "parameterCode": "ODI-119",
+      "candidateExtractorFamily": "DIMENSION_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "внутренний контур универсальной кабины и применимый нормативный случай"
+    },
+    {
+      "parameterCode": "ODI-121",
+      "candidateExtractorFamily": "PARKING_LAYOUT",
+      "evidenceKinds": [
+        "GEOMETRY",
+        "VISUAL_SYMBOL",
+        "TABLE",
+        "COMPOSITE",
+        "CROSS_DOCUMENT",
+        "NORM"
+      ],
+      "specificProofDependency": "число мест МГН и ширину каждого места на схеме парковки"
+    },
+    {
+      "parameterCode": "ZU-125",
+      "candidateExtractorFamily": "LAYER_ASSEMBLY",
+      "evidenceKinds": [
+        "VISUAL_SYMBOL",
+        "SPECIFICATION",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "толщину утеплителя и расчёт сопротивления теплопередаче наружной стены"
+    },
+    {
+      "parameterCode": "ZU-127",
+      "candidateExtractorFamily": "THERMAL_PERFORMANCE",
+      "evidenceKinds": [
+        "SPECIFICATION",
+        "NORM",
+        "COMPOSITE",
+        "CROSS_DOCUMENT"
+      ],
+      "specificProofDependency": "модель окна и подтверждённое Ro соответствующей конструкции"
+    },
+    {
+      "parameterCode": "ZU-130",
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "evidenceKinds": [
+        "APPROVAL_CONTEXT",
+        "CROSS_DOCUMENT",
+        "SPECIFICATION"
+      ],
+      "specificProofDependency": "тип светильника и документ согласования замены оборудования"
+    }
+  ]
+}

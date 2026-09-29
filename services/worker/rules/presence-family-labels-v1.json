@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "presence-family-labels-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "candidatePackSha256": "a3ad00a04865f04bfeef5c2f21f5a11054fec88dcab264590fdb66d70a968581",
+  "disposition": "REVIEW_ONLY",
+  "entries": [
+    {
+      "parameterCode": "SPZU-039",
+      "catalogName": "Мероприятия по инженерной подготовке (дренажи)",
+      "attribute": "DRAINAGE_MEASURE_SET",
+      "features": [
+        {"featureKey": "OPEN_DRAIN_TRAY", "labels": ["открытый лоток", "открытые лотки", "открытого лотка"]},
+        {"featureKey": "CLOSED_WALL_DRAIN", "labels": ["закрытый пристенный дренаж", "закрытого пристенного дренажа", "система пристенного дренажа"]}
+      ],
+      "scopeGroups": [{"scopeKey": "DRAINAGE_ZONE", "labels": ["зона дренажа", "дренажная зона"], "requireId": true}]
+    },
+    {
+      "parameterCode": "AR-053",
+      "catalogName": "Конструктивные мероприятия по защите от шума",
+      "attribute": "NOISE_PROTECTION_MEASURE_SET",
+      "features": [
+        {"featureKey": "DAMPING_TAPE", "labels": ["демпферная лента", "демпферные ленты", "демпферной ленты"]},
+        {"featureKey": "SOUND_INSULATION_GASKET", "labels": ["звукоизоляционная прокладка", "звукоизоляционные прокладки", "звукоизоляционной прокладки"]}
+      ],
+      "scopeGroups": [{"scopeKey": "PARTITION_JOINT", "labels": ["узел перегородки", "узел примыкания перегородки"], "requireId": true}]
+    },
+    {
+      "parameterCode": "POD-092",
+      "catalogName": "Мероприятия по защите действующих коммуникаций",
+      "attribute": "LIVE_UTILITY_PROTECTION_SET",
+      "features": [
+        {"featureKey": "PROTECTIVE_BOX", "labels": ["защитный короб", "защитные короба", "защитного короба"]},
+        {"featureKey": "PROTECTIVE_BARRIER", "labels": ["защитное ограждение сети", "защитные ограждения сети", "защитного ограждения сети"]}
+      ],
+      "scopeGroups": [
+        {"scopeKey": "LIVE_UTILITY", "labels": ["действующая сеть", "действующая коммуникация"], "requireId": true},
+        {"scopeKey": "MACHINE_WORK_ZONE", "labels": ["зона работы техники"], "requireId": true}
+      ]
+    },
+    {
+      "parameterCode": "POD-095",
+      "catalogName": "Мероприятия по пылеподавлению и снижению шума",
+      "attribute": "DUST_NOISE_SUPPRESSION_SET",
+      "features": [
+        {"featureKey": "HYDRO_SPRAY", "labels": ["система гидроорошения", "системы гидроорошения", "гидроорошение"]},
+        {"featureKey": "DUST_SCREEN", "labels": ["пылезащитный экран", "пылезащитные экраны", "пылезащитного экрана"]},
+        {"featureKey": "WATER_CANNON", "labels": ["водяная пушка", "водяные пушки", "водяной пушки"]}
+      ],
+      "scopeGroups": [{"scopeKey": "DEMOLITION_ZONE", "labels": ["зона демонтажа"], "requireId": true}]
+    },
+    {
+      "parameterCode": "ODI-120",
+      "catalogName": "Спецификация опорных стационарных и откидных поручней",
+      "attribute": "ACCESSIBLE_GRAB_RAIL_SET",
+      "features": [
+        {"featureKey": "FIXED_GRAB_RAIL", "labels": ["стационарный поручень", "стационарные поручни", "стационарного поручня"]},
+        {"featureKey": "FOLDING_GRAB_RAIL", "labels": ["откидной поручень", "откидные поручни", "откидного поручня"]}
+      ],
+      "scopeGroups": [{"scopeKey": "ACCESSIBLE_TOILET", "labels": ["санузел МГН", "доступный санузел"], "requireId": true}]
+    },
+    {
+      "parameterCode": "ODI-122",
+      "catalogName": "Наличие и расстановка тактильно-контрастных указателей",
+      "attribute": "TACTILE_WARNING_SET",
+      "features": [
+        {"featureKey": "TACTILE_WARNING_STRIP", "labels": ["предупреждающая тактильная полоса", "предупреждающие тактильные полосы", "тактильно-контрастная полоса", "тактильно-контрастные полосы"]}
+      ],
+      "scopeGroups": [{"scopeKey": "STAIR_OR_DOOR", "labels": ["лестница", "дверь"], "requireId": true}]
+    },
+    {
+      "parameterCode": "ODI-123",
+      "catalogName": "Состав систем двухсторонней связи и вызова помощника",
+      "attribute": "ASSISTANCE_CALL_SYSTEM_SET",
+      "features": [
+        {"featureKey": "HELP_CALL_BUTTON", "labels": ["кнопка вызова персонала", "кнопки вызова персонала", "кнопка вызова помощника"]},
+        {"featureKey": "TWO_WAY_CALL_SYSTEM", "labels": ["система двусторонней связи", "системы двусторонней связи", "система двухсторонней связи", "системы двухсторонней связи"]}
+      ],
+      "scopeGroups": [{"scopeKey": "ACCESSIBLE_FACILITY", "labels": ["санузел МГН", "доступный санузел", "вход"], "requireId": true}]
+    },
+    {
+      "parameterCode": "ZU-129",
+      "catalogName": "Наличие приборов учета расхода энергоресурсов",
+      "attribute": "ENERGY_METER_SET",
+      "features": [
+        {"featureKey": "ELECTRIC_METER", "labels": ["счетчик электроэнергии", "счётчик электроэнергии", "электросчетчик", "электросчётчик"]},
+        {"featureKey": "WATER_METER", "labels": ["счетчик воды", "счётчик воды", "водосчетчик", "водосчётчик"]},
+        {"featureKey": "HEAT_METER", "labels": ["счетчик тепла", "счётчик тепла", "теплосчетчик", "теплосчётчик"]}
+      ],
+      "scopeGroups": [
+        {"scopeKey": "ENERGY_CARRIER", "labels": ["электроэнергия", "вода", "тепло"], "requireId": false},
+        {"scopeKey": "METER_SCOPE", "labels": ["узел учета", "узел учёта", "квартира", "здание"], "requireId": true}
+      ]
+    }
+  ]
+}

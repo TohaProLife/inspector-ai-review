@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "inspector-public-probe-summary-v1",
+  "date": "2026-09-24",
+  "model": "prism-ml/Ternary-Bonsai-2-27B-gguf",
+  "modelRevision": "6ed5e12bf84b7a63069882c91dd9e9218647d17b",
+  "runtimeImageDigest": "sha256:fb87b971d0730cd1298d92bf3e0a50e2e80947afa903731da53acfae5415870f",
+  "scope": "TRAIN_PUBLIC_ONLY_PROBE_NOT_APPLICATION_FINDING",
+  "probes": [
+    {
+      "caseId": "TRAIN-0001",
+      "mode": "text",
+      "modelSeconds": 20.4,
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "domainDecision": "NOT_ACCEPTED_PROBE_ONLY",
+      "finishReason": "stop",
+      "publicLabel": "CONFIGURATION_MISMATCH",
+      "pages": [
+        {
+          "fileId": "F0171",
+          "stage": "PD",
+          "sourcePage": 104,
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "textCharacters": 1833
+        },
+        {
+          "fileId": "F0201",
+          "stage": "RD",
+          "sourcePage": 17,
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "textCharacters": 1145
+        }
+      ],
+      "answer": "{\n  \"verdict\": \"INSUFFICIENT_EVIDENCE\",\n  \"explanation\": \"В предоставленных фрагментах текста и изображений отсутствует информация о характеристиках вентиляторов общеобменной вентиляции для помещения 012. В документе ПД (F0171) на странице 104 приведена принципиальная схема системы теплоснабжения приточных установок, где помещение 012 обозначено как 'Венткамера', но конкретные характеристики вентиляторов (мощность, производительность, тип и т.д.) не указаны. В документе РД (F0201) на странице 17 приведена экспликация помещений подвала, где помещение 012 также обозначено как 'Венткамера' с площадью 99.7 м², но характеристики вентиляторов здесь также отсутствуют. Поскольку в предоставленных фрагментах нет данных о параметре IOS4-079 (Характеристики вентиляторов общеобменной вентиляции), невозможно установить расхождение или соответствие.\",\n  \"evidence\": [\n    {\n      \"fileId\": \"F0171\",\n      \"sourcePage\": 104,\n      \"quote\": \"012 Венткамера\"\n    },\n    {\n      \"fileId\": \"F0201\",\n      \"sourcePage\": 17,\n      \"quote\": \"012 Венткамера 99.7 В2\"\n    }\n  ]\n}",
+      "citations": [
+        {
+          "fileId": "F0171",
+          "sourcePage": 104,
+          "quote": "012 Венткамера",
+          "textLayerVerified": true
+        },
+        {
+          "fileId": "F0201",
+          "sourcePage": 17,
+          "quote": "012 Венткамера 99.7 В2",
+          "textLayerVerified": true
+        }
+      ],
+      "usage": {
+        "completion_tokens": 332,
+        "prompt_tokens": 2166,
+        "total_tokens": 2498,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "caseId": "TRAIN-0002",
+      "mode": "text",
+      "modelSeconds": 33.81,
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "domainDecision": "NOT_ACCEPTED_PROBE_ONLY",
+      "finishReason": "stop",
+      "publicLabel": "MISSING_DESIGN_ELEMENT",
+      "pages": [
+        {
+          "fileId": "F0171",
+          "stage": "PD",
+          "sourcePage": 99,
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "textCharacters": 6033
+        },
+        {
+          "fileId": "F0202",
+          "stage": "RD",
+          "sourcePage": 17,
+          "sourceSha256": "632379a0e541f0c81e6b03e5528946730b4433939c796db4fdc1e5c3fc8b71ee",
+          "textCharacters": 4767
+        }
+      ],
+      "answer": "{\n  \"verdict\": \"INSUFFICIENT_EVIDENCE\",\n  \"explanation\": \"В предоставленных фрагментах текста отсутствует информация о параметре FREE-HEATING-001 для помещения 267. В документе ПД (F0171) на странице 99 упоминается помещение 267 в контексте плана этажей ('267, 270 Раздевальная и санузел для МГН'), но не приводятся спецификации по отоплению или вентиляции для этого конкретного помещения. В документе РД (F0202) на странице 17 помещение 267 ('Раздевальная для МГН') присутствует в экспликации, но также не содержит данных о параметре FREE-HEATING-001. Так как в текстовых выдержках нет описания оборудования или параметров для данного помещения, невозможно установить соответствие или расхождение.\",\n  \"evidence\": [\n    {\n      \"fileId\": \"F0171\",\n      \"sourcePage\": 99,\n      \"quote\": \"267, 270 Раздевальная и санузел для МГН\"\n    },\n    {\n      \"fileId\": \"F0202\",\n      \"sourcePage\": 17,\n      \"quote\": \"267 Раздевальная для МГН 13.7\"\n    }\n  ]\n}",
+      "citations": [
+        {
+          "fileId": "F0171",
+          "sourcePage": 99,
+          "quote": "267, 270 Раздевальная и санузел для МГН",
+          "textLayerVerified": false
+        },
+        {
+          "fileId": "F0202",
+          "sourcePage": 17,
+          "quote": "267 Раздевальная для МГН 13.7",
+          "textLayerVerified": true
+        }
+      ],
+      "usage": {
+        "completion_tokens": 317,
+        "prompt_tokens": 6113,
+        "total_tokens": 6430,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "caseId": "TRAIN-0006",
+      "mode": "text",
+      "modelSeconds": 38.3,
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "domainDecision": "NOT_ACCEPTED_PROBE_ONLY",
+      "finishReason": "stop",
+      "publicLabel": "MISSING_DESIGN_ELEMENT",
+      "pages": [
+        {
+          "fileId": "F0171",
+          "stage": "PD",
+          "sourcePage": 88,
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "textCharacters": 2711
+        },
+        {
+          "fileId": "F0201",
+          "stage": "RD",
+          "sourcePage": 18,
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "textCharacters": 6861
+        }
+      ],
+      "answer": "{\n  \"verdict\": \"INSUFFICIENT_EVIDENCE\",\n  \"explanation\": \"Для проверки параметра IOS4-078 (Сечения и геометрия воздуховодов общеобменной вентиляции) для помещения 140 требуется информация о конкретных сечениях и геометрии воздуховодов, обслуживающих данное помещение. В предоставленном фрагменте файла F0171 (ПД) на странице 88 приведена принципиальная схема систем общеобменной вентиляции, где помещение 140 обозначено как «Физического эксперимента». Однако в тексте схемы не указаны конкретные сечения (например, диаметр или тип сечения) или геометрия воздуховодов для этого помещения, а только обозначения вентиляционных устройств (В2.11, В2.12 и т.д.) и дефлекторов. В файле F0201 (РД) на странице 18 приведена экспликация помещений, где помещение 140 указано как «моделирования и конструирования» с площадью 50.4 м², но информация о сечениях и геометрии воздуховодов отсутствует. Поскольку в предоставленных фрагментах нет данных о сечениях и геометрии воздуховодов для помещения 140, невозможно установить расхождение или соответствие по данному параметру.\",\n  \"evidence\": [\n    {\n      \"fileId\": \"F0171\",\n      \"sourcePage\": 88,\n      \"quote\": \"140 Физического эксперимента\"\n    },\n    {\n      \"fileId\": \"F0171\",\n      \"sourcePage\": 88,\n      \"quote\": \"Принципиальная схема систем общеобменной вентиляции (продолжение №3)\"\n    },\n    {\n      \"fileId\": \"F0201\",\n      \"sourcePage\": 18,\n      \"quote\": \"140 моделирования и конструирования 50.4\"\n    }\n  ]\n}",
+      "citations": [
+        {
+          "fileId": "F0171",
+          "sourcePage": 88,
+          "quote": "140 Физического эксперимента",
+          "textLayerVerified": true
+        },
+        {
+          "fileId": "F0171",
+          "sourcePage": 88,
+          "quote": "Принципиальная схема систем общеобменной вентиляции (продолжение №3)",
+          "textLayerVerified": true
+        },
+        {
+          "fileId": "F0201",
+          "sourcePage": 18,
+          "quote": "140 моделирования и конструирования 50.4",
+          "textLayerVerified": true
+        }
+      ],
+      "usage": {
+        "completion_tokens": 447,
+        "prompt_tokens": 5982,
+        "total_tokens": 6429,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "caseId": "TRAIN-0001",
+      "mode": "vision",
+      "modelSeconds": 107.36,
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "domainDecision": "NOT_ACCEPTED_PROBE_ONLY",
+      "finishReason": "stop",
+      "publicLabel": "CONFIGURATION_MISMATCH",
+      "pages": [
+        {
+          "fileId": "F0171",
+          "stage": "PD",
+          "sourcePage": 104,
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "textCharacters": 1833
+        },
+        {
+          "fileId": "F0201",
+          "stage": "RD",
+          "sourcePage": 17,
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "textCharacters": 1145
+        }
+      ],
+      "answer": "{\n  \"verdict\": \"INSUFFICIENT_EVIDENCE\",\n  \"explanation\": \"Для сравнения параметров IOS4-079 (Характеристики вентиляторов общеобменной вентиляции) для помещения 012 требуется наличие конкретных данных о характеристиках вентиляторов (мощность, производительность, тип и т.д.) в обоих документах. В предоставленных фрагментах ПД (F0171) и РД (F0201) присутствуют только схемы и экспликации, где помещение 012 обозначено как 'Венткамера', но сами характеристики вентиляторов, установленных в этом помещении, в текстовых выдержках и на видимых фрагментах изображений не приведены в виде читаемых значений для сравнения.\",\n  \"evidence\": [\n    {\n      \"fileId\": \"F0171\",\n      \"sourcePage\": 104,\n      \"quote\": \"Венткамера 012\"\n    },\n    {\n      \"fileId\": \"F0201\",\n      \"sourcePage\": 17,\n      \"quote\": \"012 Венткамера 99.7 В2\"\n    }\n  ]\n}",
+      "citations": [
+        {
+          "fileId": "F0171",
+          "sourcePage": 104,
+          "quote": "Венткамера 012",
+          "textLayerVerified": false
+        },
+        {
+          "fileId": "F0201",
+          "sourcePage": 17,
+          "quote": "012 Венткамера 99.7 В2",
+          "textLayerVerified": true
+        }
+      ],
+      "usage": {
+        "completion_tokens": 279,
+        "prompt_tokens": 3849,
+        "total_tokens": 4128,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ]
+}

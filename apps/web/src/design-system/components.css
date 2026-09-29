@@ -1,0 +1,40 @@
+.button { min-height: var(--control-height); border-radius: var(--radius-control); font-weight: 500; white-space: nowrap; transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast); }
+.button:active:not(:disabled) { transform: translateY(1px); }
+.button:disabled { cursor: not-allowed; }
+.button > svg { flex-shrink: 0; }
+.button--primary { color: var(--on-accent); }
+.button--accent { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.button--accent:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.button--secondary { color: var(--ink); background: var(--surface); border-color: var(--line-strong); }
+.button--secondary:hover:not(:disabled) { background: var(--surface-raised); border-color: var(--ink-faint); }
+:is(button, a, input, textarea, select, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Navigation focuses the destination heading for reading; it is not an interactive control. */
+.main :is(h1, h2)[tabindex="-1"]:focus { outline: none; }
+input::placeholder, textarea::placeholder { color: var(--ink-faint); opacity: 1; }
+.ds-field input:disabled { background: var(--surface-raised); color: var(--ink-faint); cursor: not-allowed; }
+.document-source-image { display: block; background: var(--color-white); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.source-image-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; gap: 12px; padding: 24px; color: var(--ink-faint); text-align: center; font-size: 12px; }
+.source-image-empty strong { font-size: 14px; color: var(--ink); }
+.source-image-empty span { max-width: 32ch; line-height: 1.6; }
+.source-image-loading { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 160px; padding: 24px; color: #526382; background: #f1f4fa; font-size: 13px; pointer-events: none; }
+.source-image-loading svg { color: #2454d3; }
+.source-image-empty { width: 100%; }
+.page-canvas:has(.source-image-loading) { min-height: 240px; }
+.button--inverted { color: #101112; background: #fff; border-color: #fff; }
+.button--inverted:hover:not(:disabled) { background: #e3e6ee; border-color: #e3e6ee; }
+.ds-field { display: grid; gap: 8px; font-size: 14px; font-weight: 500; }
+.ds-field input { min-height: 44px; width: 100%; padding: 10px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-control); }
+.ds-field small { color: var(--ink-faint); font-size: 12px; font-weight: 400; }
+.ds-field input[aria-invalid="true"] { border-color: var(--danger); }
+.ds-field .ds-field__error { color: var(--danger); }
+.ds-eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; letter-spacing: .05em; }
+.ds-eyebrow i { display: none; }
+.ds-brand { display: inline-flex; gap: 10px; align-items: center; color: #202326; font-family: var(--font-heading); font-size: 23px; font-weight: 620; letter-spacing: -.8px; white-space: nowrap; }
+.ds-brand__ai { margin-left: 5px; color: #6b727c; font-weight: 440; }
+.ds-brand--inverse { color: #fff; }
+.ds-brand--inverse .ds-brand__ai { color: #aab0bb; }
+.ds-brand__mark { display: flex; width: 24px; height: 26px; align-items: center; gap: 3px; transform: skewY(-15deg); }
+.ds-brand__mark i { width: 5px; height: 22px; background: currentColor; }
+.ds-brand__mark i:nth-child(2) { height: 14px; }
+.ds-brand__mark i:nth-child(3) { height: 18px; }

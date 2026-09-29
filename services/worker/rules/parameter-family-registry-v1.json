@@ -1,0 +1,932 @@
+{
+  "schemaVersion": "parameter-family-registry-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "executionPolicy": "DESIGN_ONLY",
+  "entries": [
+    {
+      "parameterCode": "PZ-001",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PZ-002",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-003",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "PZ-004",
+      "classification": "PILOT_REVIEW_ONLY",
+      "family": "DIFFERENT",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-005",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PZ-006",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "SOURCE_TRIGGER_CONFLICT"
+    },
+    {
+      "parameterCode": "PZ-007",
+      "classification": "PILOT_REVIEW_ONLY",
+      "family": "DIFFERENT",
+      "factType": "INTEGER",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-008",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-009",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PZ-010",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DIFFERENT",
+      "factType": "INTEGER",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-011",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PZ-012",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "INTEGER",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-013",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PZ-014",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-015",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-016",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-017",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-018",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-019",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "PZ-020",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "PZ-021",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-022",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PZ-023",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SPZU-024",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SPZU-025",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SPZU-026",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "SPZU-027",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-028",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-029",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-030",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SPZU-031",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-032",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-033",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-034",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-035",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-036",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-037",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "INTEGER",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SPZU-038",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-039",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "AR-040",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "AR-041",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "AR-042",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-043",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "AR-044",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-045",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-046",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-047",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "AR-048",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-049",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "AR-050",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "AR-051",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "AR-052",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "AR-053",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-054",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-055",
+      "classification": "PILOT_REVIEW_ONLY",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-056",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-057",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-058",
+      "classification": "PILOT_REVIEW_ONLY",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-059",
+      "classification": "PILOT_REVIEW_ONLY",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-060",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-061",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-062",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "KR-063",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-064",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-065",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-066",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-067",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "IOS1-068",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS1-069",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS1-070",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS2-071",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "IOS2-072",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "IOS2-073",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS3-074",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "IOS3-075",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "IOS4-076",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS4-077",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS4-078",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "PUBLIC_MAPPING_CONFLICT"
+    },
+    {
+      "parameterCode": "IOS4-079",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "PUBLIC_MAPPING_CONFLICT"
+    },
+    {
+      "parameterCode": "IOS5-080",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POS-081",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-082",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POS-083",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-084",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "POS-085",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-086",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "INTEGER",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POS-087",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "POS-088",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POS-089",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-090",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POD-091",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "POD-092",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POD-093",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_DELTA",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POD-094",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-095",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "POD-096",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-097",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "OOS-098",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-099",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-100",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-101",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "PPM-102",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PPM-103",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PPM-104",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PPM-105",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "LOWER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PPM-106",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PPM-107",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "PPM-108",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-109",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-110",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-111",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-112",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-113",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-114",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "ODI-115",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ODI-116",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-117",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-118",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "UPPER_BOUND",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ODI-119",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-120",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ODI-121",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ODI-122",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ODI-123",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ZU-124",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "CLASS_DECREASE",
+      "factType": "ORDERED_DOMAIN",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ZU-125",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ZU-126",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ZU-127",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ZU-128",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "DECREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ZU-129",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "PRESENCE_SET",
+      "factType": "SET",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "ZU-130",
+      "classification": "UNRESOLVED",
+      "family": null,
+      "factType": null,
+      "reasonCode": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "ZU-131",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    },
+    {
+      "parameterCode": "SM-132",
+      "classification": "GENERIC_CANDIDATE",
+      "family": "RELATIVE_INCREASE",
+      "factType": "DECIMAL",
+      "reasonCode": null
+    }
+  ]
+}

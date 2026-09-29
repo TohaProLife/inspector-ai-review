@@ -1,0 +1,4 @@
+# Offline script test runner; install into a dedicated virtual environment.
+-r requirements-template-probe.txt
+Pillow==12.3.0
+pypdfium2==5.12.1

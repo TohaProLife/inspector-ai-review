@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1.7
+FROM python:3.12.11-slim-bookworm@sha256:c00fc7b44d844b6da22861ec24af43968a5200eac4ec607b4725d585165d6b49
+
+LABEL org.opencontainers.image.title="Inspector AI Bonsai model provisioner" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      ai.inspector.model.revision="6ed5e12bf84b7a63069882c91dd9e9218647d17b"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    BONSAI_ARTIFACT_LOCK=/opt/bonsai/artifacts.lock.json \
+    BONSAI_MODEL_DIR=/models
+
+WORKDIR /opt/bonsai
+COPY artifacts.lock.json download_model.py ./
+
+RUN groupadd --gid 10001 bonsai \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin bonsai
+
+USER 10001:10001
+ENTRYPOINT ["python", "/opt/bonsai/download_model.py"]

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "local-vlm-runtime-profile-v1",
+  "profileId": "vlm-bonsai2-27b-ptq1-laptop-v1",
+  "providerProfiles": {
+    "METADATA_EXTRACTOR": "metadata-hybrid-bonsai2-27b-ptq1-v1",
+    "ENTITY_EXTRACTION_MODEL": "entity-bonsai2-27b-ptq1-v1"
+  },
+  "modelAlias": "inspector-bonsai-2-27b",
+  "artifactLockSha256": "e5f4e64b90cb2b9170021c0339db55fbf00bdfc5466bf6e3b1bf65f43e564e8f",
+  "runtime": {
+    "repository": "PrismML-Eng/llama.cpp",
+    "releaseTag": "prism-b10685-7dffb15",
+    "revision": "7dffb158de30ebb8ef9d64f33c6b0b2d7c1e6313",
+    "api": "openai-compatible"
+  },
+  "generation": {
+    "contextSize": 8192,
+    "parallel": 1,
+    "maxOutputTokens": 2048,
+    "temperature": 0.0,
+    "topP": 1.0,
+    "topK": 20,
+    "seed": 20260918
+  },
+  "vision": {
+    "projector": "Q8_0",
+    "projectorOnCpu": true,
+    "maxImages": 1,
+    "maxImageTokens": 4096,
+    "remoteUrlsAllowed": false
+  },
+  "resources": {
+    "gpuLayers": 99,
+    "batchSize": 512,
+    "microBatchSize": 128,
+    "minimumGpuVramMiB": 8188,
+    "minimumSystemRamGiB": 14,
+    "recommendedFreeDiskGiBBeforeProvisioning": 20
+  },
+  "network": {
+    "externalNetworkAllowedAtRuntime": false,
+    "listenPort": 8080
+  }
+}

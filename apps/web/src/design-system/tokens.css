@@ -1,0 +1,155 @@
+/* Evidence / 2.0 — Antimetal-inspired presentation, opaque document workspace. */
+:root, .theme-light {
+  --font-body: "Onest Variable", "Segoe UI", sans-serif;
+  --font-heading: "Onest Variable", "Segoe UI", sans-serif;
+  --font-display: "Source Serif 4 Variable", Georgia, serif;
+  --font-code: "Cascadia Code", Consolas, monospace;
+  --color-carbon: #071331;
+  --color-white: #ffffff;
+  --ink: #101b36;
+  --ink-soft: #465675;
+  --ink-faint: #62708a;
+  --paper: #f7f8fc;
+  --surface: #ffffff;
+  --surface-raised: #f0f3f9;
+  --surface-selected: #eaf0ff;
+  --line: #e1e7f0;
+  --line-strong: #c8d2e2;
+  --accent: #2458d3;
+  --accent-hover: #1744af;
+  --on-accent: #ffffff;
+  --accent-soft: #edf0ff;
+  --warning: #8b571e;
+  --warning-soft: #fbf2e5;
+  --success: #23734c;
+  --success-soft: #eaf5ee;
+  --danger: #b53d39;
+  --danger-soft: #fbeeed;
+  --canvas: #edf0f6;
+  --hero-midnight: #02051d;
+  --hero-blue: #064dec;
+  --hero-lime: #d5ff52;
+  --glass-blur: 20px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-showcase: 16px;
+  --shadow-document: 0 8px 32px #10111218;
+  --shadow-floating: 0 24px 80px #10111230;
+  --duration-fast: 140ms;
+  --duration-reveal: 220ms;
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --text-caption: 12px;
+  --text-body: 14px;
+  --control-height: 44px;
+  --layer-sticky: 20;
+  --layer-dialog: 100;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  color: var(--ink);
+  --ink: #ffffff;
+  --ink-soft: #d0def8;
+  --ink-faint: #a9bbdc;
+  --paper: #02051d;
+  --surface: #101d3e;
+  --surface-raised: #192a51;
+  --surface-selected: #20365f;
+  --line: #ffffff26;
+  --line-strong: #ffffff4a;
+  --accent: #b4d5ff;
+  --accent-hover: #d3e6ff;
+  --on-accent: #071331;
+  --accent-soft: #20365f;
+  --success: #82cfa4;
+  --success-soft: #19382a;
+  --warning: #e5b978;
+  --warning-soft: #3a2b19;
+  --danger: #ef9691;
+  --danger-soft: #442522;
+}
+
+.theme-light { color-scheme: light; color: var(--ink); }
+
+/* Workspace and component reference use the same semantic day palette. */
+
+.app-shell, .search-overlay, .ds-page {
+  --warning: #87551c;
+  --warning-soft: #fff4e6;
+  --danger: #a3443e;
+  --danger-soft: #fbedeb;
+  --success: #286752;
+  --success-soft: #eaf5ef;
+  --ink: #0a1432;
+  --ink-soft: #374568;
+  --ink-faint: #586886;
+  --paper: #f8faff;
+  --surface: #fff;
+  --surface-raised: #f1f5ff;
+  --surface-selected: #eaf0ff;
+  --line: #e2e8f5;
+  --line-strong: #cbd5ec;
+  --accent: #2454d3;
+  --accent-hover: #143fae;
+  --accent-soft: #eaf0ff;
+  --canvas: #f8faff;
+}
+
+/* Moon palette calibrated from the archived Antimetal theme switch. Source values are visual references, not extracted CSS. */
+
+html[data-color-resolved="dark"] {
+  color-scheme: dark;
+  --night-base: #0e0d0b;
+  --night-recessed: #11100e;
+  --night-panel: #181714;
+  --night-raised: #211f1b;
+  --night-selected: #2c2923;
+  --night-text: #f1efe7;
+  --night-soft: #c5c1b6;
+  --night-muted: #a5a095;
+  --night-line: #f1e9ce21;
+  --night-line-strong: #f1e9ce3d;
+  --night-lime: #d8fb4b;
+  background: var(--night-base);
+}
+
+html[data-color-resolved="dark"], html[data-color-resolved="dark"] :is(.landing--antimetal, .app-shell, .search-overlay, .ds-page),
+html[data-color-resolved="dark"] :is(.landing--antimetal, .app-shell) :is(.theme-dark, .theme-light) {
+  --ink: var(--night-text);
+  --ink-soft: var(--night-soft);
+  --ink-faint: var(--night-muted);
+  --paper: var(--night-base);
+  --canvas: var(--night-base);
+  --surface: var(--night-panel);
+  --surface-raised: var(--night-raised);
+  --surface-selected: var(--night-selected);
+  --line: var(--night-line);
+  --line-strong: var(--night-line-strong);
+  --accent: #e2e5c6;
+  --accent-hover: #f6f8e7;
+  --accent-soft: #292d1c;
+  --on-accent: #15170b;
+  --success: #a5d5ad;
+  --success-soft: #203126;
+  --warning: #e2bf7e;
+  --warning-soft: #352b1b;
+  --danger: #e8a49a;
+  --danger-soft: #382321;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+:root {
+  --action-primary: #d8fb4b;
+  --action-primary-hover: #e5ff7a;
+  --on-action-primary: #172005;
+}

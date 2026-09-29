@@ -1,0 +1,500 @@
+import { canonicalJson, sha256 } from "./canonical-json.js";
+
+// API-owned copy of the audited v2 allowlist. Its SHA pin is checked at load.
+const config = {
+  "bounds": {
+    "maxLeadsPerCode": 16,
+    "maxLineChars": 500,
+    "maxTextArtifactBytes": 67108864
+  },
+  "entries": [
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "GP",
+          "stage": "PD"
+        },
+        {
+          "section": "SPZU",
+          "stage": "PD"
+        },
+        {
+          "section": "GP",
+          "stage": "RD"
+        },
+        {
+          "section": "PP",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "ВЕДОМОСТЬ ТИПОВ ПОКРЫТИЙ",
+          "pageNumber": 21,
+          "renderSha256": "cd04bc7f57b57cb69196d723909b3a2120399a001859fd4c9759d8ef148e172f",
+          "sourceFileId": "F0126",
+          "sourceSha256": "b4846376535dd97aa24a8e384e0cb71f40792084fc61981dad587b15bbf63088"
+        }
+      ],
+      "anchors": [
+        "ведомость типов покрытий"
+      ],
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "SPZU-026",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "APPROVAL_OR_CONTEXT",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "APPROVAL_DOCUMENT",
+        "APPROVAL_AUTHORITY_DATE_SCOPE",
+        "TABLE_ROW_GEOMETRY"
+      ],
+      "specificProofDependency": "изменённый объём мощения и запись согласования заказчика"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "AR",
+          "stage": "PD"
+        },
+        {
+          "section": "AR",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "стемалитом в гармонирующим с цветовым решением фасадов.  ",
+          "pageNumber": 20,
+          "renderSha256": "ef5ace7ff46a0da789bbbb66c931b7f8be73508075bac0655c382667ef2a0218",
+          "sourceFileId": "F0156",
+          "sourceSha256": "16cd7f0b61a31b52b6e5d94f9249c0382407ec91b5531d6e0ed843e8827e30cf"
+        }
+      ],
+      "anchors": [
+        "цветовым решением фасадов"
+      ],
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "AR-052",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "APPROVAL_OR_CONTEXT",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "APPROVAL_DOCUMENT",
+        "APPROVAL_AUTHORITY_DATE_SCOPE",
+        "SAME_FACADE_ELEMENT"
+      ],
+      "specificProofDependency": "цвет и материал конкретного фасада и документ согласования замены"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "IOS2",
+          "stage": "PD"
+        },
+        {
+          "section": "VK",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "Магистральные  трубопроводы  выполнены  из  стальных  водогазопроводных  оцинкованных,  по  ГОСТ ",
+          "pageNumber": 12,
+          "renderSha256": "ad8380532add6e65936b3d7f11e3353a7e36cac4a7fe124f280803ccf1233c1d",
+          "sourceFileId": "F0118",
+          "sourceSha256": "63c2bbc93d14a15232eca0d771820f6994c07f41cba73a3f4172cda925bd9357"
+        },
+        {
+          "lineText": "Стояки и поэтажная разводка под потолком выполнена из фузиоленовых пластиковых труб. ",
+          "pageNumber": 12,
+          "renderSha256": "ad8380532add6e65936b3d7f11e3353a7e36cac4a7fe124f280803ccf1233c1d",
+          "sourceFileId": "F0118",
+          "sourceSha256": "63c2bbc93d14a15232eca0d771820f6994c07f41cba73a3f4172cda925bd9357"
+        }
+      ],
+      "anchors": [
+        "магистральные трубопроводы выполнены",
+        "стояки и поэтажная разводка"
+      ],
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "IOS2-072",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "APPROVAL_OR_CONTEXT",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "APPROVAL_DOCUMENT",
+        "APPROVAL_AUTHORITY_DATE_SCOPE",
+        "SAME_SYSTEM_SEGMENT",
+        "RECALCULATION"
+      ],
+      "specificProofDependency": "материал трубы, класс давления и перерасчёт теплового расширения"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "IOS3",
+          "stage": "PD"
+        },
+        {
+          "section": "VK",
+          "stage": "RD"
+        },
+        {
+          "section": "NVK",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "подземной части здания и техпространстве предусматриваются из чугунных безраструбных труб SML. ",
+          "pageNumber": 8,
+          "renderSha256": "8ff99c6f752c43933319039371b96a1ae3c2c65812e1cafdd9afc16a52e4f68b",
+          "sourceFileId": "F0120",
+          "sourceSha256": "6351d217b51c5004b93ce7fab4b7721178adfd63c2159ba2feb3dcd285e9265d"
+        },
+        {
+          "lineText": "раструбных полипропиленовых канализационных труб по ГОСТ 32414-2013.  ",
+          "pageNumber": 8,
+          "renderSha256": "8ff99c6f752c43933319039371b96a1ae3c2c65812e1cafdd9afc16a52e4f68b",
+          "sourceFileId": "F0120",
+          "sourceSha256": "6351d217b51c5004b93ce7fab4b7721178adfd63c2159ba2feb3dcd285e9265d"
+        }
+      ],
+      "anchors": [
+        "чугунных безраструбных труб sml",
+        "полипропиленовых канализационных труб"
+      ],
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "IOS3-075",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "APPROVAL_OR_CONTEXT",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "APPROVAL_DOCUMENT",
+        "APPROVAL_AUTHORITY_DATE_SCOPE",
+        "SAME_SYSTEM_SEGMENT",
+        "PRODUCT_PROPERTY"
+      ],
+      "specificProofDependency": "тип, материал и свойство малошумности конкретной трубы"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "ZU",
+          "stage": "PD"
+        },
+        {
+          "section": "IOS1",
+          "stage": "PD"
+        },
+        {
+          "section": "EOM",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "Светотехническое оборудование",
+          "pageNumber": 120,
+          "renderSha256": "332d1127375dd191ca10dae0697b3a5b497036e05548924d1f8a2bd40c61caee",
+          "sourceFileId": "F0160",
+          "sourceSha256": "72fc8a91a7e09c20ac9769f513f2f0a763d7ffd6d9c0e9c198432834286537cd"
+        },
+        {
+          "lineText": "Светильник рабочего освещения",
+          "pageNumber": 120,
+          "renderSha256": "332d1127375dd191ca10dae0697b3a5b497036e05548924d1f8a2bd40c61caee",
+          "sourceFileId": "F0160",
+          "sourceSha256": "72fc8a91a7e09c20ac9769f513f2f0a763d7ffd6d9c0e9c198432834286537cd"
+        }
+      ],
+      "anchors": [
+        "светотехническое оборудование",
+        "светильник рабочего освещения"
+      ],
+      "candidateExtractorFamily": "DOCUMENT_APPROVAL",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "ZU-130",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "APPROVAL_OR_CONTEXT",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "APPROVAL_DOCUMENT",
+        "APPROVAL_AUTHORITY_DATE_SCOPE",
+        "SAME_INSTALLATION_LOCATION",
+        "PRODUCT_PROPERTY"
+      ],
+      "specificProofDependency": "тип светильника и документ согласования замены оборудования"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "AR",
+          "stage": "PD"
+        },
+        {
+          "section": "AR",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "ПЛАН ПЕРВОГО ЭТАЖА на отм. 0.000",
+          "pageNumber": 27,
+          "renderSha256": "6726fb36dec09093b5452389944674034375a3131416d88ff596da642cb11fb7",
+          "sourceFileId": "F0156",
+          "sourceSha256": "16cd7f0b61a31b52b6e5d94f9249c0382407ec91b5531d6e0ed843e8827e30cf"
+        }
+      ],
+      "anchors": [
+        "план первого этажа"
+      ],
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "AR-043",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "GEOMETRY_OR_TOPOLOGY",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "DRAWING_GEOMETRY",
+        "APPLICABLE_NORM",
+        "EVACUATION_ROUTE",
+        "DOOR_SWING_ASSOCIATION"
+      ],
+      "specificProofDependency": "сторону открывания конкретной эвакуационной двери и соседний поток"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "IOS5",
+          "stage": "PD"
+        },
+        {
+          "section": "PPM",
+          "stage": "PD"
+        },
+        {
+          "section": "SS",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "12.1 Система пожарной сигнализации ",
+          "pageNumber": 41,
+          "renderSha256": "ef02119e390e2f7cec6f65d14d7c16fafa69d4660189d850b0abf5d121d61234",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        },
+        {
+          "lineText": "Извещатель пожарный дымовой адресный ДИП-34А-03",
+          "pageNumber": 59,
+          "renderSha256": "076cb91e3027263d7a6f6f594873beb48c15fa585346873c840c2c136343e1a0",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        }
+      ],
+      "anchors": [
+        "система пожарной сигнализации",
+        "извещатель пожарный дымовой адресный"
+      ],
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "IOS5-080",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "COMPOSITE_TRIGGER",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "DRAWING_GEOMETRY",
+        "APPLICABLE_NORM",
+        "ZONE_DEVICE_PLACEMENT"
+      ],
+      "specificProofDependency": "извещатели, зоны контроля и расстояния между конкретными приборами"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "PPM",
+          "stage": "PD"
+        },
+        {
+          "section": "AR",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "дистанционное открывание запоров дверей эвакуационных выходов. ",
+          "pageNumber": 43,
+          "renderSha256": "bb7f0336c2e6a8946c690c5ca143b9b8178d572b3bbef603835c3151f65356f4",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        }
+      ],
+      "anchors": [
+        "дверей эвакуационных выходов"
+      ],
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "PPM-106",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "GEOMETRY_OR_TOPOLOGY",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "DRAWING_GEOMETRY",
+        "APPLICABLE_NORM",
+        "EVACUATION_ROUTE",
+        "DOOR_SWING_ASSOCIATION"
+      ],
+      "specificProofDependency": "направление открывания двери и свободную траекторию эвакуации"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "PPM",
+          "stage": "PD"
+        },
+        {
+          "section": "IOS5",
+          "stage": "PD"
+        },
+        {
+          "section": "SS",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "Размещение  пожарных  извещателей  производится  с  учетом ",
+          "pageNumber": 41,
+          "renderSha256": "ef02119e390e2f7cec6f65d14d7c16fafa69d4660189d850b0abf5d121d61234",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        },
+        {
+          "lineText": "Извещатель пожарный дымовой адресный ДИП-34А-03",
+          "pageNumber": 59,
+          "renderSha256": "076cb91e3027263d7a6f6f594873beb48c15fa585346873c840c2c136343e1a0",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        }
+      ],
+      "anchors": [
+        "размещение пожарных извещателей",
+        "извещатель пожарный дымовой адресный"
+      ],
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "PPM-108",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "COMPOSITE_TRIGGER",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "DRAWING_GEOMETRY",
+        "APPLICABLE_NORM",
+        "ZONE_DEVICE_PLACEMENT"
+      ],
+      "specificProofDependency": "извещатели, зоны контроля и расстояния между приборами"
+    },
+    {
+      "allowedSourceRoles": [
+        {
+          "section": "PPM",
+          "stage": "PD"
+        },
+        {
+          "section": "SS",
+          "stage": "RD"
+        }
+      ],
+      "anchorEvidence": [
+        {
+          "lineText": "12.2 Система оповещения и управления эвакуацией людей при пожаре ",
+          "pageNumber": 43,
+          "renderSha256": "bb7f0336c2e6a8946c690c5ca143b9b8178d572b3bbef603835c3151f65356f4",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        },
+        {
+          "lineText": "размещение и обеспечение освещения знаков пожарной безопасности на путях ",
+          "pageNumber": 43,
+          "renderSha256": "bb7f0336c2e6a8946c690c5ca143b9b8178d572b3bbef603835c3151f65356f4",
+          "sourceFileId": "F0193",
+          "sourceSha256": "edf34d969b0f37e9165c344432f7f229159db2b990e87b67482969286e71aa4f"
+        }
+      ],
+      "anchors": [
+        "система оповещения и управления эвакуацией",
+        "знаков пожарной безопасности"
+      ],
+      "candidateExtractorFamily": "SAFETY_COVERAGE",
+      "locatorType": "TEXT_LINE_BBOX_ONLY",
+      "parameterCode": "PPM-110",
+      "registryClassification": "UNRESOLVED",
+      "registryReasonCode": "COMPOSITE_TRIGGER",
+      "requiredProofGates": [
+        "APPROVED_SOURCE_REVISIONS",
+        "VERIFIED_SECTION_STAGE",
+        "SAME_ELEMENT_OR_SPACE",
+        "PD_RD_PAIR",
+        "DRAWING_GEOMETRY",
+        "APPLICABLE_NORM",
+        "EVACUATION_ROUTE",
+        "ZONE_DEVICE_PLACEMENT"
+      ],
+      "specificProofDependency": "расстановку динамиков и табло относительно путей эвакуации"
+    }
+  ],
+  "executionPolicy": "REVIEW_ONLY_ABSTAIN",
+  "matching": "ANY_LITERAL_LOWERCASE_COLLAPSE_WHITESPACE",
+  "registrySha256": "fdc6a69544e06513ee37baa20ad21a1c5c1bc711b04907491becc3283604a87a",
+  "schemaVersion": "unresolved-review-config-v2",
+  "strategySha256": "0e9519b426c93fa9eaefe7416d6ced893c212ff3deb198d87e70eedf884d5514",
+  "version": "2"
+};
+const configSha256 = "1c31aad1761af86273f421daef5fc04bfe7724c9bf07750a1f1b8b37be30a0e8";
+if (sha256(canonicalJson(config)) !== configSha256) {
+  throw new Error("unresolved review v2 config SHA pin mismatch");
+}
+
+function deepFreeze<T>(value: T): Readonly<T> {
+  if (value !== null && typeof value === "object") {
+    for (const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+export const pinnedUnresolvedReviewConfigV2 = deepFreeze(config);

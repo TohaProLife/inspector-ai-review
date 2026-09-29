@@ -1,0 +1,238 @@
+name: inspector-ai
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inspector}
+      POSTGRES_USER: ${POSTGRES_USER:-inspector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run ./infra/stack.sh laptop init or ./infra/stack.sh server init}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports: ["${HOST_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"]
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine@sha256:11c9d525392fa42ea090550a6d2d8fca0d4c0d0e21912f91f7018296a3f66228
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-inspector}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?run ./infra/stack.sh laptop init or ./infra/stack.sh server init}
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${RABBITMQ_PORT:-5672}:5672"
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine@sha256:de4d18872bf67ad0bd62224a712263975ca1d53b9b1d0d5d076082e7fa887890
+    command: ["sh", "-ec", "exec redis-server --appendonly yes --requirepass \"$${REDIS_PASSWORD}\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?run ./infra/stack.sh laptop init or ./infra/stack.sh server init}
+    ports: ["${HOST_BIND_ADDRESS:-127.0.0.1}:${REDIS_PORT:-6379}:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$${REDIS_PASSWORD}\" ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a4938f37f1be1841b8e7b627ad0207b265345fd0d063e42d7410c78af0e63e68
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-inspector}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?run ./infra/stack.sh laptop init or ./infra/stack.sh server init}
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${MINIO_API_PORT:-9000}:9000"
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes: ["minio-data:/data"]
+
+  clamav:
+    image: clamav/clamav:stable@sha256:49a035c7b33154dc829bc15eff2fe44f1d07c63d3d20b681bf42e8e658d21152
+    environment:
+      CLAMD_CONF_StreamMaxLength: 128M
+      CLAMD_CONF_MaxFileSize: 128M
+      CLAMD_CONF_MaxScanSize: 250M
+    expose: ["3310"]
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    command: ["npm", "run", "db:migrate", "-w", "@inspector-ai/api"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-inspector}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inspector}
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      API_PORT: 4100
+      INSPECTOR_ANALYSIS_PROFILE: ${INSPECTOR_ANALYSIS_PROFILE:-SCAFFOLD}
+      INSPECTOR_VISUAL_PROFILE: ${INSPECTOR_VISUAL_PROFILE:-V4}
+      INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE: ${INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE:-v1}
+      INSPECTOR_OCR_HEAT_ROW_PROFILE: ${INSPECTOR_OCR_HEAT_ROW_PROFILE:-}
+      INSPECTOR_FACT_FAMILY_PROFILE: ${INSPECTOR_FACT_FAMILY_PROFILE:-}
+      INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE: ${INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE:-}
+      INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE: ${INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE:-}
+      INSPECTOR_CANDIDATE_FAMILY_OCR_OBSERVATIONS_PROFILE: ${INSPECTOR_CANDIDATE_FAMILY_OCR_OBSERVATIONS_PROFILE:-}
+      INSPECTOR_OCR_TABLE_ROWS_PROFILE: ${INSPECTOR_OCR_TABLE_ROWS_PROFILE:-}
+      INSPECTOR_OCR_TYPED_FACT_CANDIDATE_PROFILE: ${INSPECTOR_OCR_TYPED_FACT_CANDIDATE_PROFILE:-}
+      INSPECTOR_UNRESOLVED_FAMILY_RUN_REVIEW_PROFILE: ${INSPECTOR_UNRESOLVED_FAMILY_RUN_REVIEW_PROFILE:-}
+      INSPECTOR_UNRESOLVED_FAMILY_OCR_REVIEW_PROFILE: ${INSPECTOR_UNRESOLVED_FAMILY_OCR_REVIEW_PROFILE:-}
+      INSPECTOR_SITE_TEP_AREA_REVIEW_PROFILE: ${INSPECTOR_SITE_TEP_AREA_REVIEW_PROFILE:-}
+      INSPECTOR_SITE_GP_CONTEXT_REVIEW_PROFILE: ${INSPECTOR_SITE_GP_CONTEXT_REVIEW_PROFILE:-}
+      INSPECTOR_SITE_GP_TABLE_ROW_REVIEW_PROFILE: ${INSPECTOR_SITE_GP_TABLE_ROW_REVIEW_PROFILE:-}
+      INSPECTOR_EQUIPMENT_SPEC_REVIEW_PROFILE: ${INSPECTOR_EQUIPMENT_SPEC_REVIEW_PROFILE:-}
+      INSPECTOR_MATERIAL_CLASS_REVIEW_PROFILE: ${INSPECTOR_MATERIAL_CLASS_REVIEW_PROFILE:-}
+      INSPECTOR_UNRESOLVED_CONFIG_REVIEW_PROFILE: ${INSPECTOR_UNRESOLVED_CONFIG_REVIEW_PROFILE:-}
+      INSPECTOR_LAYER_ASSEMBLY_REVIEW_PROFILE: ${INSPECTOR_LAYER_ASSEMBLY_REVIEW_PROFILE:-}
+      INSPECTOR_KR065_OPENING_REVIEW_PROFILE: ${INSPECTOR_KR065_OPENING_REVIEW_PROFILE:-}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-inspector}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inspector}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:?run ./infra/stack.sh laptop init or ./infra/stack.sh server init}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-0}
+      INSPECTOR_PUBLIC_REVIEW_OBJECT_IDS: ${INSPECTOR_PUBLIC_REVIEW_OBJECT_IDS:-}
+      INSPECTOR_OPEN_WORKSPACE: ${INSPECTOR_OPEN_WORKSPACE:-1}
+      S3_ENDPOINT: ${S3_ENDPOINT-http://minio:9000}
+      S3_BUCKET: inspector-documents
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-inspector}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      UPLOAD_STORAGE_DIR: /app/runtime
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: 3310
+      REFERENCE_DATASET_DIR: /reference-data
+    volumes:
+      - ../datasets/reference_methodology/hackathon_gold_20260811/УЧАСТНИКАМ_БЕЗ_ОТВЕТОВ:/reference-data:ro
+      - api-storage:/app/runtime
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      clamav: { condition: service_started }
+    ports: ["${HOST_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-4100}:4100"]
+
+  outbox-relay:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    command: ["npm", "run", "outbox:relay", "-w", "@inspector-ai/api"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-inspector}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inspector}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      OUTBOX_METRICS_HOST: 0.0.0.0
+      OUTBOX_METRICS_PORT: ${OUTBOX_METRICS_PORT:-9465}
+    expose: ["9465"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9465/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../services/worker
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      INSPECTOR_API_INTERNAL_URL: http://api:4100/api/internal/v1
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN}
+      WORKER_ID: compose-rules-worker
+      WORKER_HEARTBEAT_SECONDS: ${WORKER_HEARTBEAT_SECONDS:-20}
+      INSPECTOR_DURABLE_OCR_CACHE_ROOT: /ocr-page-cache
+      REFERENCE_DATASET_DIR: /reference-data
+    volumes:
+      - ocr-page-cache:/ocr-page-cache
+      - ../datasets/reference_methodology/hackathon_gold_20260811/УЧАСТНИКАМ_БЕЗ_ОТВЕТОВ:/reference-data:ro
+    depends_on:
+      api: { condition: service_started }
+      outbox-relay: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  document-worker:
+    build:
+      context: ../services/worker
+    command: ["inspector-worker", "--queue", "documents.render"]
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      INSPECTOR_API_INTERNAL_URL: http://api:4100/api/internal/v1
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN}
+      WORKER_ID: compose-document-worker
+      WORKER_HEARTBEAT_SECONDS: ${WORKER_HEARTBEAT_SECONDS:-20}
+      INSPECTOR_DURABLE_TEXT_CACHE_ROOT: /text-layer-cache
+    volumes:
+      - text-layer-cache:/text-layer-cache
+    depends_on:
+      api: { condition: service_started }
+      outbox-relay: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  extract-worker:
+    build:
+      context: ../services/worker
+    command: ["inspector-worker", "--queue", "documents.extract"]
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      INSPECTOR_API_INTERNAL_URL: http://api:4100/api/internal/v1
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN}
+      WORKER_ID: compose-extract-worker
+      WORKER_HEARTBEAT_SECONDS: ${WORKER_HEARTBEAT_SECONDS:-20}
+      INSPECTOR_DURABLE_OCR_CACHE_ROOT: /ocr-page-cache
+    volumes:
+      - ocr-page-cache:/ocr-page-cache
+    depends_on:
+      api: { condition: service_started }
+      outbox-relay: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  link-worker:
+    build:
+      context: ../services/worker
+    command: ["inspector-worker", "--queue", "documents.link"]
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-inspector}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      INSPECTOR_API_INTERNAL_URL: http://api:4100/api/internal/v1
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN}
+      WORKER_ID: compose-link-worker
+      WORKER_HEARTBEAT_SECONDS: ${WORKER_HEARTBEAT_SECONDS:-20}
+    depends_on:
+      api: { condition: service_started }
+      outbox-relay: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    depends_on: [api]
+    ports: ["${HOST_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:80"]
+
+volumes:
+  api-storage:
+  postgres-data:
+  redis-data:
+  minio-data:
+  ocr-page-cache:
+  text-layer-cache:
