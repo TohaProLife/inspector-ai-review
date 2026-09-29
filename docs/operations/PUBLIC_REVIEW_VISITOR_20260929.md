@@ -4,7 +4,7 @@
 
 ## Исходные PDF
 
-Скрипт [`prepare-public-review-examples.py`](../../scripts/prepare-public-review-examples.py) сверяет статус каждого PDF с открытым manifest (`TRAIN_PUBLIC/INCLUDE/PUBLIC_TRAIN`), размер и SHA-256 байтов перед загрузкой. Оригиналы сохранены в [`fixtures/public-review`](../../fixtures/public-review).
+Скрипт [`prepare-public-review-examples.py`](../../scripts/prepare-public-review-examples.py) сверяет статус каждого PDF с открытым manifest (`TRAIN_PUBLIC/INCLUDE/PUBLIC_TRAIN`), размер и SHA-256 байтов перед загрузкой. Оригиналы не включены в публичный репозиторий. Получите F0101.pdf, F0142.pdf и F0147.pdf из конкурсного пакета и положите их в отдельную папку, указанную через `--pdf-dir`.
 
 | Файл | Стадия | SHA-256 PDF | Подсказок на homeserver |
 | --- | --- | --- | ---: |
@@ -21,6 +21,7 @@
 ```bash
 python3 scripts/prepare-public-review-examples.py \
   --base-url http://127.0.0.1:4100 \
+  --pdf-dir /path/to/approved-pdf \
   --env-file infra/.env.server \
   --receipt output/public-review-examples.json
 ./infra/stack.sh server up -d --no-deps api

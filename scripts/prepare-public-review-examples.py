@@ -69,7 +69,13 @@ def main() -> None:
         if (row.get("split"), row.get("distribution_status"), row.get("label_visibility"),
                 row.get("extension")) != ("TRAIN_PUBLIC", "INCLUDE", "PUBLIC_TRAIN", ".pdf"):
             raise RuntimeError(f"{file_id} is not an allowed public PDF")
-        pdf = (args.pdf_dir / f"{file_id}.pdf").read_bytes()
+        pdf_path = args.pdf_dir / f"{file_id}.pdf"
+        if not pdf_path.is_file():
+            raise RuntimeError(
+                f"missing {pdf_path}; obtain the approved source PDF separately "
+                "and pass its directory with --pdf-dir"
+            )
+        pdf = pdf_path.read_bytes()
         if len(pdf) != row["size_bytes"] or hashlib.sha256(pdf).hexdigest() != row["sha256"]:
             raise RuntimeError(f"{file_id} original PDF SHA or size mismatch")
         source_bytes[file_id] = pdf
