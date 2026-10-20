@@ -32,13 +32,13 @@ export function createSelectionRequest() {
 
 interface UploadCommands {
   uploadFiles: (id: string, stage: UploadStage, files: File[]) => Promise<unknown>;
-  startCheck: (id: string) => Promise<CheckRun>;
+  startCheck: (id: string, mode?: "SAMPLE" | "FULL") => Promise<CheckRun>;
 }
 
 /** Keep every stage and the new run attached to the selected object, including resumed drafts. */
-export async function uploadAndStartCheck(commands: UploadCommands, objectId: string, stageFiles: Record<UploadStage, File[]>) {
+export async function uploadAndStartCheck(commands: UploadCommands, objectId: string, stageFiles: Record<UploadStage, File[]>, mode?: "SAMPLE" | "FULL") {
   for (const [stage, files] of Object.entries(stageFiles) as [UploadStage, File[]][]) {
     if (files.length) await commands.uploadFiles(objectId, stage, files);
   }
-  return commands.startCheck(objectId);
+  return mode ? commands.startCheck(objectId, mode) : commands.startCheck(objectId);
 }

@@ -113,3 +113,7 @@ bbox — ровно четыре числа xyxy: 0≤x0<x1≤1, 0≤y0<y1≤1. 
 Original key: org/{org}/objects/{object}/originals/{sha256}; имя — metadata. Derived key включает input hash, adapter version и config hash. Протоколы имеют отдельные immutable keys. Hash проверяется при приёме и чтении критичных артефактов.
 
 Orphan artifacts после неудачного commit становятся кандидатами GC. Сборщик проверяет отсутствие ссылок из manifests/jobs/protocols и выдерживает retention; cache TTL не удаляет доказательства протокола. Срок документов согласуется отдельно. Карантин очищается независимо от originals.
+
+## T62: immutable source audit v3
+
+Forward migration038 добавляет `document-text-v3` в существующий ledger `analysis_text_artifacts`, без backfill. Source-audit release включает полные extractor profile и processor/cache source SHA; manifest/stage/job/run association и artifact bytes/domain hashes проверяются при записи и чтении. Raw located/unlocated строки не являются machine facts. Historical release integrity не означает одобрение текущего release. [Детали](../operations/MATRIX_T62_DURABLE_TEXT_V3_20261018.md).

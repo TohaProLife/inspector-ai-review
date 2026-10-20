@@ -1,6 +1,6 @@
-import type { CheckRun, SessionUser } from "@inspector-ai/contracts";
+import type { CheckRun, InspectionObject, SessionUser } from "@inspector-ai/contracts";
 import { describe, expect, it } from "vitest";
-import { protocolFinalizationBlock, protocolRequiresGapAcknowledgement } from "./protocol-state";
+import { protocolFinalizationBlock, protocolRequiresGapAcknowledgement, protocolRevocationBlock } from "./protocol-state";
 
 const supervisor = { roles: ["SUPERVISOR"], capabilities: [] } as unknown as SessionUser;
 const check = { mode: "NORMAL", status: "PARTIAL", completedAt: "2026-09-29T12:00:00Z", stats: { candidates: 0, unsupported: 0 } } as CheckRun;
@@ -28,5 +28,12 @@ describe("protocol readiness", () => {
   });
   it("keeps an already finalized protocol read-only", () => {
     expect(protocolFinalizationBlock({ ...check, status: "FINALIZED" }, supervisor)).toContain("уже зафиксирована");
+  });
+  it("requires an explicit scoped REVOKE grant even for a supervisor", () => {
+    const object = { permissions: { revoke: false }, revokeUnavailableReason: "Нет права отзывать протокол объекта" } as InspectionObject;
+    expect(protocolRevocationBlock(object, supervisor)).toBe(object.revokeUnavailableReason);
+    expect(protocolRevocationBlock({ ...object, permissions: { ...object.permissions!, revoke: true } }, supervisor)).toBeNull();
+    expect(protocolRevocationBlock({} as InspectionObject, supervisor)).toContain("не подтверждено");
+    expect(protocolRevocationBlock({ ...object, permissions: { ...object.permissions!, revoke: true } }, { ...supervisor, roles: ["CURATOR"] })).not.toBeNull();
   });
 });

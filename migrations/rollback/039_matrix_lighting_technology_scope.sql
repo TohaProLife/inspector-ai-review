@@ -1,0 +1,1 @@
+ALTER TABLE source_review_decisions DROP COLUMN lighting_technology_scope;

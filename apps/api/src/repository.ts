@@ -1,3 +1,4 @@
+import type { InspectorReviewDetails, CandidateReviewAction } from "@inspector-ai/contracts";
 import type {
   BinaryUploadRecord,
   CheckRun,
@@ -788,11 +789,14 @@ export interface ReviewCandidateDecisionInput {
   schemaVersion: "review-candidate-decision-v1";
   candidateId: string;
   artifactHash: string;
-  decision: "ACCEPT_FOR_REVIEW" | "REJECT";
+  decision: CandidateReviewAction;
+  details?: InspectorReviewDetails;
+  expectedDecisionHash?: string | null;
   note: string;
 }
 
 export interface ReviewCandidateDecisionRead extends ReviewCandidateDecisionInput {
+  inheritedFrom?: { decisionId: string; checkId: string; decisionHash: string; createdAt: string };
   id: string;
   checkId: string;
   actorId: string;
@@ -1078,6 +1082,22 @@ export interface ProtocolCanonicalArtifactContent {
   bytes: Buffer;
 }
 
+export type ProtocolRenderFormat = "pdf" | "docx" | "xml";
+
+/** A renderer/template revision must change when its deterministic output changes. */
+export interface ProtocolRenderedArtifactKey {
+  protocolId: string;
+  format: ProtocolRenderFormat;
+  templateVersion: string;
+  snapshotHash: string;
+}
+
+export interface ProtocolRenderedArtifactContent extends ProtocolRenderedArtifactKey {
+  bytes: Buffer;
+  contentHash: string;
+  mediaType: string;
+}
+
 export interface ReviewDecisionCommand {
   actor: AuthenticatedActor;
   input: DecisionInput;
@@ -1157,6 +1177,7 @@ export interface JobLease {
     ocrLayoutSlot: { profileId: string | null; configHash: string | null } | null;
     rules: {
       executionStatus: "UNCONFIGURED" | "PILOT";
+      matrixDefinitions?: Record<string, unknown>;
       definitions?: {
         navigation: Record<string, unknown>;
         numeric: Record<string, unknown>;
@@ -1172,8 +1193,13 @@ export interface JobLease {
     } | null;
   };
   inputs: {
+    /** Exact v13-only protected projection; absent for inherited profiles. */
+    concreteWallOriginsV1?: Record<string, unknown>;
     reviewedEntityLinks?: ReviewedFactEntityLink[];
     sourceDecisions: Record<string, {
+      scopeProofs?: Record<string, Record<string, unknown>>;
+      reviewDecisionId?: string;
+      reviewContentHash?: string;
       sourceSha256: string;
       revisionStatus: SourceReviewInput["revisionStatus"];
       approvalStatus: SourceReviewInput["approvalStatus"];
@@ -1203,6 +1229,7 @@ export type JobClaimResult =
   | { kind: "not_found" };
 
 export interface JobAttemptInput {
+  visualProgress?: import("@inspector-ai/contracts").VisualRunProgress;
   attemptId: string;
   fencingToken: number;
 }
@@ -1244,6 +1271,22 @@ export type JobTextArtifactResult =
   | { kind: "stale_attempt" }
   | { kind: "integrity_error" }
   | { kind: "not_found" };
+
+export type JobInventoryComparisonInputsResult =
+  | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-ar053-loader-inputs-v1"}
+  | {kind:"already_terminal";state:"SUCCEEDED"|"FAILED"|"DEAD"|"CANCELLED"}
+  | {kind:"stale_attempt"}|{kind:"integrity_error"}|{kind:"not_found"};
+
+export type JobReviewedInventoryComparisonInputsResult = Exclude<JobInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-ar053-loader-inputs-v1"|"matrix-reviewed-inventory-loader-inputs-v2"};
+
+export type JobWaterNodeReviewedInventoryComparisonInputsResult = Exclude<JobInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-ar053-loader-inputs-v1"|"matrix-reviewed-inventory-loader-inputs-v2"|"matrix-reviewed-inventory-loader-inputs-v3"|"matrix-reviewed-inventory-loader-inputs-v4"};
+export type JobLightingTechnologyReviewedInventoryComparisonInputsResult = Exclude<JobWaterNodeReviewedInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-ar053-loader-inputs-v1"|"matrix-reviewed-inventory-loader-inputs-v2"|"matrix-reviewed-inventory-loader-inputs-v3"|"matrix-reviewed-inventory-loader-inputs-v4"|"matrix-reviewed-inventory-loader-inputs-v5"};
+
+export type JobSteelReviewedInventoryComparisonInputsResult = Exclude<JobInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-reviewed-inventory-loader-inputs-v6"};
+export type JobColumnPylonSectionReviewedInventoryComparisonInputsResult = Exclude<JobInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-reviewed-inventory-loader-inputs-v7"};
+export type JobConcreteWallReviewedInventoryComparisonInputsResult = JobColumnPylonSectionReviewedInventoryComparisonInputsResult;
+
+export type JobRailReviewedInventoryComparisonInputsResult = Exclude<JobInventoryComparisonInputsResult,{kind:"available"}> | {kind:"available";canonical:string;contentHash:string;byteSize:number;inputManifestHash:string;schemaVersion:"matrix-ar053-loader-inputs-v1"|"matrix-reviewed-inventory-loader-inputs-v2"|"matrix-reviewed-inventory-loader-inputs-v3"};
 
 export type JobOcrLayoutArtifactResult =
   | {
@@ -1338,12 +1381,37 @@ export interface InspectionRepository {
     files: RegisteredIngestedDocumentFile[],
     command: AuditedMutationCommand,
   ): Awaitable<AuditedMutationCommandResult<BinaryUploadRecord>>;
+  recordSteelApplicabilityReviewCommand?(objectId:string,input:import("@inspector-ai/contracts").SteelApplicabilityReviewInput,command:AuditedMutationCommand):Awaitable<AuditedMutationCommandResult<import("@inspector-ai/contracts").SteelApplicabilityReviewDecision>>;
+  getSteelApplicabilityReviews?(objectId:string,actor:AuthenticatedActor):Awaitable<{items:import("@inspector-ai/contracts").SteelApplicabilityReviewDecision[];canReview:boolean}|undefined>;
+  recordColumnPylonSectionV2ReviewCommand?(objectId:string,input:import("@inspector-ai/contracts").ColumnPylonSectionV2Request,command:AuditedMutationCommand):Awaitable<AuditedMutationCommandResult<import("@inspector-ai/contracts").ColumnPylonSectionV2Journal>>;
+  getColumnPylonSectionV2Reviews?(objectId:string,actor:AuthenticatedActor):Awaitable<import("@inspector-ai/contracts").ColumnPylonSectionV2ReviewList|undefined>;
+  getColumnPylonSectionV2Source?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<import("@inspector-ai/contracts").ColumnPylonSectionV2SourcePreview|undefined>;
+  previewColumnPylonSectionV2Comparison?(objectId:string,reviewDecisionId:string,actor:AuthenticatedActor):Awaitable<import("@inspector-ai/contracts").ColumnPylonSectionV2Result|{kind:"invalid_state";code:string;message:string}|undefined>;
   recordSourceReviewCommand?(
     objectId: string,
     sourceFileId: string,
     input: SourceReviewInput,
     command: AuditedMutationCommand,
   ): Awaitable<AuditedMutationCommandResult<SourceReviewDecision>>;
+  getMatrixCallInventorySourcePages?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixInventorySourcePagesRead>>;
+  previewMatrixCallInventorySource?(checkId:string,sourceFileId:string,selection:import("@inspector-ai/contracts").MatrixCallInventorySelection,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("./matrix-call-inventory-api.js").MatrixCallInventoryPreviewRead>>;
+  getMatrixWaterNodeSourcePages?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixInventorySourcePagesRead>>;
+  previewMatrixWaterNodeSource?(checkId:string,sourceFileId:string,selection:import("@inspector-ai/contracts").MatrixWaterNodeInventorySelection,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("./matrix-water-node-api.js").MatrixWaterNodePreviewRead>>;
+  getMatrixRailInventorySourcePages?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixInventorySourcePagesRead>>;
+  previewMatrixRailInventorySource?(checkId:string,sourceFileId:string,selection:import("@inspector-ai/contracts").MatrixRailInventorySelection,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("./matrix-rail-inventory-api.js").MatrixRailInventoryPreviewRead>>;
+  getDocumentTextV3Source?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV3AuditSourceRead>>;
+  getDocumentTextV4FullSource?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV4FullAuditSourceRead>>;
+  getSourceOcrImports?(checkId:string,actor?:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").SourceOcrImportWorkspace>>;
+  importSourceOcrCommand?(checkId:string,sourceFileId:string,input:import("@inspector-ai/contracts").SourceOcrImportBundle,command:AuditedMutationCommand):Awaitable<{value:import("@inspector-ai/contracts").SourceOcrImportRecord;replayed:boolean}>;
+  reviewSourceOcrCommand?(checkId:string,input:import("@inspector-ai/contracts").SourceOcrReviewInput,command:AuditedMutationCommand):Awaitable<{value:import("@inspector-ai/contracts").SourceOcrReviewRecord;replayed:boolean}>;
+  getNativeAirflowComparisons?(checkId:string,actor?:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").NativeAirflowWorkspace>>;
+  compareNativeAirflowCommand?(checkId:string,input:import("@inspector-ai/contracts").NativeAirflowCompareInput,command:AuditedMutationCommand):Awaitable<{value:import("@inspector-ai/contracts").NativeAirflowRecord;replayed:boolean}>;
+  getNativeCapacityComparisons?(checkId:string,actor?:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").NativeCapacityWorkspace>>;
+  compareNativeCapacityCommand?(checkId:string,input:import("@inspector-ai/contracts").NativeCapacityCompareInput,command:AuditedMutationCommand):Awaitable<{value:import("@inspector-ai/contracts").NativeCapacityRecord;replayed:boolean}>;
+  getDocumentTextV3LargeSource?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV3LargeAuditSourceRead>>;
+  previewMatrixLightingTechnologySource?(checkId:string,sourceFileId:string,selection:import("@inspector-ai/contracts").LightingTechnologyV3Selection,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixLightingTechnologyPreviewRead>>;
+  getMatrixInventorySourcePages?(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixInventorySourcePagesRead>>;
+  previewMatrixInventorySource?(checkId:string,sourceFileId:string,selection:import("@inspector-ai/contracts").MatrixInventorySelection,actor:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixInventoryPreviewRead>>;
   getSourceReview?(
     objectId: string,
     sourceFileId: string,
@@ -1358,11 +1426,13 @@ export interface InspectionRepository {
     sourceFileId: string,
     actor: AuthenticatedActor,
   ): Awaitable<ScopedReadResult<SourceFileContent>>;
+  listObjectChecks?(objectId: string, actor: AuthenticatedActor): Awaitable<ScopedReadResult<CheckRun[]>>;
   getUpload(id: string, actor?: AuthenticatedActor): Awaitable<ScopedReadResult<BinaryUploadRecord>>;
   startCheck(objectId: string, actor?: AuthenticatedActor): Awaitable<CheckRun | undefined>;
   startCheckCommand?(
     objectId: string,
     command: AuditedMutationCommand,
+    options?: { analysisMode: "SAMPLE" | "FULL"; sourceAuditV3?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3: true; analysisMode?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3Large: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV4Full?: never } | { sourceAuditV4Full: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV3Large?: never },
   ): Awaitable<AuditedMutationCommandResult<CheckRun>>;
   completeCheck(checkId: string): Awaitable<CheckRun | undefined>;
   getCheck(id: string, actor?: AuthenticatedActor): Awaitable<ScopedReadResult<CheckRun>>;
@@ -1477,6 +1547,7 @@ export interface InspectionRepository {
   reprocessCommand?(
     checkId: string,
     command: AuditedMutationCommand,
+    options?: { analysisMode: "SAMPLE" | "FULL"; sourceAuditV3?: never } | { sourceAuditV3: true; analysisMode?: never },
   ): Awaitable<AuditedMutationCommandResult<CheckRun>>;
   finalize(checkId: string, actor?: AuthenticatedActor): Awaitable<FinalizeResult>;
   finalizeCommand?(
@@ -1494,9 +1565,19 @@ export interface InspectionRepository {
     id: string,
     actor?: AuthenticatedActor,
   ): Awaitable<ScopedReadResult<ProtocolCanonicalArtifactContent>>;
-  getSubmission(checkId: string, actor?: AuthenticatedActor): Awaitable<SubmissionResult | "AUTH_REQUIRED">;
+  getRenderedProtocolArtifact?(
+    key: ProtocolRenderedArtifactKey,
+    actor?: AuthenticatedActor,
+  ): Awaitable<ScopedReadResult<ProtocolRenderedArtifactContent>>;
+  saveRenderedProtocolArtifact?(
+    content: ProtocolRenderedArtifactContent,
+    actor?: AuthenticatedActor,
+  ): Awaitable<ScopedReadResult<ProtocolRenderedArtifactContent>>;
+  getMatrixExecution?(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}): Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixExecutionRead>>;
+  getMatrixFactTargets?(checkId:string,actor?:AuthenticatedActor):Awaitable<ScopedReadResult<import("@inspector-ai/contracts").MatrixFactTargetsRead>>;
+  getSubmission(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}): Awaitable<SubmissionResult | "AUTH_REQUIRED">;
   getParameters(): Awaitable<ParameterCatalogItem[]>;
-  getCoverage(checkId: string, actor?: AuthenticatedActor): Awaitable<ScopedReadResult<ParameterCoverageItem[]>>;
+  getCoverage(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}): Awaitable<ScopedReadResult<ParameterCoverageItem[]>>;
   getPilotResults?(
     checkId: string,
     actor?: AuthenticatedActor,
@@ -1504,9 +1585,17 @@ export interface InspectionRepository {
   claimJob?(jobId: string, input: JobClaimInput): Awaitable<JobClaimResult>;
   getJobInput?(jobId: string, sourceFileId: string, input: JobAttemptInput): Awaitable<JobInputResult>;
   getJobTextArtifact?(jobId: string, sourceFileId: string, input: JobAttemptInput): Awaitable<JobTextArtifactResult>;
+  getJobReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobReviewedInventoryComparisonInputsResult>;
+  getJobRailReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobRailReviewedInventoryComparisonInputsResult>;
+  getJobLightingTechnologyReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobLightingTechnologyReviewedInventoryComparisonInputsResult>;
+  getJobSteelReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobSteelReviewedInventoryComparisonInputsResult>;
+  getJobColumnPylonSectionReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobColumnPylonSectionReviewedInventoryComparisonInputsResult>;
+  getJobConcreteWallReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobConcreteWallReviewedInventoryComparisonInputsResult>;
+  getJobWaterNodeReviewedInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobWaterNodeReviewedInventoryComparisonInputsResult>;
+  getJobInventoryComparisonInputs?(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Awaitable<JobInventoryComparisonInputsResult>;
   getJobOcrLayoutArtifact?(jobId: string, input: JobAttemptInput): Awaitable<JobOcrLayoutArtifactResult>;
   heartbeatJob?(jobId: string, input: JobAttemptInput): Awaitable<JobHeartbeatResult>;
-  completeJob?(jobId: string, input: JobCompleteInput): Awaitable<JobCompleteResult>;
+  completeJob?(jobId: string, input: JobCompleteInput, options?:{signal?:AbortSignal;sourceAuditProfileVersion?:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" | "SOURCE_AUDIT_V4_FULL_SOURCE_V1"}): Awaitable<JobCompleteResult>;
   failJob?(jobId: string, input: JobFailInput): Awaitable<JobFailResult>;
   close?(): Promise<void>;
 }

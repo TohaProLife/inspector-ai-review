@@ -347,6 +347,11 @@ async function detectFormat(file: StagedFile): Promise<DetectedFormat> {
       `Файл «${file.name}» не соответствует поддерживаемому формату ${uploadPolicy.acceptedExtensions.map((item) => item.slice(1).toUpperCase()).join(", ")}`,
     );
   }
+  // A version signature cannot authenticate a CAD database. Until a real DWG
+  // decoder is available, do not persist arbitrary AC10-prefixed bytes as CLEAN.
+  if (extension === ".dwg") {
+    throw new FileIngestError(503, "DWG_VALIDATOR_UNAVAILABLE", uploadPolicy.unavailableFormats[".dwg"]);
+  }
   if (extension === ".xml") await validateXml(file);
   if (extension === ".docx") await validateDocx(file);
   return format;

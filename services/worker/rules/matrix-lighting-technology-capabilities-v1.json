@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-lighting-technology-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "ZU-130",
+      "matrixCode": "M-130",
+      "ruleId": "matrix-zu-130-declared_led_technology_replacement",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "ENUM_TRANSITION",
+      "executionKind": "REVIEWED_NAMED_LIGHTING_TECHNOLOGY",
+      "resultSchemaVersion": "matrix-zu130-lighting-technology-comparison-v1",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_LUMINAIRE_LIGHT_SOURCE_POSITION_PD_LED_TO_RD_FLUORESCENT_OR_INCANDESCENT_ONLY;UNNAMED_GROUPS_OTHER_TECHNOLOGIES_EFFICIENCY_CAPACITY_QUANTITIES_CONTROLS_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+    }
+  ]
+}

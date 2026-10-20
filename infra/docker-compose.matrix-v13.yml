@@ -1,0 +1,16 @@
+# CPU stack: compose with docker-compose.yml and docker-compose.core-smoke.yml.
+# The API pins the full V13 release; workers execute the leased definitions.
+# Optional GPU/model overlays are separate and are not needed for text PDFs.
+services:
+  api:
+    environment:
+      INSPECTOR_ANALYSIS_PROFILE: MATRIX_V1
+      INSPECTOR_MATRIX_CONCRETE_WALLS_V13: "1"
+      INSPECTOR_OPEN_WORKSPACE: "1"
+      NODE_OPTIONS: --max-old-space-size=384
+  migrate:
+    environment:
+      NODE_OPTIONS: --max-old-space-size=384
+  outbox-relay:
+    environment:
+      NODE_OPTIONS: --max-old-space-size=384

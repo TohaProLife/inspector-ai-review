@@ -13,6 +13,7 @@ import re
 from typing import Literal
 
 import fitz
+from .document_context import document_context
 
 
 PROPOSAL_STATUS = "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
@@ -170,7 +171,7 @@ def scan_pdf(
     *,
     max_pages: int | None = None,
     max_proposals: int = MAX_PROPOSALS,
-    profile_version: Literal["v1", "v2", "v3", "v4", "v5", "v6"] = "v3",
+    profile_version: Literal["v1", "v2", "v3", "v4", "v5", "v6", "v7"] = "v3",
 ) -> dict:
     """Return geometry proposals; never classify or assert absence.
 
@@ -183,14 +184,15 @@ def scan_pdf(
         raise ValueError("source_file_id is required")
     if not isinstance(source_sha256, str) or not re.fullmatch(r"[a-f0-9]{64}", source_sha256):
         raise ValueError("source_sha256 must be a lowercase SHA-256 digest")
-    if profile_version not in ("v1", "v2", "v3", "v4", "v5", "v6"):
+    if profile_version not in ("v1", "v2", "v3", "v4", "v5", "v6", "v7"):
         raise ValueError("profile_version must be v1, v2, v3, v4, v5 or v6")
-    profile_max_pages = 64 if profile_version in ("v1", "v2") else MAX_PAGES
+    profile_max_pages = 64 if profile_version in ("v1", "v2") else 10000 if profile_version == "v7" else MAX_PAGES
     if max_pages is None:
         max_pages = profile_max_pages
     if type(max_pages) is not int or not 1 <= max_pages <= profile_max_pages:
         raise ValueError(f"max_pages must be between 1 and {profile_max_pages}")
-    if type(max_proposals) is not int or not 1 <= max_proposals <= MAX_PROPOSALS:
+    proposal_bound = 100000 if profile_version == "v7" else MAX_PROPOSALS
+    if type(max_proposals) is not int or not 1 <= max_proposals <= proposal_bound:
         raise ValueError(f"max_proposals must be between 1 and {MAX_PROPOSALS}")
     if _sha256(path) != source_sha256:
         raise ValueError("source PDF SHA-256 mismatch")
@@ -210,13 +212,13 @@ def scan_pdf(
             "proposalLimitReached": False,
             "unretainedProposalCount": 0,
         }
-        if profile_version in ("v4", "v5", "v6"):
-            result["documentContext"] = _document_context(document)
+        if profile_version in ("v4", "v5", "v6", "v7"):
+            result["documentContext"] = document_context(document) if profile_version == "v7" else _document_context(document)
         if skipped_for_v1:
             return result
 
         page_numbers = _selected_page_numbers(page_count, max_pages)
-        if profile_version in ("v2", "v3", "v4", "v5", "v6"):
+        if profile_version in ("v2", "v3", "v4", "v5", "v6", "v7"):
             result["scannedPageNumbers"] = page_numbers
             result["skippedPageCount"] = page_count - len(page_numbers)
             if result["skippedPageCount"]:

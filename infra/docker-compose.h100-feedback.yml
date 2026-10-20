@@ -1,0 +1,16 @@
+# Apply after docker-compose.server.yml and docker-compose.matrix-v13.yml.
+# Build from the accepted Git source archive; V9 and its API sources are included.
+# V9 pins the server 8B model with explicit SAMPLE/FULL + 2048px context-v2.
+services:
+  api:
+    environment:
+      INSPECTOR_ANALYSIS_PROFILE: MATRIX_V1
+      INSPECTOR_MATRIX_CONCRETE_WALLS_V13: "1"
+      INSPECTOR_MATRIX_VISUAL_PROPOSALS: "1"
+      INSPECTOR_MATRIX_OCR_LAYOUT: "1"
+      INSPECTOR_VISUAL_PROFILE: ${INSPECTOR_VISUAL_PROFILE:?explicit H100 visual profile required}
+      INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE: v4
+      INSPECTOR_OCR_HEAT_ROW_PROFILE: v1
+      INSPECTOR_FACT_FAMILY_PROFILE: v1
+      INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE: v1
+      INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE: v1

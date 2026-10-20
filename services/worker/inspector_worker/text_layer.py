@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import socket
@@ -12,6 +13,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from typing import Any, Iterator
 
 
 MAX_TEXT_ARTIFACT_BYTES = 8 * 1024 * 1024
@@ -96,6 +98,93 @@ def _milli_points(value: float, origin: float, limit: int) -> int:
     return max(0, min(limit, round((value - origin) * 1000)))
 
 
+def _visible_pdf_layouts(path: Path) -> Iterator[tuple[Any, tuple[float, float, float, float]]]:
+    """Keep pdfminer's text layout, with the renderer-visible CropBox in its CTM.
+
+    pdfminer lays out the rotated MediaBox; PDFium renders the rotated CropBox.
+    Capture the interpreter's actual CTM rather than applying Rotate twice.
+    The durable extraction cache includes this file's SHA, so this correction
+    creates new entries without rewriting previously committed artifacts.
+    """
+    from pdfminer.converter import PDFPageAggregator
+    from pdfminer.layout import LAParams
+    from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+    from pdfminer.pdfpage import PDFPage
+    from pdfminer.utils import apply_matrix_pt
+
+    class VisiblePageAggregator(PDFPageAggregator):
+        visible_bounds: tuple[float, float, float, float]
+
+        def paint_path(self, gstate: Any, stroke: bool, fill: bool,
+                       evenodd: bool, path: Any) -> None:
+            # This artifact emits text containers only. Avoid allocating vector
+            # marks while preserving the interpreter, figures and text CTM.
+            return None
+
+        def begin_page(self, page: Any, ctm: Any) -> None:
+            super().begin_page(page, ctm)
+            if page.rotate not in (0, 90, 180, 270):
+                raise ValueError("unsupported PDF page rotation for visible text geometry")
+            media = tuple(float(value) for value in page.mediabox)
+            crop = tuple(float(value) for value in page.cropbox)
+            if (not all(math.isfinite(value) for value in (*media, *crop))
+                    or media[0] >= media[2] or media[1] >= media[3]
+                    or crop[0] >= crop[2] or crop[1] >= crop[3]
+                    or crop[0] < media[0] or crop[1] < media[1]
+                    or crop[2] > media[2] or crop[3] > media[3]):
+                raise ValueError("invalid PDF CropBox for visible text geometry")
+            corners = [apply_matrix_pt(ctm, point) for point in (
+                (crop[0], crop[1]), (crop[0], crop[3]),
+                (crop[2], crop[1]), (crop[2], crop[3]),
+            )]
+            self.visible_bounds = (min(x for x, _ in corners), min(y for _, y in corners),
+                                   max(x for x, _ in corners), max(y for _, y in corners))
+
+    with path.open("rb") as source:
+        manager = PDFResourceManager(caching=True)
+        device = VisiblePageAggregator(manager, laparams=LAParams())
+        interpreter = PDFPageInterpreter(manager, device)
+        try:
+            for page in PDFPage.get_pages(source, caching=True):
+                interpreter.process_page(page)
+                yield device.get_result(), device.visible_bounds
+        finally:
+            device.close()
+
+
+def _inside_visible(item: Any, bounds: tuple[float, float, float, float]) -> bool:
+    # Reject partially hidden text rather than clipping its box while retaining
+    # invisible characters as a literal observation. Tolerance is float noise,
+    # not a render/registration allowance (one millionth of a PDF point).
+    epsilon = 1e-6
+    return (float(item.x0) >= bounds[0] - epsilon and float(item.y0) >= bounds[1] - epsilon
+            and float(item.x1) <= bounds[2] + epsilon and float(item.y1) <= bounds[3] + epsilon)
+
+
+def _native_text_box(item: Any) -> tuple[float, float, float, float]:
+    box = (float(item.x0), float(item.y0), float(item.x1), float(item.y1))
+    if (not all(math.isfinite(value) for value in box)
+            or box[0] > box[2] or box[1] > box[3]):
+        raise ValueError("text geometry has nonfinite or inverted native bounds")
+    return box
+
+
+def _positive_text_box(box: tuple[float, float, float, float]) -> bool:
+    return box[0] < box[2] and box[1] < box[3]
+
+
+def _located_text_box(box: tuple[float, float, float, float],
+                      visible: tuple[float, float, float, float],
+                      width: int, height: int) -> list[int]:
+    converted = [_milli_points(box[0], visible[0], width),
+                 _milli_points(box[1], visible[1], height),
+                 _milli_points(box[2], visible[0], width),
+                 _milli_points(box[3], visible[1], height)]
+    if converted[0] >= converted[2] or converted[1] >= converted[3]:
+        raise ValueError("positive text geometry collapses at milli-point precision")
+    return converted
+
+
 def _is_policy_whitespace(character: str) -> bool:
     return (
         character in "\t\n\v\f\r\x1c\x1d\x1e\x1f\x85"
@@ -143,48 +232,69 @@ def extract_pdf_text_artifact(path: Path, source_file_id: str, input_sha256: str
                               policy_version: str = TEXT_QUALITY_POLICY_VERSION) -> dict[str, object]:
     if policy_version not in (LEGACY_TEXT_QUALITY_POLICY_VERSION, TEXT_QUALITY_POLICY_VERSION):
         raise ValueError("unknown text quality policy version")
-    from pdfminer.high_level import extract_pages
-    from pdfminer.layout import LTTextContainer, LTTextLine
+    from pdfminer.layout import LTChar, LTTextContainer, LTTextLine
 
     pages: list[dict[str, object]] = []
     text_page_count = 0
-    for page_number, layout in enumerate(extract_pages(str(path)), start=1):
-        width = max(1, round(float(layout.width) * 1000))
-        height = max(1, round(float(layout.height) * 1000))
+    for page_number, (layout, visible) in enumerate(_visible_pdf_layouts(path), start=1):
+        width = max(1, round((visible[2] - visible[0]) * 1000))
+        height = max(1, round((visible[3] - visible[1]) * 1000))
         blocks: list[dict[str, object]] = []
         for element in layout:
             if not isinstance(element, LTTextContainer):
                 continue
-            text = element.get_text().replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "").strip()
+            box = _native_text_box(element)
+            line_items = [child for child in element if isinstance(child, LTTextLine)]
+            # A whole zero-area line is unlocated text, not a located literal.
+            # Never remove a glyph from a positive line: that would splice a
+            # different statement. LTAnno separators have no glyph geometry.
+            inspected_lines = line_items if line_items else [element]
+            positive_lines = []
+            for line in inspected_lines:
+                line_positive = _positive_text_box(_native_text_box(line))
+                for glyph in line:
+                    if not isinstance(glyph, LTChar):
+                        continue
+                    glyph_positive = _positive_text_box(_native_text_box(glyph))
+                    if glyph_positive != line_positive:
+                        raise ValueError("text line and glyph have inconsistent degenerate geometry")
+                if line_positive:
+                    positive_lines.append(line)
+            if not _positive_text_box(box):
+                if positive_lines:
+                    raise ValueError("zero-area text parent contains positive text geometry")
+                continue
+            removed_line = bool(line_items) and len(positive_lines) != len(line_items)
+            if line_items:
+                line_items = positive_lines
+            raw_text = element.get_text()
+            if removed_line or not _inside_visible(element, visible):
+                line_items = [child for child in line_items if _inside_visible(child, visible)]
+                if not line_items:
+                    continue
+                raw_text = "".join(child.get_text() for child in line_items)
+                box = (min(float(child.x0) for child in line_items),
+                       min(float(child.y0) for child in line_items),
+                       max(float(child.x1) for child in line_items),
+                       max(float(child.y1) for child in line_items))
+            text = raw_text.replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "").strip()
             if not text:
                 continue
-            x0 = _milli_points(float(element.x0), float(layout.x0), width)
-            y0 = _milli_points(float(element.y0), float(layout.y0), height)
-            x1 = _milli_points(float(element.x1), float(layout.x0), width)
-            y1 = _milli_points(float(element.y1), float(layout.y0), height)
             block = {
-                "bboxMilliPoints": [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)],
+                "bboxMilliPoints": _located_text_box(box, visible, width, height),
                 "text": text,
             }
             # Keep the exact line geometry when pdfminer exposes a one-to-one
             # line mapping. Older document-text-v2 artifacts remain valid.
             text_lines = text.splitlines()
-            line_items = [child for child in element if isinstance(child, LTTextLine)]
             normalized_lines = [child.get_text().replace("\r\n", "\n")
                                 .replace("\r", "\n").replace("\x00", "").strip()
                                 for child in line_items]
             if len(line_items) == len(text_lines) and normalized_lines == [
                     line.strip() for line in text_lines]:
-                block["lineBboxesMilliPoints"] = [[
-                    min(_milli_points(float(child.x0), float(layout.x0), width),
-                        _milli_points(float(child.x1), float(layout.x0), width)),
-                    min(_milli_points(float(child.y0), float(layout.y0), height),
-                        _milli_points(float(child.y1), float(layout.y0), height)),
-                    max(_milli_points(float(child.x0), float(layout.x0), width),
-                        _milli_points(float(child.x1), float(layout.x0), width)),
-                    max(_milli_points(float(child.y0), float(layout.y0), height),
-                        _milli_points(float(child.y1), float(layout.y0), height)),
-                ] for child in line_items]
+                block["lineBboxesMilliPoints"] = [
+                    _located_text_box(_native_text_box(child), visible, width, height)
+                    for child in line_items]
             blocks.append(block)
         blocks.sort(key=lambda block: (
             -int(block["bboxMilliPoints"][3]),

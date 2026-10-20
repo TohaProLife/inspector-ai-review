@@ -1,3 +1,8 @@
+import { ColumnPylonSectionV2Workspace } from "./ColumnPylonSectionV2Workspace";
+import { AnalysisModeSelect } from "./AnalysisModeSelect";
+import { MatrixExecutionPanel } from "./MatrixExecutionPanel";
+import { InspectorProtocolReview } from "./InspectorProtocolReview";
+import { ProtocolDownloads } from "./ProtocolDownloads";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { uploadPolicy, uploadStages } from "@inspector-ai/contracts";
 import type {
@@ -52,6 +57,8 @@ import { Landing } from "./Landing";
 import { Brand } from "./design-system/ui";
 import { CandidateFamilyObservations } from "./CandidateFamilyObservations";
 import { ReviewCandidates } from "./ReviewCandidates";
+import { RealDocumentPairs } from "./RealDocumentPairs";
+import { FindingDocumentPair } from "./FindingDocumentPair";
 import { CandidateFamilyOcrObservations } from "./CandidateFamilyOcrObservations";
 import { UnresolvedFamilyReview } from "./UnresolvedFamilyReview";
 import { UnresolvedFamilyOcrReview } from "./UnresolvedFamilyOcrReview";
@@ -75,7 +82,7 @@ import { CandidateFamilyPreview } from "./CandidateFamilyPreview";
 import { FactLinkReview } from "./FactLinkReview";
 import { SourceReviewScreen } from "./SourceReviewScreen";
 import { createSelectionRequest, isRunningCheck, readWorkspaceObject, uploadAndStartCheck } from "./workspace-object";
-import { protocolFinalizationBlock, protocolRequiresGapAcknowledgement } from "./protocol-state";
+import { protocolFinalizationBlock, protocolRequiresGapAcknowledgement, protocolRevocationBlock } from "./protocol-state";
 
 type Screen = "home" | "objects" | "upload" | "processing" | "results" | "sources" | "candidates" | "evidence" | "missing" | "protocol" | "catalog" | "settings";
 type ObjectScopedScreen = "results" | "candidates" | "protocol";
@@ -102,6 +109,8 @@ interface ReviewCandidateSummary {
   checkId: string;
   status: "loading" | "ready" | "absent" | "error";
   count: number;
+  confirmed?: number;
+  reviewed?: number;
 }
 
 const statusLabels: Record<string, string> = {
@@ -441,13 +450,14 @@ function ObjectsScreen({ objects, onOpen, onCreate, section }: { objects: Inspec
 interface UploadScreenProps {
   existingObject?: InspectionObject | null;
   onCancel: () => void;
-  onCreated: (object: InspectionObject, files: Record<UploadStage, File[]>) => Promise<void>;
+  onCreated: (object: InspectionObject, files: Record<UploadStage, File[]>, mode: "SAMPLE" | "FULL") => Promise<void>;
 }
 
 function UploadScreen({ existingObject = null, onCancel, onCreated }: UploadScreenProps) {
   const [name, setName] = useState(existingObject?.name ?? "Многоквартирный жилой дом");
   const [address, setAddress] = useState(existingObject?.address ?? "");
   const [files, setFiles] = useState<Record<UploadStage, File[]>>({ PD: [], RD: [], ID: [] });
+  const [analysisMode, setAnalysisMode] = useState<"SAMPLE" | "FULL">("SAMPLE");
   const [draftObject, setDraftObject] = useState<InspectionObject | null>(existingObject);
   const [permissions, setPermissions] = useState<{ upload: boolean; run: boolean } | null>(existingObject ? null : { upload: true, run: true });
   const [busy, setBusy] = useState(false);
@@ -480,7 +490,7 @@ function UploadScreen({ existingObject = null, onCancel, onCreated }: UploadScre
     try {
       const object = draftObject ?? await api.createObject({ name, address });
       if (!draftObject) setDraftObject(object);
-      await onCreated(object, files);
+      await onCreated(object, files, analysisMode);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Не удалось сохранить комплект и запустить проверку");
     } finally { setBusy(false); }
@@ -499,18 +509,20 @@ function UploadScreen({ existingObject = null, onCancel, onCreated }: UploadScre
           </div>
         </section>
         <section className="surface form-surface">
-          <div className="section-heading"><div className="step-number">02</div><div><h2>Комплект документации</h2><p>{uploadPolicy.acceptedExtensions.map((item) => item.slice(1).toUpperCase()).join(", ")}. До {uploadPolicy.maxFileBytes / 1024 / 1024} МБ на файл и {uploadPolicy.maxUploadBytes / 1024 / 1024} МБ за один пакет.</p></div></div>
+          <div className="section-heading"><div className="step-number">02</div><div><h2>Комплект документации</h2><p>{uploadPolicy.availableExtensions.map((item) => item.slice(1).toUpperCase()).join(", ")}. До {uploadPolicy.maxFileBytes / 1024 / 1024} МБ на файл и {uploadPolicy.maxUploadBytes / 1024 / 1024} МБ за один пакет.</p></div></div>
+          <p role="note">DWG: {uploadPolicy.unavailableFormats[".dwg"]}</p>
           <div className="dropzone-grid">
             {uploadStages.map((stage) => (
               <label className={`dropzone ${files[stage].length ? "dropzone--filled" : ""}`} key={stage}>
-                <input type="file" accept={uploadPolicy.acceptedExtensions.join(",")} multiple onChange={(event) => setStageFiles(stage, event)} disabled={busy || !permissions?.upload} />
+                <input type="file" aria-label={`Выбрать файлы: ${stageNames[stage]}`} aria-describedby={`upload-${stage}-status`} accept={uploadPolicy.availableExtensions.join(",")} multiple onChange={(event) => setStageFiles(stage, event)} disabled={busy || !permissions?.upload} />
                 <span className="dropzone__code">{stage}</span>
                 {files[stage].length ? <CheckCircle2 size={24} /> : <UploadCloud size={24} />}
                 <strong>{stageNames[stage]}</strong>
-                <small>{files[stage].length ? `Выбрано файлов: ${files[stage].length}` : "Перетащите или выберите файлы"}</small>
+                <small id={`upload-${stage}-status`}>{files[stage].length ? `Выбрано файлов: ${files[stage].length}` : "Перетащите или выберите файлы"}</small>
               </label>
             ))}
           </div>
+          <AnalysisModeSelect value={analysisMode} onChange={setAnalysisMode} disabled={busy} />
           <div className="notice notice--warning"><AlertTriangle size={18} /><div><strong>Неполный комплект не станет нарушением</strong><span>Система пометит зависимые параметры как «нельзя сравнить» и предложит дозагрузку.</span></div></div>
           {visibleError && <div className="inline-error" role="alert"><XCircle size={17} />{visibleError}</div>}
           {!permissions && !error && <p role="status">Проверяем доступ к документам…</p>}
@@ -539,6 +551,10 @@ function ProcessingScreen({ object, check }: { object: InspectionObject; check: 
         <div className="processing-orbit"><LoaderCircle className="spin" size={34} /><strong>{check.progress}%</strong></div>
         <div><span className="kicker kicker--light">Анализ комплекта</span><h2>{check.currentStage}</h2><p>{object.fileCount} файлов · {object.pageCount.toLocaleString("ru-RU")} страниц. Можно закрыть экран — обработка продолжится.</p></div>
       </section>
+      {check.visualProgress && <section className="surface" aria-label="Ход визуальной обработки"><h3>{check.visualProgress.mode}: визуальная обработка</h3>
+        <p>Документы: {check.visualProgress.completedDocuments}/{check.visualProgress.documentCount}. Просмотрено страниц: {check.visualProgress.scannedPages}; пропущено: {check.visualProgress.skippedPages}.</p>
+        <p>Областей найдено: {check.visualProgress.eligible}; в очереди модели: {check.visualProgress.selected}; попыток выполнено: {check.visualProgress.processed}; ошибок/недоступно: {check.visualProgress.failed}.</p>
+        <small>Счётчики worker сохраняются в БД. Это ход обработки, не подтверждение соответствия.</small></section>}
       <div className="pipeline-grid">
         <section className="surface pipeline-card">
           <div className="surface-title"><div><h3>Конвейер обработки</h3><p>Каждый результат привязан к версии входного файла.</p></div><span className="live-indicator">В работе</span></div>
@@ -556,7 +572,7 @@ function ProcessingScreen({ object, check }: { object: InspectionObject; check: 
   );
 }
 
-function ResultsScreen({ object, check, findings, reviewCandidateSummary, canViewSources, onOpen, onMissing, onProtocol, onSources, onReviewCandidates }: { object: InspectionObject; check: CheckRun; findings: Finding[]; reviewCandidateSummary: ReviewCandidateSummary | null; canViewSources: boolean; onOpen: (finding: Finding) => void; onMissing: () => void; onProtocol: () => void; onSources: () => void; onReviewCandidates: () => void }) {
+function ResultsScreen({ object, check, findings, reviewCandidateSummary, canViewSources, onOpen, onMissing, onProtocol, onSources, onSourceFile, onReviewCandidates }: { object: InspectionObject; check: CheckRun; findings: Finding[]; reviewCandidateSummary: ReviewCandidateSummary | null; canViewSources: boolean; onOpen: (finding: Finding) => void; onMissing: () => void; onProtocol: () => void; onSources: () => void; onSourceFile?: (file:{id:string;sha256:string}) => void; onReviewCandidates: () => void }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"ALL" | FindingStatus>("ALL");
   const visible = findings.filter((finding) => {
@@ -571,6 +587,13 @@ function ResultsScreen({ object, check, findings, reviewCandidateSummary, canVie
   return (
     <div className="content">
       <ObjectHeader object={object} check={check} />
+      {check.mode === "NORMAL" && check.purpose !== "SOURCE_AUDIT_ONLY" && <MatrixExecutionPanel objectId={object.id} checkId={check.id} onSource={canViewSources ? onSourceFile : undefined} />}
+      {check.status === "FAILED" && <section className="notice notice--warning" role="alert"><div>
+        <strong>Обработка завершилась ошибкой. Соответствие не установлено.</strong>
+        <p>{check.failure ? `${check.failure.jobType}: ${check.failure.code} — ${check.failure.message}` : check.currentStage}</p>
+        <p>Проверьте исходники и ограничения, исправьте причину и запустите проверку повторно.</p>
+        {canViewSources && <button type="button" className="button button--secondary" onClick={onSources}>Проверить источники и повторить</button>}
+      </div></section>}
       <section className="review-summary" aria-label="Сводка проверки">
         <div className="summary-intro"><span>Матрица проверки</span><strong>{check.stats.total} параметра</strong><small>{summary}</small></div>
         {check.mode === "NORMAL" ? <button className="summary-metric summary-metric--button" onClick={onReviewCandidates}>
@@ -581,7 +604,9 @@ function ResultsScreen({ object, check, findings, reviewCandidateSummary, canVie
             : reviewCandidateSummary?.status === "error" ? "Ошибка чтения — открыть подробности"
               : reviewCandidateSummary?.status === "absent" ? "Адресных подсказок в запуске нет" : "Загружаем подсказки"}</small>
         </button> : <div className="summary-metric"><span>Учебные примеры</span><strong>{check.stats.candidates}</strong><small>ждут решения</small></div>}
-        <div className="summary-metric"><span>Подтверждено</span><strong>{check.stats.confirmed}</strong><small>инспектором</small></div>
+        <div className="summary-metric"><span>{check.mode === "NORMAL" ? "Подтверждено по подсказкам" : "Подтверждено"}</span>
+          <strong>{check.mode === "NORMAL" ? reviewCandidateSummary?.confirmed ?? "…" : check.stats.confirmed}</strong>
+          <small>{check.mode === "NORMAL" ? `Рассмотрено: ${reviewCandidateSummary?.reviewed ?? "…"}; результаты правил: ${check.stats.confirmed}` : "инспектором"}</small></div>
       </section>
       <section className="surface results-surface">
         <div className="surface-title results-title"><div><span className="kicker">Официальная очередь</span><h2>Результаты сравнения</h2><p>{visible.length} записей в текущем представлении</p></div><div className="source-review-actions">{check.mode === "NORMAL" && canViewSources && <button className="button button--secondary" onClick={onSources}><FileText size={17} /> Исходные документы</button>}<button className="button button--secondary" onClick={onMissing}>Ограничения анализа</button><button className="button button--secondary" onClick={onProtocol}><FileCheck2 size={17} /> Открыть протокол</button></div></div>
@@ -636,6 +661,9 @@ function CandidatesScreen({ object, check, findings, onOpen }: { object: Inspect
 }
 
 interface EvidenceScreenProps {
+  objectId: string;
+  canDecide: boolean;
+  demo: boolean;
   finding: Finding;
   findings: Finding[];
   onSelect: (finding: Finding) => void;
@@ -643,7 +671,7 @@ interface EvidenceScreenProps {
   onDecision: (type: DecisionType, reason: string) => Promise<void>;
 }
 
-function EvidenceScreen({ finding, findings, onSelect, onBack, onDecision }: EvidenceScreenProps) {
+function EvidenceScreen({ objectId, canDecide, demo, finding, findings, onSelect, onBack, onDecision }: EvidenceScreenProps) {
   const [reason, setReason] = useState(finding.decision?.reason ?? "");
   const [zoom, setZoom] = useState(72);
   const [busy, setBusy] = useState<DecisionType | null>(null);
@@ -656,6 +684,7 @@ function EvidenceScreen({ finding, findings, onSelect, onBack, onDecision }: Evi
   useEffect(() => { setReason(finding.decision?.reason ?? ""); setError(null); }, [finding.id, finding.decision?.reason]);
 
   const submit = async (type: DecisionType) => {
+    if (!canDecide) return;
     if (reason.trim().length < 5) return setError("Добавьте причину решения — минимум 5 символов");
     setBusy(type); setError(null);
     try { await onDecision(type, reason); } catch (caught) { setError(caught instanceof Error ? caught.message : "Не удалось сохранить решение"); } finally { setBusy(null); }
@@ -663,14 +692,15 @@ function EvidenceScreen({ finding, findings, onSelect, onBack, onDecision }: Evi
 
   return (
     <div className="evidence-screen">
-      <header className="evidence-topbar"><button className="back-link" onClick={onBack} disabled={Boolean(busy)}><ArrowLeft size={16} /> Результаты</button><div className="evidence-nav"><button aria-label="Предыдущий результат" disabled={Boolean(busy) || index <= 0} onClick={() => onSelect(findings[index - 1])}><ArrowLeft size={16} /></button><span>Результат {index + 1} из {findings.length}</span><button aria-label="Следующий результат" disabled={Boolean(busy) || index >= findings.length - 1} onClick={() => onSelect(findings[index + 1])}><ArrowRight size={16} /></button></div><div className="zoom-control"><button aria-label="Уменьшить масштаб" onClick={() => setZoom((value) => Math.max(40, value - 10))}><ZoomOut size={16} /></button><span>{zoom}%</span><button aria-label="Увеличить масштаб" onClick={() => setZoom((value) => Math.min(120, value + 10))}><ZoomIn size={16} /></button></div></header>
+      <header className="evidence-topbar"><button className="back-link" onClick={onBack} disabled={Boolean(busy)}><ArrowLeft size={16} /> Результаты</button><div className="evidence-nav"><button aria-label="Предыдущий результат" disabled={Boolean(busy) || index <= 0} onClick={() => onSelect(findings[index - 1])}><ArrowLeft size={16} /></button><span>Результат {index + 1} из {findings.length}</span><button aria-label="Следующий результат" disabled={Boolean(busy) || index >= findings.length - 1} onClick={() => onSelect(findings[index + 1])}><ArrowRight size={16} /></button></div>{demo && <div className="zoom-control"><button aria-label="Уменьшить масштаб" onClick={() => setZoom((value) => Math.max(40, value - 10))}><ZoomOut size={16} /></button><span>{zoom}%</span><button aria-label="Увеличить масштаб" onClick={() => setZoom((value) => Math.min(120, value + 10))}><ZoomIn size={16} /></button></div>}</header>
       <div className="evidence-layout">
         <aside className="candidate-rail">
           <span className="kicker">Очередь</span><strong>{candidates.length} без решения</strong>
           <div>{findings.map((item) => <button key={item.id} className={item.id === finding.id ? "active" : ""} onClick={() => onSelect(item)} disabled={Boolean(busy)}><span className={`severity-dot severity-dot--${item.severity.toLowerCase()}`} aria-label={`Критичность: ${item.severity === "CRITICAL" ? "критическая" : "требует внимания"}`} /><div><em>{item.parameterCode}</em><strong>{item.location}</strong></div>{item.status !== "CANDIDATE" && <CheckCircle2 size={14} />}</button>)}</div>
         </aside>
-        <main className="document-workspace">
-          {[left, right].map((evidence, evidenceIndex) => <section className="document-pane" key={evidence?.fileId ?? evidenceIndex}><header><span className={`doc-stage doc-stage--${evidence?.stage.toLowerCase()}`}>{evidence?.stage ?? "—"}</span><div><strong>{evidence?.fileName ?? "Документ не найден"}</strong><small>{evidence ? `Страница PDF ${evidence.pdfPageNumber} · лист ${evidence.documentSheetNumber ?? "—"}` : "Нет источника"}</small></div></header><div className="page-canvas">{evidence?.imageUrl ? <img src={evidence.imageUrl} alt={`${evidence.stage}, страница ${evidence.pdfPageNumber}`} style={{ width: `${zoom}%` }} /> : <div className="document-empty"><FileText size={32} />Нет изображения страницы</div>}<span className={`source-ribbon source-ribbon--${evidenceIndex}`}>{evidenceIndex === 0 ? "Ожидание по ПД" : "Факт по РД"}</span></div></section>)}
+        <main className={`document-workspace${demo ? "" : " document-workspace--pair"}`}>
+          {demo ? [left, right].map((evidence, evidenceIndex) => <section className="document-pane" key={evidence?.fileId ?? evidenceIndex}><header><span className={`doc-stage doc-stage--${evidence?.stage.toLowerCase()}`}>{evidence?.stage ?? "—"}</span><div><strong>{evidence?.fileName ?? "Документ не найден"}</strong><small>{evidence ? `Страница PDF ${evidence.pdfPageNumber} · лист ${evidence.documentSheetNumber ?? "—"}` : "Нет источника"}</small></div></header><div className="page-canvas">{evidence?.imageUrl ? <img src={evidence.imageUrl} alt={`${evidence.stage}, страница ${evidence.pdfPageNumber}`} style={{ width: `${zoom}%` }} /> : <div className="document-empty"><FileText size={32} />Нет изображения страницы</div>}<span className={`source-ribbon source-ribbon--${evidenceIndex}`}>{evidenceIndex === 0 ? "Ожидание по ПД" : "Факт по РД"}</span></div></section>)
+            : <FindingDocumentPair key={`${objectId}:${finding.id}`} objectId={objectId} finding={finding} />}
         </main>
         <aside className="decision-panel">
           <div className="decision-panel__scroll">
@@ -680,7 +710,7 @@ function EvidenceScreen({ finding, findings, onSelect, onBack, onDecision }: Evi
             <div className="source-list"><span>Источники</span>{finding.evidence.map((evidence) => <div key={`${evidence.fileId}-${evidence.pdfPageNumber}`}><FileText size={15} /><div><strong>{evidence.fileId} · стр. {evidence.pdfPageNumber}</strong><small>SHA-256: {evidence.sha256.slice(0, 12)}…</small></div></div>)}</div>
             {finding.decision && <div className="notice notice--success"><CheckCircle2 size={18} /><div><strong>Решение сохранено</strong><span>{finding.decision.author}, {formatDate(finding.decision.decidedAt)}</span></div></div>}
           </div>
-          <div className="decision-actions"><label><span>Причина решения <em>обязательное поле</em></span><textarea value={reason} onChange={(event) => setReason(event.target.value)} disabled={Boolean(busy)} placeholder="Укажите основание со ссылкой на документ" rows={3} aria-invalid={Boolean(error)} aria-describedby={error ? "decision-error" : undefined} /></label>{error && <div className="inline-error" id="decision-error"><XCircle size={16} />{error}</div>}<div className="decision-buttons"><button className="decision-button decision-button--reject" onClick={() => submit("REJECT")} disabled={Boolean(busy)}>{busy === "REJECT" ? <LoaderCircle className="spin" size={17} /> : <X size={17} />} Отклонить кандидат</button><button className="decision-button decision-button--clarify" onClick={() => submit("CLARIFY")} disabled={Boolean(busy)}><Send size={17} /> Запросить уточнение</button><button className="decision-button decision-button--confirm" onClick={() => submit("CONFIRM")} disabled={Boolean(busy)}>{busy === "CONFIRM" ? <LoaderCircle className="spin" size={17} /> : <Check size={17} />} Подтвердить нарушение</button></div></div>
+          <div className="decision-actions">{!canDecide && <p role="status">Режим просмотра: нет права сохранять решения.</p>}<label><span>Причина решения <em>обязательное поле</em></span><textarea value={reason} onChange={(event) => setReason(event.target.value)} disabled={!canDecide || Boolean(busy)} placeholder="Укажите основание со ссылкой на документ" rows={3} aria-invalid={Boolean(error)} aria-describedby={error ? "decision-error" : undefined} /></label>{error && <div className="inline-error" id="decision-error"><XCircle size={16} />{error}</div>}<div className="decision-buttons"><button className="decision-button decision-button--reject" onClick={() => submit("REJECT")} disabled={!canDecide || Boolean(busy)}>{busy === "REJECT" ? <LoaderCircle className="spin" size={17} /> : <X size={17} />} Отклонить кандидат</button><button className="decision-button decision-button--clarify" onClick={() => submit("CLARIFY")} disabled={!canDecide || Boolean(busy)}><Send size={17} /> Запросить уточнение</button><button className="decision-button decision-button--confirm" onClick={() => submit("CONFIRM")} disabled={!canDecide || Boolean(busy)}>{busy === "CONFIRM" ? <LoaderCircle className="spin" size={17} /> : <Check size={17} />} Подтвердить нарушение</button></div></div>
         </aside>
       </div>
     </div>
@@ -815,7 +845,7 @@ export function FactFamilyReview({ data, objectId }: {
   </section>;
 }
 
-function MissingScreen({ object, check, onBack, onUpload, onSources, onReprocess, onProtocol, parameterCatalog }: { object: InspectionObject; check: CheckRun; onBack: () => void; onUpload?: () => void; onSources?: () => void; onReprocess?: () => Promise<void>; onProtocol: () => void; parameterCatalog: Record<string, { name: string; matrixCode: string }> }) {
+function MissingScreen({ object, check, onBack, onUpload, onSources, onReprocess, onProtocol, parameterCatalog }: { object: InspectionObject; check: CheckRun; onBack: () => void; onUpload?: () => void; onSources?: () => void; onReprocess?: () => Promise<void>; onProtocol: () => void; parameterCatalog: Record<string, { name: string; matrixCode: string; criticality?: string | null; trigger?: string | null; source_pd?: string | null }> }) {
   const [coverage, setCoverage] = useState<ParameterCoverageItem[] | null>(null);
   const [coverageError, setCoverageError] = useState<string | null>(null);
   const [pilotResults, setPilotResults] = useState<PilotResultsRead | null>(null);
@@ -942,7 +972,7 @@ function MissingScreen({ object, check, onBack, onUpload, onSources, onReprocess
 
 function ReviewCandidatesScreen({ object, check, onBack, onProtocol, parameterCatalog }: {
   object: InspectionObject; check: CheckRun; onBack: () => void; onProtocol: () => void;
-  parameterCatalog: Record<string, { name: string; matrixCode: string }>;
+  parameterCatalog: Record<string, { name: string; matrixCode: string; criticality?: string | null; trigger?: string | null; source_pd?: string | null }>;
 }) {
   const [results, setResults] = useState<PilotResultsRead | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -960,6 +990,7 @@ function ReviewCandidatesScreen({ object, check, onBack, onProtocol, parameterCa
   return <div className="content">
     <button className="back-link" onClick={onBack}><ArrowLeft size={16} /> К результатам</button>
     <ObjectHeader object={object} check={check} />
+    <RealDocumentPairs objectId={object.id} checkId={check.id} />
     {error && <p role="alert">{error}</p>}
     {!results && !error && <p role="status">Загружаем кандидатов запуска…</p>}
     {results && (results.reviewCandidates
@@ -972,38 +1003,32 @@ function ReviewCandidatesScreen({ object, check, onBack, onProtocol, parameterCa
 function ProtocolScreen({ object, check, findings, protocols, user, reviewCandidateSummary, onBack, onReviewCandidates, onFinalize, onRevoke }: { object: InspectionObject; check: CheckRun; findings: Finding[]; protocols: ProtocolVersion[]; user: SessionUser | null; reviewCandidateSummary: ReviewCandidateSummary | null; onBack: () => void; onReviewCandidates: () => void; onFinalize: (acknowledgementReason?: string) => Promise<void>; onRevoke: (protocolId: string, reasonCode: ProtocolRevocationReasonCode, comment: string) => Promise<void> }) {
   const [busy, setBusy] = useState<"finalize" | "revoke" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageKind, setMessageKind] = useState<"success" | "error">("error");
   const [gapsAcknowledged, setGapsAcknowledged] = useState(false);
   const [acknowledgementReason, setAcknowledgementReason] = useState("");
   const [revocationReason, setRevocationReason] = useState<ProtocolRevocationReasonCode>("PROTOCOL_CONTENT_ERROR");
   const [revocationComment, setRevocationComment] = useState("");
-  const [reviewDecisionCount, setReviewDecisionCount] = useState<number | null>(null);
-  useEffect(() => {
-    if (check.mode !== "NORMAL") return;
-    let active = true;
-    void api.listReviewCandidateDecisions(check.id).then((result) => {
-      if (active) setReviewDecisionCount(result.items.length);
-    }).catch(() => {
-      if (active) setReviewDecisionCount(null);
-    });
-    return () => { active = false; };
-  }, [check.id, check.mode]);
+  const [pendingCandidateCount, setPendingCandidateCount] = useState<number | null>(null);
   const latest = protocols.at(-1);
   const activeFinal = [...protocols].reverse().find((protocol) => protocol.status === "FINAL" && protocol.validity !== "REVOKED");
   const confirmed = findings.filter((finding) => finding.status === "CONFIRMED_VIOLATION");
   const requiresGapAcknowledgement = protocolRequiresGapAcknowledgement(check);
   const finalizationBlock = protocolFinalizationBlock(check, user);
   const alreadyFinalized = check.status === "FINALIZED";
-  const hasRevocationRole = Boolean(user?.roles.some((role) => role === "SUPERVISOR" || role === "ADMIN"));
-  const canRevoke = check.mode === "NORMAL" && alreadyFinalized && Boolean(activeFinal) && hasRevocationRole;
+  const revocationBlock = protocolRevocationBlock(object, user);
+  const canRevoke = check.mode === "NORMAL" && alreadyFinalized && Boolean(activeFinal) && !revocationBlock;
   const canFinalize = !finalizationBlock
+    && (check.mode !== "NORMAL" || pendingCandidateCount === 0)
     && (!requiresGapAcknowledgement || (gapsAcknowledged && acknowledgementReason.trim().length >= 10));
 
   const finalize = async () => {
     if (!canFinalize || busy) return;
     setBusy("finalize");
     setMessage(null);
+    setMessageKind("error");
     try {
       await onFinalize(requiresGapAcknowledgement ? acknowledgementReason.trim() : undefined);
+      setMessageKind("success");
       setMessage("Финальная версия протокола создана");
     } catch (caught) {
       setMessage(caught instanceof Error ? caught.message : "Не удалось финализировать");
@@ -1016,8 +1041,10 @@ function ProtocolScreen({ object, check, findings, protocols, user, reviewCandid
     if (!canRevoke || !activeFinal || revocationComment.trim().length < 10) return;
     setBusy("revoke");
     setMessage(null);
+    setMessageKind("error");
     try {
       await onRevoke(activeFinal.id, revocationReason, revocationComment.trim());
+      setMessageKind("success");
       setRevocationComment("");
       setMessage("Протокол отозван, создана новая черновая версия");
     } catch (caught) {
@@ -1046,14 +1073,15 @@ function ProtocolScreen({ object, check, findings, protocols, user, reviewCandid
             </div>
           </div>
           <div className="protocol-section">
-            <div><span className="kicker">Раздел 03</span><h3>Подтверждённые нарушения</h3></div>
+            <div><span className="kicker">Раздел 03</span><h3>Подтверждённые результаты исполняемых правил</h3></div>
             {confirmed.length
               ? confirmed.map((finding) => <div className="protocol-finding" key={finding.id}><span>{finding.parameterCode}</span><div><strong>{finding.title}</strong><p>{finding.location} · {finding.decision?.reason}</p></div><StatusBadge status={finding.status} /></div>)
-              : <div className="protocol-empty"><ShieldCheck size={24} /><span>Инспектор ещё не подтвердил нарушения.</span></div>}
+              : <div className="protocol-empty"><ShieldCheck size={24} /><span>Подтверждённых результатов исполняемых правил нет. Решения по исходным листам показаны ниже.</span></div>}
           </div>
+          {check.mode === "NORMAL" && <InspectorProtocolReview objectId={object.id} checkId={check.id} onPending={setPendingCandidateCount} />}
           {check.mode === "NORMAL" && reviewCandidateSummary?.status === "ready" && reviewCandidateSummary.count > 0 && <div className="protocol-section protocol-review-note">
             <div><span className="kicker">Отдельный режим</span><h3>Подсказки для инспектора</h3></div>
-            <p>{reviewCandidateSummary.count} подсказок по исходным страницам · решений инспектора: {reviewDecisionCount ?? "…"}.</p>
+            <p>{reviewCandidateSummary.count} подсказок по исходным страницам · осталось рассмотреть: {pendingCandidateCount ?? "…"}.</p>
             <p>Подсказки не входят в перечень подтверждённых нарушений и не повышают покрытие.</p>
             <button className="button button--secondary" type="button" onClick={onReviewCandidates}>Открыть подсказки и решения</button>
           </div>}
@@ -1064,11 +1092,12 @@ function ProtocolScreen({ object, check, findings, protocols, user, reviewCandid
             {protocols.map((protocol) => {
               const isRevoked = protocol.validity === "REVOKED";
               const versionLabel = isRevoked ? "Отозвана" : protocol.status === "FINAL" ? "Финальная" : "Черновик";
-              return <div className={`version-row ${isRevoked ? "version-row--revoked" : ""}`} key={protocol.id}><span><FileClock size={17} /></span><div><strong>Версия {protocol.version}</strong><small>{versionLabel} · {formatDate(protocol.createdAt)}{protocol.snapshotHash ? ` · SHA-256 ${protocol.snapshotHash.slice(0, 12)}…` : ""}</small>{protocol.revocation && <small>Причина: {revocationReasonLabels[protocol.revocation.reasonCode]} · {protocol.revocation.comment}</small>}{protocol.canonicalArtifact && <a className="artifact-link" href={api.canonicalArtifactUrl(protocol.id)}><Download size={13} /> Canonical JSON · {protocol.canonicalArtifact.byteSize} байт</a>}</div>{isRevoked ? <XCircle size={17} /> : protocol.status === "FINAL" && <CheckCircle2 size={17} />}</div>;
+              return <div className={`version-row ${isRevoked ? "version-row--revoked" : ""}`} key={protocol.id}><span><FileClock size={17} /></span><div><strong>Версия {protocol.version}</strong><small>{versionLabel} · {formatDate(protocol.createdAt)}{protocol.snapshotHash ? ` · SHA-256 ${protocol.snapshotHash.slice(0, 12)}…` : ""}</small>{protocol.revocation && <small>Причина: {revocationReasonLabels[protocol.revocation.reasonCode]} · {protocol.revocation.comment}</small>}{protocol.canonicalArtifact && <a className="artifact-link" href={api.canonicalArtifactUrl(protocol.id)}><Download size={13} /> Canonical JSON · {protocol.canonicalArtifact.byteSize} байт</a>}<ProtocolDownloads protocol={protocol} compact /></div>{isRevoked ? <XCircle size={17} /> : protocol.status === "FINAL" && <CheckCircle2 size={17} />}</div>;
             })}
           </section>
           <section className="surface action-card">
             <h3>Выпуск протокола</h3>
+            {check.mode === "NORMAL" && pendingCandidateCount !== 0 && <p role="status">{pendingCandidateCount === null ? "Загружаем решения и состав комплекта…" : `Осталось рассмотреть подсказок: ${pendingCandidateCount}. Исправленные доказательства требуют повторного решения.`}</p>}
             <p>{finalizationBlock ?? (requiresGapAcknowledgement
               ? `${check.stats.unsupported} параметров не поддерживаются. Проверка выполнена частично: можно выпустить только неполный протокол.`
               : "Все кандидаты обработаны. Можно зафиксировать версию.")}</p>
@@ -1077,9 +1106,9 @@ function ProtocolScreen({ object, check, findings, protocols, user, reviewCandid
               <label><span>Основание выпуска</span><textarea rows={3} value={acknowledgementReason} onChange={(event) => setAcknowledgementReason(event.target.value)} placeholder="Почему допустим выпуск неполного протокола" /></label>
               <small>Подтверждение не означает полную приёмку всех 132 параметров.</small>
             </div>}
-            {message && <div className={`inline-message ${message.startsWith("Финальная") || message.startsWith("Протокол отозван") ? "inline-message--success" : ""}`}>{message}</div>}
+            {message && <div role={messageKind === "error" ? "alert" : "status"} className={`inline-message ${messageKind === "success" ? "inline-message--success" : ""}`}>{message}</div>}
             <button className="button button--primary button--full" onClick={finalize} disabled={Boolean(busy) || !canFinalize}>{busy === "finalize" ? <LoaderCircle className="spin" size={17} /> : <FileCheck2 size={17} />} Финализировать</button>
-            {latest && <a className="button button--secondary button--full" href={api.exportUrl(latest.id)}><Download size={17} /> Скачать протокол JSON</a>}
+            {latest && <ProtocolDownloads protocol={latest} />}
             {latest?.canonicalArtifact && <a className="button button--secondary button--full" href={api.canonicalArtifactUrl(latest.id)}><Download size={17} /> Скачать immutable snapshot</a>}
             <small>{check.mode === "DEMO_SEED" ? "Демонстрационный seed не является результатом анализа новых документов." : "Submission JSON для текущего контура недоступен. Для передачи используйте экспорт выпущенного протокола JSON."}</small>
           </section>
@@ -1091,7 +1120,7 @@ function ProtocolScreen({ object, check, findings, protocols, user, reviewCandid
             <small>Комментарий обязателен, минимум 10 символов.</small>
             <button className="button button--danger button--full" onClick={revoke} disabled={Boolean(busy) || revocationComment.trim().length < 10}>{busy === "revoke" ? <LoaderCircle className="spin" size={17} /> : <RefreshCw size={17} />} Отозвать и открыть проверку</button>
           </section>}
-          {check.mode === "NORMAL" && alreadyFinalized && !hasRevocationRole && <section className="surface action-card"><h3>Нужно исправление?</h3><p>Отзыв финального протокола доступен руководителю или администратору с правом на этот объект.</p></section>}
+          {check.mode === "NORMAL" && alreadyFinalized && revocationBlock && <section className="surface action-card"><h3>Нужно исправление?</h3><p role="status">{revocationBlock}</p></section>}
         </aside>
       </div>
     </div>
@@ -1128,6 +1157,7 @@ function CatalogScreen({ parameters, initialQuery = "" }: { parameters: Paramete
 
 export function App() {
   const [screen, setScreen] = useState<Screen>("home");
+  const [sourceReviewSelection,setSourceReviewSelection]=useState<{objectId:string;checkId:string;id:string;sha256:string}|null>(null);
   const [uploadTarget, setUploadTarget] = useState<InspectionObject | null>(null);
   const [colorMode, setColorMode] = useColorMode();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1216,15 +1246,20 @@ export function App() {
     let active = true;
     const checkId = check.id;
     setReviewCandidateSummary({ checkId, status: "loading", count: 0 });
-    void api.getPilotResults(checkId).then((results) => {
+    void api.getPilotResults(checkId).then(async (results) => {
+      const history = results.reviewCandidates?.candidateCount ? await api.listReviewCandidateDecisions(checkId) : { items: [] };
       if (!active) return;
+      const latest = new Map(history.items.map(event => [event.candidateId, event]));
+      const decisions = (results.reviewCandidates?.candidates ?? []).map(candidate => latest.get(candidate.candidateId));
       setReviewCandidateSummary({ checkId, status: results.reviewCandidates ? "ready" : "absent",
-        count: results.reviewCandidates?.candidateCount ?? 0 });
+        count: results.reviewCandidates?.candidateCount ?? 0,
+        confirmed: decisions.filter(event => event?.decision === "CONFIRM").length,
+        reviewed: decisions.filter(event => event && !["ACCEPT_FOR_REVIEW", "CORRECT_EVIDENCE"].includes(event.decision)).length });
     }).catch(() => {
       if (active) setReviewCandidateSummary({ checkId, status: "error", count: 0 });
     });
     return () => { active = false; };
-  }, [check?.id, check?.mode, check?.status]);
+  }, [check?.id, check?.mode, check?.status, screen]);
 
   const currentReviewSummary = reviewCandidateSummary?.checkId === check?.id ? reviewCandidateSummary : null;
   const canCreateObject = Boolean(sessionUser?.roles.some((role) => role === "INSPECTOR" || role === "SUPERVISOR")
@@ -1305,13 +1340,13 @@ export function App() {
       setNavigationError(caught instanceof Error ? caught.message : "Не удалось открыть объект");
     } finally { if (selectionVersion === objectLoadVersion.current) setLoading(false); }
   };
-  const created = async (createdObject: InspectionObject, stageFiles: Record<UploadStage, File[]>) => {
+  const created = async (createdObject: InspectionObject, stageFiles: Record<UploadStage, File[]>, mode: "SAMPLE" | "FULL") => {
     setObjects((current) => current.some((item) => item.id === createdObject.id) ? current : [...current, createdObject]);
-    const nextCheck = await uploadAndStartCheck(api, createdObject.id, stageFiles);
+    const nextCheck = await uploadAndStartCheck(api, createdObject.id, stageFiles, mode);
     const nextObjects = await api.listObjects(); setObjects(nextObjects); await loadObject(createdObject.id); setCheck(nextCheck); setScreen(isRunningCheck(nextCheck) ? "processing" : "results");
   };
   const decide = async (type: DecisionType, reason: string) => {
-    if (!selectedFinding) return;
+    if (!selectedFinding || !(check?.mode === "DEMO_SEED" || sessionUser?.capabilities.includes("REVIEW_DECIDE"))) return;
     await api.decide(selectedFinding.id, { type, reason, author: "Алексей К." });
     if (object) await loadObject(object.id);
   };
@@ -1334,7 +1369,7 @@ export function App() {
   };
 
   const parameterCatalog = Object.fromEntries(parameters.map((parameter) => [parameter.parameter_code,
-    { name: parameter.parameter_name, matrixCode: matrixCode(parameter) }]));
+    { name: parameter.parameter_name, matrixCode: matrixCode(parameter), criticality: parameter.criticality, trigger: parameter.trigger, source_pd: parameter.source_pd }]));
   const search = searchOpen && <GlobalSearch objects={objects} findings={findings} parameters={parameters} onClose={closeSearch} onObject={(item) => { setSearchOpen(false); void openObject(item); }} onFinding={(finding) => { setSearchOpen(false); setSelectedFindingId(finding.id); setEvidenceReturnScreen(finding.status === "CANDIDATE" ? "candidates" : "results"); setScreen("evidence"); }} onParameter={(parameter) => { setSearchOpen(false); setCatalogQuery(parameter.parameter_code); setScreen("catalog"); }} />;
   const preferenceClasses = `${preferences.denseRows ? "app-shell--dense" : ""} ${preferences.largeText ? "app-shell--large-text" : ""}`;
 
@@ -1362,15 +1397,20 @@ export function App() {
     if (screen === "settings") return <SettingsScreen preferences={preferences} onChange={updatePreferences} onReset={() => updatePreferences({ denseRows: false, largeText: false })} />;
     if (!object || !check) return <ObjectsScreen objects={objects} section={screen === "results" || screen === "candidates" || screen === "protocol" ? screen : undefined} onOpen={(item) => void openObject(item, screen === "results" || screen === "candidates" || screen === "protocol" ? screen : undefined)} onCreate={canCreateObject ? () => openUpload() : undefined} />;
     if (screen === "processing") return <ProcessingScreen object={object} check={check} />;
-    if (screen === "sources") return <SourceReviewScreen objectId={object.id} checkId={check.id} checkStatus={check.status} onBack={() => setScreen("results")} onReprocess={reprocess} onUpload={() => openUpload(object)} />;
+    if (screen === "sources") return <><SourceReviewScreen objectId={object.id} checkId={check.id} checkStatus={check.status} sourceAuditOnly={check.purpose === "SOURCE_AUDIT_ONLY"}
+      initialSourceFile={sourceReviewSelection?.objectId===object.id&&sourceReviewSelection.checkId===check.id ? sourceReviewSelection : undefined}
+      onBack={() => {setSourceReviewSelection(null);setScreen("results");}} onReprocess={reprocess} onUpload={() => openUpload(object)} /><ColumnPylonSectionV2Workspace key={`${object.id}:${check.id}`} objectId={object.id} disabled={isRunningCheck(check)} /></>;
     if (screen === "missing") return <MissingScreen object={object} check={check} onBack={() => setScreen("results")} onUpload={canCreateObject ? () => openUpload(object) : undefined} onSources={sessionUser?.capabilities.includes("SOURCE_REVIEW") ? () => setScreen("sources") : undefined} onReprocess={canCreateObject ? reprocess : undefined} onProtocol={() => setScreen("protocol")} parameterCatalog={parameterCatalog} />;
     if (screen === "protocol") return <ProtocolScreen object={object} check={check} findings={findings} protocols={protocols} user={sessionUser} reviewCandidateSummary={currentReviewSummary} onBack={() => setScreen("results")} onReviewCandidates={() => setScreen("candidates")} onFinalize={finalize} onRevoke={revoke} />;
     if (screen === "candidates") return check.mode === "NORMAL"
       ? <ReviewCandidatesScreen object={object} check={check} onBack={() => setScreen("results")}
           onProtocol={() => setScreen("protocol")} parameterCatalog={parameterCatalog} />
       : <CandidatesScreen object={object} check={check} findings={findings} onOpen={(finding) => { setSelectedFindingId(finding.id); setEvidenceReturnScreen("candidates"); setScreen("evidence"); }} />;
-    if (screen === "evidence" && selectedFinding) return <EvidenceScreen finding={selectedFinding} findings={findings} onSelect={(finding) => setSelectedFindingId(finding.id)} onBack={() => setScreen(evidenceReturnScreen)} onDecision={decide} />;
-    return <ResultsScreen object={object} check={check} findings={findings} reviewCandidateSummary={currentReviewSummary} canViewSources={Boolean(sessionUser?.capabilities.includes("SOURCE_REVIEW"))} onOpen={(finding) => { setSelectedFindingId(finding.id); setEvidenceReturnScreen("results"); setScreen("evidence"); }} onMissing={() => setScreen("missing")} onProtocol={() => setScreen("protocol")} onSources={() => setScreen("sources")} onReviewCandidates={() => setScreen("candidates")} />;
+    if (screen === "evidence" && selectedFinding) return <EvidenceScreen objectId={object.id} canDecide={check?.mode === "DEMO_SEED" || Boolean(sessionUser?.capabilities.includes("REVIEW_DECIDE"))} demo={check?.mode === "DEMO_SEED"} finding={selectedFinding} findings={findings} onSelect={(finding) => setSelectedFindingId(finding.id)} onBack={() => setScreen(evidenceReturnScreen)} onDecision={decide} />;
+    return <ResultsScreen object={object} check={check} findings={findings} reviewCandidateSummary={currentReviewSummary} canViewSources={Boolean(sessionUser?.capabilities.includes("SOURCE_REVIEW"))} onOpen={(finding) => { setSelectedFindingId(finding.id); setEvidenceReturnScreen("results"); setScreen("evidence"); }} onMissing={() => setScreen("missing")} onProtocol={() => setScreen("protocol")}
+      onSources={() => {setSourceReviewSelection(null);setScreen("sources");}}
+      onSourceFile={file=>{setSourceReviewSelection({objectId:object.id,checkId:check.id,...file});setScreen("sources");}}
+      onReviewCandidates={() => setScreen("candidates")} />;
   })();
 
   const immersive = screen === "evidence";

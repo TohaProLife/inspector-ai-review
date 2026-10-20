@@ -127,6 +127,56 @@ describe("binary document ingest", () => {
     expect(stored).toEqual(pdf);
   });
 
+  it.each([
+    Buffer.from("AC1032QA30_HEADER_ONLY_NOT_A_VALID_CAD_DATABASE"),
+    Buffer.concat([Buffer.from("AC1032"), Buffer.alloc(128 * 1024, 0x41)]),
+  ])("does not authenticate a DWG from its version signature or size", async (contents) => {
+    const objectId = await createObject(app);
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/objects/${objectId}/files?stage=PD`,
+      ...multipartFile("drawing.dwg", "image/vnd.dwg", contents),
+    });
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toMatchObject({ error: "DWG_VALIDATOR_UNAVAILABLE" });
+    expect(response.json().message).toContain("PDF");
+    expect(storage.objects.size).toBe(0);
+    const object = await app.inject({ method: "GET", url: `/api/objects/${objectId}` });
+    expect(object.json().fileCount).toBe(0);
+  });
+
+  it("rejects a mixed PDF/DWG batch before storing any bytes and accepts a following PDF", async () => {
+    const objectId = await createObject(app);
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/objects/${objectId}/files?stage=PD`,
+      ...multipartFiles([
+        { filename: "valid.pdf", mimeType: "application/pdf", contents: validPdf },
+        { filename: "drawing.dwg", mimeType: "application/acad", contents: Buffer.from("AC1032not-a-CAD-database") },
+      ]),
+    });
+    expect(response.statusCode).toBe(503);
+    expect(response.json().error).toBe("DWG_VALIDATOR_UNAVAILABLE");
+    expect(storage.objects.size).toBe(0);
+    const following = await app.inject({
+      method: "POST", url: `/api/objects/${objectId}/files?stage=PD`,
+      ...multipartFile("valid.pdf", "application/pdf", validPdf),
+    });
+    expect(following.statusCode).toBe(201);
+    expect(storage.objects.size).toBe(1);
+  });
+
+  it("rejects a renamed file with an invalid DWG signature", async () => {
+    const objectId = await createObject(app);
+    const response = await app.inject({
+      method: "POST", url: `/api/objects/${objectId}/files?stage=PD`,
+      ...multipartFile("drawing.dwg", "image/vnd.dwg", Buffer.from("not a DWG")),
+    });
+    expect(response.statusCode).toBe(415);
+    expect(response.json().error).toBe("UNSUPPORTED_FILE_FORMAT");
+    expect(storage.objects.size).toBe(0);
+  });
+
   it("keeps a newly uploaded object separate from the demo seed", async () => {
     const objectId = await createObject(app);
     const multipart = multipartFile(

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matrix-column-pylon-section-loader.schema.json",
+  "title": "PROPOSAL all-retained T82 journal/original child (no pairing inference)",
+  "$ref": "#/$defs/loaderPackage",
+  "$defs": {
+    "historicalSource": {
+      "allOf": [
+        {
+          "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/source"
+        },
+        {
+          "properties": {
+            "review": {
+              "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/sourceReview"
+            }
+          }
+        }
+      ]
+    },
+    "retainedReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "journal",
+        "historicalSources"
+      ],
+      "properties": {
+        "journal": {
+          "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/journal"
+        },
+        "historicalSources": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/historicalSource"
+          }
+        }
+      }
+    },
+    "loaderPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "sources",
+        "origins",
+        "reviews"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-loader-inputs-v1"
+        },
+        "objectId": {
+          "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/key"
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/source"
+          }
+        },
+        "origins": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/origin"
+          }
+        },
+        "reviews": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/retainedReview"
+          }
+        }
+      }
+    }
+  },
+  "x-proposal": {
+    "status": "DRAFT_FOR_ROOT_QA_REVIEW",
+    "canonicalFrozen": false,
+    "productionImplementationAuthorized": false
+  },
+  "x-native-limits": {
+    "canonicalUtf8Bytes": 67108864,
+    "nodes": 2900000,
+    "depth": 68,
+    "containerItems": 32768,
+    "scalarStringCodePoints": 2000000
+  },
+  "x-artifact-limits": {
+    "policyVersion": "document-text-v3-large-source-bounds-v1",
+    "canonicalUtf8Bytes": 32000000,
+    "nodes": 1400000,
+    "depth": 64,
+    "traversalPolicyVersion": "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1"
+  },
+  "x-order": {
+    "sources": "strict ascending sourceFileId Unicode CODEPOINT order",
+    "origins": "strict ascending canonical JSON of [sourceFileId,target] using Unicode CODEPOINT comparison",
+    "reviews": "strict ascending recomputed T82 public-object pairKey (ASCII hex)"
+  },
+  "x-semantics": [
+    "objectId PUBLIC T82 object ID; equals parent.objectApiId; never rewrite frozen journals to internal UUID",
+    "sources exactly current sealed run manifest sources; unique sourceFileId; common sourceId/SHA/stages/reviewID/hash/classification/pageStages projection equals all existing six children after explicit object-domain mapping",
+    "reviews carries ALL latest snapshot journals including excluded, UNKNOWN and WITHDRAWN; exact bijection with snapshot.entries by journal ID/hash/projection hash/pair key, not identity; same identity with different physical source pair is allowed",
+    "historicalSources is exactly expected,actual operand order; source IDs/SHA and nonnull review IDs/hashes exactly match journal refs; full original parent review hash, actor/DB chain and original stage context authenticated by protected repository before projection",
+    "historicalSources stages are frozen original source classification from operand audit manifest; its review fields are exact pinned historical parent decision, not current review; complete current sources kept separate",
+    "Every retained original validates full large-v3 body/profile/domain hash/canonical byte hash/original SHA/object/full pages/stage page bounds before interpretation",
+    "origins is EXACT closure of all journal expected/actual targets: every operand resolves exactly one by sourceId/SHA/full target; unique [sourceFileId,target], no unused origin; same source may have multiple distinct exact audit targets; zero reviews =>zero origins",
+    "Origin target.inputManifestHash belongs to its own sealed audit, not necessarily this normal run manifest; never equate or rebase them",
+    "Every journal whole hash, all selections and own-original basis reconstruct before current eligibility or empty/sentinel outcome; no page facade/glyph grouping/new parser",
+    "All APPROVED retained journals additionally satisfy a T83 local exact copy of existing T82 approved-claims checks (no T82 source changes/public helper required). Historical comparison must be CANDIDATE or NO_DECREASE_IN_REVIEWED_PAIR, or ABSTAIN SOURCE_STAGE_UNVERIFIED only; all integrity/other reasons throw",
+    "UNKNOWN/WITHDRAWN historical comparison must be ABSTAIN PAIR_REVIEW_UNAPPROVED after complete reconstruction; no fake approved stage/identity/review and no arbitrary abstention allowlist",
+    "Current comparisons are only for included snapshot entries, projecting their exact2 CURRENT sources and exact2 retained origins into frozen T82 comparator. Excluded entries still fully validated and pinned, produce no scoped output",
+    "Snapshot included entries and typed scoped results form exact pairKey+decisionId/hash bijection; no identity-only dedup; included empty =>one unbound abstention AFTER all retained validation",
+    "No authenticity claim for standalone pure validation; protected repository owns full parent review/PDF/actor/run authentication"
+  ]
+}

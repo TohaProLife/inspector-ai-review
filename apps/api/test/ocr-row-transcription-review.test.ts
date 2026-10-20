@@ -154,8 +154,8 @@ describe("OCR row transcription review validator", () => {
   });
 });
 
-const realStagePath = fileURLToPath(new URL("../../../output/public-index-20260927/f0202-v5-ocr-stage-20260928.json", import.meta.url));
-const realRowsPath = fileURLToPath(new URL("../../../output/public-index-20260927/f0202-v5-ocr-table-review-20260928.json", import.meta.url));
+const realStagePath = fileURLToPath(new URL("../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-stage-20260928.json", import.meta.url));
+const realRowsPath = fileURLToPath(new URL("../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-table-review-20260928.json", import.meta.url));
 const pythonPath = fileURLToPath(new URL("../../../services/worker/.venv/bin/python", import.meta.url));
 
 it.skipIf(!existsSync(realStagePath) || !existsSync(realRowsPath))(

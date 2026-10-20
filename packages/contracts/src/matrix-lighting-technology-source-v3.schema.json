@@ -1,0 +1,456 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:matrix-lighting-technology-source-v3",
+  "title": "Pure source-only lighting declarations over complete original document-text-v3",
+  "$ref": "#/definitions/result",
+  "definitions": {
+    "usedTextRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "selectedFragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "rawText"
+      ],
+      "properties": {
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000000
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "fragments"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "fragments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/selectedFragment"
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "stage",
+        "pageStages",
+        "textArtifact",
+        "selection"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD",
+            "ID",
+            "UNRESOLVED"
+          ]
+        },
+        "pageStages": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "textArtifact": {
+          "$ref": "document-text-v3.schema.json#/definitions/artifact"
+        },
+        "selection": {
+          "$ref": "#/definitions/selection"
+        }
+      }
+    },
+    "primaryFragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "nativeBoxPointStrings",
+        "bboxMilliPoints",
+        "usedTextRange"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000000
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeBox"
+        },
+        "bboxMilliPoints": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "usedTextRange": {
+          "$ref": "#/definitions/usedTextRange"
+        }
+      }
+    },
+    "declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "extractorVersion",
+        "bindingPolicyVersion",
+        "sourceFileId",
+        "sourceSha256",
+        "textArtifactHash",
+        "extractorProfileHash",
+        "stage",
+        "pageNumber",
+        "pageWidthMilliPoints",
+        "pageHeightMilliPoints",
+        "nativeFrame",
+        "regionBoxMilliPoints",
+        "technology",
+        "rawTechnology",
+        "positionLabel",
+        "scopeStatus",
+        "primaryFragments",
+        "authorityStatus",
+        "renderedVisibility",
+        "calibratedProbability"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-zu130-lighting-technology-v3-declaration-v1"
+        },
+        "extractorVersion": {
+          "const": "matrix-zu130-lighting-technology-source-v3-v1"
+        },
+        "bindingPolicyVersion": {
+          "const": "matrix-zu130-explicit-lighting-technology-v3-literals-v1"
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textArtifactHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "extractorProfileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD",
+            "ID",
+            "UNRESOLVED"
+          ]
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "pageWidthMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "pageHeightMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "nativeFrame": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeFrame"
+        },
+        "regionBoxMilliPoints": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "technology": {
+          "enum": [
+            "LED",
+            "FLUORESCENT",
+            "INCANDESCENT"
+          ]
+        },
+        "rawTechnology": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "positionLabel": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scopeStatus": {
+          "enum": [
+            "NAMED_POSITION_LITERAL",
+            "UNBOUND_GROUP_DECLARATION"
+          ]
+        },
+        "primaryFragments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/primaryFragment"
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "authorityStatus": {
+          "const": "SOURCE_DECLARED_UNVERIFIED"
+        },
+        "renderedVisibility": {
+          "const": "UNVERIFIED"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        }
+      }
+    },
+    "result": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "reasonCode"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-zu130-lighting-technology-source-v3-result-v1"
+            },
+            "status": {
+              "const": "ABSTAIN"
+            },
+            "reasonCode": {
+              "enum": [
+                "INVALID_INPUT",
+                "INPUT_LIMIT",
+                "INVALID_TEXT_ARTIFACT",
+                "SOURCE_MISMATCH",
+                "STAGE_CONFLICT",
+                "INVALID_SELECTION",
+                "SELECTION_MISMATCH",
+                "SELECTED_TEXT_UNLOCATED",
+                "UNLOCATED_PAGE_TEXT",
+                "SOURCE_TEXT_UNAVAILABLE",
+                "AMBIGUOUS_LAYOUT",
+                "DECLARATION_UNVERIFIED"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "declaration"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-zu130-lighting-technology-source-v3-result-v1"
+            },
+            "status": {
+              "const": "RECONSTRUCTED"
+            },
+            "declaration": {
+              "$ref": "#/definitions/declaration"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-semantic-contract": {
+    "native": {
+      "limits": "Whole consumer input: existing portable native JSON 8000000 serialized UTF8 bytes incl punctuation/escaping,200000 nodes with keys,depth64,container32768,string2000000 codepoints; pages512/records100000 as existing v3. No separate per-record budget multiplied by claims. Descriptor-first/no custom callbacks before guard; fail on proxy/getter/cycle/hole/surrogate/float/unsafe/nonfinite.",
+      "textArtifactHash": "Existing document_text_v3_content_hash: SHA256(portableCanonical({hashDomain:\"document-text-v3-content-v1\",artifact:FULL_ENVELOPE})). Preserve all pages, profiles, native/unlocated records.",
+      "declarationContentHash": "SHA256(portableCanonical({hashDomain:\"matrix-zu130-lighting-technology-v3-source-id-v1\",declaration:FULL_DECLARATION})). Hash helper validates exact bounded declaration DTO first; content identity is not authentication.",
+      "canonical": "Existing codepoint-key sorted portable scalar canonical JSON; no Unicode/number normalization."
+    },
+    "lexicalPolicy": {
+      "version": "lighting-v3-original-line-ascii-edge-view-v1",
+      "rule": "Preserve rawText unchanged. If last codepoint is LF remove exactly that one from grammar view; then remove only U0020 SPACE at beginning/end of that view. Record resulting half-open Unicode CODEPOINT usedTextRange {start,end} on every fragment. Empty view or any remaining CR/LF/TAB rejects grammar. Never str.trim/strip/NFKC/casefold. Optional absent terminal LF accepted.",
+      "reason": "Actual original v3 F0161 first line has leading/trailing ASCII SPACE plus LF; second trailing SPACE plus LF. Frozen v2 had already stripped these. This explicit NEW lexical policy avoids hidden producer normalization.",
+      "realRanges": [
+        [
+          1,
+          83
+        ],
+        [
+          0,
+          51
+        ]
+      ],
+      "approval": "ROOT accepted before implementation under existing user authorization. Record codepoint offsets, preserve full raw; no old grammar changes."
+    },
+    "grammar": {
+      "aliases": {
+        "LED": [
+          "LED",
+          "светодиодный",
+          "светодиодные"
+        ],
+        "FLUORESCENT": [
+          "FLUORESCENT",
+          "люминесцентный",
+          "люминесцентные"
+        ],
+        "INCANDESCENT": [
+          "INCANDESCENT",
+          "лампа накаливания",
+          "лампы накаливания"
+        ]
+      },
+      "named": "Anchored exactly: Светильник +([A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9_.-]{0,79})\\. Источник +света: ([^\\r\\n\\t]+)\\.",
+      "group": "Same anchored two-line source wording as frozen v1: Светотехническое +оборудование +приняты +с +энергосберегающими +источниками +света ; then (<TECH>), на базе продукции компании «<MANUFACTURER>». Exact punctuation and aliases; manufacturer cannot contain U0022/U0027/«/»/parentheses/controls. No manufacturer/model/energy-saving inference. Group remains UNBOUND_GROUP_DECLARATION.",
+      "noAliases": "No lowercase Latin, typographic punctuation repair, alternatives, negation, substring, model decoding or technology ranking."
+    },
+    "sourceAndGeometry": {
+      "native": "Copy exact located nativeBoxPointStrings and integer bbox; no float reparsing/rounding in consumer. Native frame from original selected page, no PDF Rotate/visibility claim.",
+      "unlocated": "Exact selection of unlocated original line => SELECTED_TEXT_UNLOCATED. Any other unlocated record on selected page => UNLOCATED_PAGE_TEXT, conservative first version even if geometrically remote. No fake bbox/region relevance heuristic. Unlocated on other valid pages stays intact in full source hash and does not veto selected candidate page.",
+      "quality": "After selected-page unlocated veto require TEXT_LAYER_CANDIDATE; OCR_REQUIRED => SOURCE_TEXT_UNAVAILABLE. This certifies only producer quality disposition.",
+      "geometry": "Use exact numeric sourcePath parents and the explicit groupGeometry rules in this canonical artifact; no v2 block/line aliases.",
+      "interleavers": "Any nonempty other located whole line touching/intersecting derived union => AMBIGUOUS_LAYOUT; fixed v3 whitespace criterion. No cropped text, nearest-line joins or glyph splicing.",
+      "visibility": "Always renderedVisibility:\"UNVERIFIED\". Native Form text can be clipped/occluded despite located line. Neither source nor PDF text reader proves rendering/physical existence/completeness."
+    },
+    "gateOrder": [
+      "1 whole native/limits/exact input/stage/pageStages syntax",
+      "2 FULL v3 semantic validation and content hash",
+      "3 original source ID/SHA match and actual pageStages range",
+      "4 stage conflict/effective selected stage",
+      "5 exact selection DTO/page/path/cardinality/order",
+      "6 exact original path/raw association; absent or altered => SELECTION_MISMATCH",
+      "7 selected unlocated => SELECTED_TEXT_UNLOCATED; otherwise selected-page unlocated veto; selected quality",
+      "8 located union/group geometry and full selected-page interleavers",
+      "9 explicit lexical view + exact literal grammar",
+      "10 reconstruct source-only declaration; no pairing/authority"
+    ],
+    "compatibility": "NEW pure consumer only. Accept all three explicitly recorded canonical document-text-v3 traversal policies after whole artifact validation; never v2 facade or native path migration. Keep old v1 lighting modules/goldens unchanged. No runtime/DB/release/machine/coverage/UI integration in this packet.",
+    "inputIdentity": "SourceFileId follows frozen lighting clean Unicode scalar key policy1..200; exact source/artifact ID and SHA. Stage map has canonical positive safe decimal keys1..16digits within actual pageCount; every non-UNRESOLVED override must equal top-level stage; no stage inference.",
+    "association": "Selection fragment has ONLY original sourcePath and exact rawText. Resolve both located and unlocated arrays by original path before geometry. Duplicates invalid; requested raw or path mismatch SELECTION_MISMATCH. A selected unlocated record wins SELECTED_TEXT_UNLOCATED, then any other selected-page unlocated vetoes UNLOCATED_PAGE_TEXT, then require TEXT_LAYER_CANDIDATE. No other-page unlocated veto; full artifact still hashed.",
+    "limits": "Native guard applies once to whole input before any artifact property lookup/callback; same portable limits as complete v3 including200000nodes/depth64/container32768/string2000000/codepoint JSON8MUTF8 including punctuation/escapes. INPUT_LIMIT wins over malformed later structure. Whole reader INPUT_LIMIT propagates; other reader failures INVALID_TEXT_ARTIFACT. No input truncation.",
+    "ordering": "Located selections must be in visual order: top edge descending, left edge ascending, then numeric lexicographic original path (shorter prefix first). Order failure INVALID_SELECTION. Selected unlocated is resolved before visual ordering. Interleavers use fixed v3 whitespace codepoint set, not host Unicode categories. All touching/intersecting nonempty other located whole lines in selected region cause AMBIGUOUS_LAYOUT.",
+    "groupGeometry": "Two fragments only; heights9000..14000mpt inclusive, difference<=1000, absleftdelta<=16000, first right>=second right, vertical gap firstbottom-secondtop in0..18000 inclusive. If original source paths have exactly same parent path, second final child index must equal first+1; otherwise no fake parent adjacency. Region is exact bbox union. Same selected page only.",
+    "hashHelper": "The declaration hash validates bounded exact declaration DTO shape, safe integer dimensions/boxes, native decimal strings/frame shape, flags/null, path cardinality/uniqueness, raw scalar/range shape, literal enums and scope/cardinality/position relation before canonical hashing. It cannot authenticate textArtifactHash/profile/physical identity without the full original source. Do not synthesize a v3 artifact as validation facade. Reconstructed declarations already have whole source validation; rawTechnology/technology/position/usedTextRange must remain exact parser output.",
+    "nonClaims": [
+      "No genuine PD/RD pair exists in supplied real evidence.",
+      "No inherited machine eligibility, authority, finding or completeness.",
+      "No profile activation/new extraction in this packet.",
+      "No literal grammar relaxation in existing v2 source modules."
+    ]
+  },
+  "x-exports": {
+    "TS": [
+      "reconstructLightingTechnologySourceV3(input:unknown):LightingTechnologySourceV3Result",
+      "lightingTechnologyV3DeclarationContentHash(declaration:unknown):string"
+    ],
+    "Python": [
+      "reconstruct_lighting_technology_source_v3(value:Any)->dict",
+      "lighting_technology_v3_declaration_content_hash(declaration:Any)->str"
+    ]
+  },
+  "x-hash-domain": "matrix-zu130-lighting-technology-v3-source-id-v1",
+  "x-local-ref-allowlist": [
+    "document-text-v3.schema.json"
+  ]
+}

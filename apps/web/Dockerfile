@@ -7,6 +7,9 @@ COPY packages/contracts/package.json packages/contracts/package.json
 RUN npm ci
 COPY tsconfig.base.json ./
 COPY packages/contracts packages/contracts
+COPY services/worker/rules/matrix-execution-v1.json services/worker/rules/matrix-execution-v1.json
+COPY fixtures/real-public-room-pairs-v1/manual-source-bindings.json fixtures/real-public-room-pairs-v1/manual-source-bindings.json
+COPY fixtures/real-parameter-source-comparisons-v1/viewer-bindings.json fixtures/real-parameter-source-comparisons-v1/viewer-bindings.json
 COPY apps/web apps/web
 RUN npm run build -w @inspector-ai/web
 

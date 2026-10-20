@@ -1,0 +1,38 @@
+.document-pair-workspace { min-width: 0; padding: 16px; margin: 18px 0; border: 1px solid var(--line, #c4ced0); border-radius: 12px; background: var(--surface, #fff); color: var(--text, inherit); }
+.app-shell .document-workspace--pair,.document-workspace--pair { display: block; overflow: auto; padding: 10px; }
+.document-pair-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.document-pair-toolbar>div { flex: 1 1 180px; }
+.document-pair-toolbar h3 { margin: 4px 0; }
+.document-pair-workspace button,.document-pair-workspace select,.document-pair-workspace input { border: 1px solid var(--line-strong, #9caeb5); border-radius: 6px; background: var(--surface, #fff); color: inherit; padding: 8px; font: inherit; max-width: 100%; }
+.document-pair-workspace button { cursor: pointer; }
+.document-pair-workspace button:disabled { opacity: .5; cursor: default; }
+.document-pair-workspace button:focus-visible,.document-pair-workspace select:focus-visible,.document-pair-workspace input:focus-visible { outline: 3px solid #167b91; outline-offset: 2px; }
+.document-pair-toolbar label { display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13px; }
+.document-pair-help { font-size: 12px; line-height: 1.5; }
+.document-pair-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.document-pair-columns:has(>.document-pair-column:nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.document-pair-column { display: flex; flex-direction: column; min-width: 0; gap: 10px; }
+.document-pair-column>label { display: flex; flex-direction: column; font-size: 12px; gap: 5px; }
+.document-pair-column select { width: 100%; min-width: 0; }
+.document-pair-quote { display: flex; flex-direction: column; gap: 6px; text-align: left; overflow-wrap: anywhere; min-height: 85px; }
+.document-pair-quote>span { font-size: 11px; }
+.document-pair-quote q { quotes: none; white-space: pre-wrap; font-size: 14px; line-height: 1.5; }
+.document-pair-workspace mark { background: #ffe1a0; color: #493100; border-radius: 3px; padding: 1px 2px; box-decoration-break: clone; }
+.document-pair-column .inspector-evidence-pane { flex: 1; }
+.document-pair-column .inspector-sheet-viewport { height: min(60vh, 660px); min-height: 320px; overscroll-behavior: contain; }
+.document-pair-workspace--wide { position: fixed; inset: 16px; z-index: 150; margin: 0; overflow: auto; box-shadow: 0 0 0 50vmax #0008; }
+.document-pair-workspace:fullscreen { overflow: auto; padding: 20px; }
+.document-pair-workspace--wide .inspector-sheet-viewport,.document-pair-workspace:fullscreen .inspector-sheet-viewport { height: max(320px, calc(100vh - 480px)); }
+.pair-source-search { margin: 0; font-size: 13px; }
+.pair-source-search summary { cursor: pointer; padding: 8px 0; }
+.pair-source-search label { display: flex; flex-direction: column; gap: 5px; margin-block: 8px; }
+.pair-source-search ol { max-height: 220px; overflow: auto; padding-left: 22px; }
+.pair-source-search li button { text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 5px; }
+.inspector-page-navigation { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-block: 8px; }
+.inspector-page-navigation .inspector-page-control { display: flex; flex-direction: row; align-items: center; gap: 5px; font-size: 12px; margin: 0; }
+.inspector-page-navigation button { padding: 6px 9px; }
+.inspector-fragment-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 12px; }
+.inspector-fragment-controls label { display: flex; flex-direction: row; align-items: center; gap: 5px; }
+.inspector-evidence-box--active { border-color: #a72c05; background: #ffb32840; box-shadow: 0 0 0 2px #fff9; }
+.inspector-evidence-box--active span { background: #873100; }
+@media(max-width: 760px) { .document-pair-columns,.document-pair-columns:has(>.document-pair-column:nth-child(3)) { grid-template-columns: 1fr; } .document-pair-workspace { padding: 10px; } .document-pair-workspace--wide { inset: 6px; } }

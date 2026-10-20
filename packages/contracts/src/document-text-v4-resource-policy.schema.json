@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "document-text-v4-resource-policy-v1",
+  "policyVersion": "document-text-v4-full-source-bounds-v1",
+  "canonicalUtf8Bytes": 32000000,
+  "nativeNodesIncludingKeys": 1400000,
+  "nativeDepth": 64,
+  "containerItems": 32768,
+  "stringCodepoints": 2000000,
+  "pages": 1024,
+  "wholeLocatedAndUnlocatedRecords": 100000,
+  "sourcePdfBytes": 67108864,
+  "purpose": "SOURCE_AUDIT_ONLY"
+}

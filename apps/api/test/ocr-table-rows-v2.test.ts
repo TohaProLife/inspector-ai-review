@@ -5,11 +5,11 @@ import { canonicalJson, sha256 } from "../src/canonical-json.js";
 import { verifyOcrTableRows } from "../src/ocr-table-rows.js";
 
 const stagePath = fileURLToPath(new URL(
-  "../../../output/public-index-20260927/f0202-v5-ocr-stage-20260928.json", import.meta.url));
+  "../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-stage-20260928.json", import.meta.url));
 const v1PacketPath = fileURLToPath(new URL(
-  "../../../output/public-index-20260927/f0202-v5-ocr-table-review-20260928.json", import.meta.url));
+  "../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-table-review-20260928.json", import.meta.url));
 const v2Path = fileURLToPath(new URL(
-  "../../../output/public-index-20260927/f0202-v5-ocr-table-rows-v2-20260928.json", import.meta.url));
+  "../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-table-rows-v2-20260928.json", import.meta.url));
 const stageSha256 = "abc417e23740320ba4004dc05ec84d951b3715abde02a91c563c7954dffb327a";
 const sourceSha256 = "632379a0e541f0c81e6b03e5528946730b4433939c796db4fdc1e5c3fc8b71ee";
 

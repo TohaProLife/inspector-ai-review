@@ -1,0 +1,110 @@
+/** Independent local-PG expectations frozen before first owned execution.
+ * Original PDFs/full native v3 from T65 manual; no source consumer as oracle. */
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,dirname} from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {Pool} from 'pg';
+import {afterAll,beforeAll,describe,expect,it} from 'vitest';
+import {MATRIX_LIGHTING_TECHNOLOGY_PROFILE,matrixLightingTechnologyConfigHash} from '../src/matrix-lighting-technology-profile.js';
+import {canonicalJson,sha256} from '../src/canonical-json.js';
+import {runDatabaseMigrations} from '../src/database-migrations.js';
+import {PostgresInspectionRepository} from '../src/postgres-repository.js';
+import {loadReferenceData} from '../src/reference-data.js';
+import {LocalObjectStorage} from '../src/storage.js';
+import {provisionLocalUser} from '../src/user-provisioning.js';
+import type {AuthenticatedActor} from '../src/identity.js';
+import {pythonExecutable,pythonEnv} from './python.js';
+
+const adminUrl=process.env.INSPECTOR_POSTGRES_ADMIN_URL,root=new URL('../../../',import.meta.url);
+const manualBytes=readFileSync(new URL('fixtures/matrix-lighting-technology-execution-v1/qa-manual-execution-goldens.json',root));
+expect(sha256(manualBytes)).toBe('264c3ed29f73f03a65e2e286b85ce6a6e91f8b4b76e42e019b6930fa6b85390e');
+const manual=JSON.parse(manualBytes.toString()).validCases[0].package;
+const domainHash=(a:unknown)=>sha256(canonicalJson({hashDomain:'document-text-v3-content-v1',artifact:a}));
+const declarationHash=(d:unknown)=>sha256(canonicalJson({hashDomain:'matrix-zu130-lighting-technology-v3-source-id-v1',declaration:d}));
+const scaffold=`import json,sys\nfrom inspector_worker.stage_scaffold import DEFAULT_STAGE_PROVIDER_REGISTRY\nx=json.load(sys.stdin)\njson.dump(DEFAULT_STAGE_PROVIDER_REGISTRY.execute(x['type'],x['lease'],x['attempt']),sys.stdout)`;
+const command=(actor:AuthenticatedActor)=>({actor,idempotencyKey:randomUUID(),requestId:randomUUID(),traceId:randomUUID()});
+const success=(value:any)=>{expect(value.kind,JSON.stringify(value)).toBe('success');if(value.kind!=='success')throw Error('Expected success');return value.value;};
+
+(adminUrl?describe:describe.skip)('T67 ordinary public audit to immutable lighting review PostgreSQL',{timeout:180_000},()=>{
+ const name=`lighting_execution_${randomUUID().replaceAll('-','')}`;let admin:Pool,db:Pool,repo:PostgresInspectionRepository,dir:string;
+ let actor:AuthenticatedActor,noRead:AuthenticatedActor,noReview:AuthenticatedActor,stranger:AuthenticatedActor,objectId:string,otherObjectId:string,checkId:string;
+ let files:any[],artifacts:any[],expectedDeclarations:any[],stored:any[]=[];let v2Artifacts:any[]=[];let positive:any,positiveBefore:any,inputs:any[]=[];const org='lighting-review-independent';
+ async function user(objects:string[],permissions:any[]):Promise<AuthenticatedActor>{const u=await provisionLocalUser(db,{organizationSlug:org,login:`qa-${randomUUID()}`,displayName:'Synthetic lighting reviewer',password:'Synthetic-Only-Test-2026!',objectApiIds:objects,objectPermissions:permissions});return {sessionId:randomUUID(),userId:u.id,organizationId:u.organizationId,displayName:'Synthetic lighting reviewer',roles:['INSPECTOR'],capabilities:['SOURCE_REVIEW'],csrfHash:'x',expiresAt:'2030-01-01T00:00:00Z'} as AuthenticatedActor;}
+ beforeAll(async()=>{
+  admin=new Pool({connectionString:adminUrl,max:1,connectionTimeoutMillis:5000,query_timeout:20000});await admin.query(`CREATE DATABASE "${name}"`);
+  const url=new URL(adminUrl!);url.pathname=`/${name}`;await runDatabaseMigrations(url.toString());db=new Pool({connectionString:url.toString(),connectionTimeoutMillis:5000,statement_timeout:15000,query_timeout:20000});dir=await mkdtemp(join(tmpdir(),'lighting-review-'));
+  repo=await PostgresInspectionRepository.create({connectionString:url.toString(),parameters:(await loadReferenceData()).parameters,analysisProfile:'MATRIX_V1',organizationSlug:org,storage:new LocalObjectStorage(dir)});
+  objectId=(await repo.createObject({name:'T67 SYNTHETIC human mappings; original-backed source declarations',address:'Москва'})).id;
+  otherObjectId=(await repo.createObject({name:'T67 unrelated object',address:'Москва'})).id;
+  actor=await user([objectId,otherObjectId],['READ','REVIEW_DECIDE','RUN']);noRead=await user([objectId],['REVIEW_DECIDE']);noReview=await user([objectId],['READ']);stranger=await user([],['READ','REVIEW_DECIDE']);
+  files=manual.sources.map((s:any,i:number)=>{const original=readFileSync(new URL(`fixtures/matrix-lighting-technology-source-v1/research-${i?'named-fluorescent':'named-led'}.pdf`,root));expect(sha256(original)).toBe(s.sourceSha256);return {id:`FIL-${randomUUID()}`,name:`T67-${i?'RD-FLUORESCENT':'PD-LED'}.pdf`,stage:i?'RD':'PD',size:original.length,mimeType:'application/pdf',sha256:s.sourceSha256,scanStatus:'CLEAN',status:'STORED',storageKey:`authored-${randomUUID()}.pdf`};});
+  for(let i=0;i<files.length;i++){const path=join(dir,files[i].storageKey);await mkdir(dirname(path),{recursive:true});await writeFile(path,readFileSync(new URL(`fixtures/matrix-lighting-technology-source-v1/research-${i?'named-fluorescent':'named-led'}.pdf`,root)));}
+  await repo.registerIngestedFiles(objectId,files);
+  v2Artifacts=files.map((f:any,i:number)=>({...JSON.parse(readFileSync(new URL(`fixtures/matrix-lighting-technology-source-v1/research-${i?'named-fluorescent':'named-led'}.text.json`,root),'utf8')),sourceFileId:f.id}));
+  artifacts=manual.origins.map((o:any,i:number)=>({...structuredClone(o.textArtifact),sourceFileId:files[i].id}));
+  expectedDeclarations=manual.sources.map((s:any,i:number)=>({...structuredClone(s.review.lightingTechnologyScope.claims[0].declarationSnapshot),sourceFileId:files[i].id,textArtifactHash:domainHash(artifacts[i])}));
+ });
+ afterAll(async()=>{await repo?.close();await db?.end();if(dir)await rm(dir,{recursive:true,force:true});if(admin)try{await admin.query('SET statement_timeout=10000');await admin.query('SET lock_timeout=5000');for(let i=0;i<100;i++){if((await admin.query('SELECT count(*)::int n FROM pg_stat_activity WHERE datname=$1',[name])).rows[0].n===0)break;await new Promise(r=>setTimeout(r,20));}await admin.query(`DROP DATABASE IF EXISTS "${name}"`);}finally{await admin.end();}});
+ const count=async()=>(await db.query('SELECT count(*)::int n FROM source_review_decisions')).rows[0].n;
+ async function request(i=0){const read=await repo.getDocumentTextV3Source(checkId,files[i].id,actor);if(!read||typeof read==='string')throw Error('Sealed native source missing');const selection=structuredClone(manual.sources[i].review.lightingTechnologyScope.claims[0].selection);const preview=await repo.previewMatrixLightingTechnologySource!(checkId,files[i].id,selection,actor);if(!preview||typeof preview==='string'||!preview.target||preview.result.status!=='RECONSTRUCTED')throw Error('Native preview missing');const {declarationSnapshot:_snapshot,...claim}=structuredClone(manual.sources[i].review.lightingTechnologyScope.claims[0]);return {read,preview,input:{sourceSha256:files[i].sha256,revisionStatus:'CURRENT' as const,approvalStatus:'APPROVED' as const,sectionCode:i?'EOM' as const:'IOS1' as const,linkGroupId:'synthetic-lighting-link',pageStages:{},basis:{reference:'SYNTHETIC inspected original source lines, no physical finding'},expectedReviewHash:read.latestReviewHash,lightingTechnologyScope:{schemaVersion:'matrix-zu130-lighting-technology-review-v1' as const,claims:[{...claim,target:preview.target,selection}]}}};}
+ function reviewHash(i:number,value:any){return sha256(canonicalJson({objectApiId:objectId,sourceFileApiId:files[i].id,sourceSha256:value.sourceSha256,revisionStatus:value.revisionStatus,approvalStatus:value.approvalStatus,linkGroupId:value.linkGroupId,...(value.sectionCode?{sectionCode:value.sectionCode}:{}),pageStages:value.pageStages,basis:value.basis,...(value.inventoryScope?{inventoryScope:value.inventoryScope}:{}),...(value.callInventoryScope?{callInventoryScope:value.callInventoryScope}:{}),...(value.railInventoryScope?{railInventoryScope:value.railInventoryScope}:{}),...(value.waterNodeScope?{waterNodeScope:value.waterNodeScope}:{}),...(value.lightingTechnologyScope?{lightingTechnologyScope:value.lightingTechnologyScope}:{}),actorId:actor.userId}));}
+ async function start(audit=false){const flags=['INSPECTOR_MATRIX_LIGHTING_TECHNOLOGY_COMPARISONS','INSPECTOR_MATRIX_WATER_NODE_COMPARISONS','INSPECTOR_MATRIX_RAIL_INVENTORY_COMPARISONS','INSPECTOR_MATRIX_CALL_INVENTORY_COMPARISONS','INSPECTOR_MATRIX_INVENTORY_COMPARISONS','INSPECTOR_MATRIX_OCR_LAYOUT'];const prior=flags.map(k=>process.env[k]);for(const key of flags)delete process.env[key];if(!audit)process.env[flags[0]]='1';try{return success(await repo.startCheckCommand(objectId,command(actor),audit?{sourceAuditV3:true}:undefined)).id;}finally{flags.forEach((k,i)=>prior[i]===undefined?delete process.env[k]:process.env[k]=prior[i]);}}
+ async function frozen(id:string){const q=await db.query(`SELECT a.content_json,a.content_hash,s.submission_bytes,s.submission_hash FROM analysis_runs r JOIN analysis_stage_artifacts a ON a.run_id=r.id AND a.job_type='RULE_EVALUATION' JOIN machine_prediction_snapshots s ON s.run_id=r.id WHERE r.api_id=$1`,[id]);const row=q.rows[0];expect(sha256(canonicalJson(row.content_json))).toBe(row.content_hash.trim());expect(sha256(row.submission_bytes)).toBe(row.submission_hash.trim());return {body:canonicalJson(row.content_json),hash:row.content_hash.trim(),submission:row.submission_bytes.toString('utf8'),submissionHash:row.submission_hash.trim()};}
+ async function read(id:string){const value=await repo.getMatrixExecution(id,actor);if(!value||typeof value==='string')throw Error('Verified saved execution unavailable');return value as any;}
+ const durableScript=`import json,sys\nfrom unittest.mock import patch\nfrom inspector_worker import durable_lighting_technology_matrix as worker\nfrom inspector_worker.pilot_rule_adapter import PilotPz002RuleAdapter\nx=json.load(sys.stdin);artifacts={a['sourceFileId']:a for a in x['artifacts']}\nwith patch.object(worker,'download_reviewed_inventory_comparison_inputs',return_value=x['loader']),patch.object(worker,'download_text_artifact',side_effect=lambda lease,source,attempt:artifacts[source['sourceFileId']]):\n result=PilotPz002RuleAdapter().execute(x['lease'],x['attempt'])\njson.dump(result,sys.stdout,ensure_ascii=False)`;
+ async function run(audit=false,attacks=false){const id=await start(audit),types:string[]=[];let accepted:any;
+  for(let n=0;n<14;n++){const q=await db.query(`SELECT j.id,j.job_type FROM analysis_jobs j JOIN analysis_runs r ON r.id=j.run_id WHERE r.api_id=$1 AND j.state='READY' ORDER BY j.created_at,j.id LIMIT 1`,[id]);if(!q.rows.length)break;const job=q.rows[0];types.push(job.job_type);const acquired=await repo.claimJob(job.id,{workerId:'lighting-review-it',capabilities:[job.job_type]});expect(acquired.kind).toBe('acquired');if(acquired.kind!=='acquired')throw Error('Lease missing');const lease=acquired.lease,attempt={attemptId:lease.attemptId,fencingToken:lease.fencingToken};let result:any;
+   if(job.job_type==='ANALYSIS_INVENTORY')result={disposition:'MANIFEST_INVENTORIED',sourceCount:2,stageCounts:{PD:1,RD:1,ID:0}};
+   else if(job.job_type==='DOCUMENT_TEXT_LAYER')result={disposition:'DOCUMENT_TEXT_LAYER_COMPLETED',...(audit?{purpose:'SOURCE_AUDIT_ONLY',workerId:'lighting-review-it'}:{}),sources:(audit?artifacts:v2Artifacts).map(a=>({sourceFileId:a.sourceFileId,inputSha256:a.inputSha256,status:'EXTRACTED',artifact:a}))};
+   else if(job.job_type==='RULE_EVALUATION'&&!audit){
+    expect(lease.release.providerSlot).toMatchObject({profileId:MATRIX_LIGHTING_TECHNOLOGY_PROFILE,adapterVersion:'9',configHash:matrixLightingTechnologyConfigHash});
+    const loaderMethod=(repo as any).getJobLightingTechnologyReviewedInventoryComparisonInputs.bind(repo);
+    expect(await loaderMethod(job.id,{...attempt,attemptId:randomUUID()})).toMatchObject({kind:'stale_attempt'});expect(await loaderMethod(job.id,{...attempt,fencingToken:attempt.fencingToken+1})).toMatchObject({kind:'stale_attempt'});
+    const aborted=new AbortController();aborted.abort();const cancelled=await loaderMethod(job.id,attempt,{signal:aborted.signal});expect(cancelled.kind).not.toBe('available');
+    const originalBytes=readFileSync(join(dir,files[0].storageKey));try{await writeFile(join(dir,files[0].storageKey),Buffer.alloc(originalBytes.length,32));expect((await loaderMethod(job.id,attempt)).kind).not.toBe('available');}finally{await writeFile(join(dir,files[0].storageKey),originalBytes);}
+    const loaded=await loaderMethod(job.id,attempt);expect(loaded.kind).toBe('available');if(loaded.kind!=='available')throw Error('Protected v5 loader unavailable');expect(loaded.schemaVersion).toBe('matrix-reviewed-inventory-loader-inputs-v5');expect(loaded.contentHash).toBe(sha256(loaded.canonical));const loader=JSON.parse(loaded.canonical);
+    expect(Object.keys(loader).sort()).toEqual(['callInventory','inputManifestHash','inventory','lightingTechnology','objectId','railInventory','schemaVersion','waterNode']);
+    for(const key of ['inventory','callInventory','railInventory','waterNode']){expect(loader[key].origins).toEqual(loader.inventory.origins);expect(loader[key].origins.every((o:any)=>o.textArtifact.schemaVersion==='document-text-v2')).toBe(true);}
+    expect(loader.lightingTechnology.origins.every((o:any)=>o.textArtifact.schemaVersion==='document-text-v3')).toBe(true);expect(loader.lightingTechnology.sources).toHaveLength(2);
+    for(const source of loader.lightingTechnology.sources){for(const key of ['inventory','callInventory','railInventory','waterNode']){const old=loader[key].sources.find((s:any)=>s.sourceFileId===source.sourceFileId);expect(old.sourceSha256).toBe(source.sourceSha256);expect(old.stages).toEqual(source.stages);expect(old.reviewSnapshot).toEqual(source.reviewSnapshot);}}
+    expect(await repo.getJobWaterNodeReviewedInventoryComparisonInputs(job.id,attempt)).toMatchObject({kind:'integrity_error'});
+    for(const a of v2Artifacts){const text=await repo.getJobTextArtifact(job.id,a.sourceFileId,attempt);expect(text.kind).toBe('available');}
+    const process=spawnSync(pythonExecutable,['-c',durableScript],{cwd:root,encoding:'utf8',timeout:30000,maxBuffer:48*1024*1024,env:{...globalThis.process.env,...pythonEnv},input:JSON.stringify({lease,attempt,loader,artifacts:v2Artifacts})});expect(process.status,process.stderr).toBe(0);result=JSON.parse(process.stdout);
+    const keys=['inventoryComparisons','callInventoryComparisons','railInventoryComparisons','waterNodeComparisons','lightingTechnologyComparisons'];expect(result.outputCount).toBe(result.execution.results.length+keys.reduce((sum,k)=>sum+result[k].results.length,0));
+    expect(result.lightingTechnologyComparisons.results[0]).toMatchObject({kind:'SCOPED_COMPARISON'});
+    expect(result.effectiveCoverage.filter((c:any)=>c.implementedAtomicRules>0)).toHaveLength(60);expect(result.effectiveCoverage.reduce((sum:number,c:any)=>sum+c.implementedAtomicRules,0)).toBe(68);expect(result.effectiveCoverage.filter((c:any)=>c.executionStatus==='UNSUPPORTED')).toHaveLength(72);
+    expect(result.effectiveCoverage.find((c:any)=>c.parameterCode==='ZU-130')).toMatchObject({implementedAtomicRules:1,enabledAtomicRules:1,evaluatedAtomicRules:1,executionStatus:'PARTIAL',failures:0});
+    if(attacks){const reject=async(v:any)=>{expect((await repo.completeJob(job.id,{...attempt,result:v})).kind).toBe('invalid_state');expect((await db.query('SELECT 1 FROM analysis_stage_artifacts WHERE job_id=$1',[job.id])).rows).toHaveLength(0);};for(const key of [...keys,'effectiveCoverage']){const v=structuredClone(result);delete v[key];await reject(v);}for(const mutate of [(v:any)=>v.outputCount--,(v:any)=>v.lightingTechnologyComparisons.results[0].id='f'.repeat(64),(v:any)=>v.lightingTechnologyComparisons.results[0].comparison.calibratedProbability=.99,(v:any)=>{const envelope=v.lightingTechnologyComparisons,row=envelope.results[0];row.comparison.expected.sourceSha256='f'.repeat(64);const {id:_old,...body}=row;row.id=sha256(canonicalJson({hashDomain:'matrix-lighting-technology-execution-result-id-v1',objectId:envelope.objectId,inputManifestHash:envelope.inputManifestHash,capabilityRegistryHash:envelope.capabilityRegistryHash,result:body}));},(v:any)=>v.effectiveCoverage.find((c:any)=>c.parameterCode==='ZU-130').executionStatus='EVALUATED']){const v=structuredClone(result);mutate(v);await reject(v);}expect((await repo.completeJob(job.id,{...attempt,fencingToken:attempt.fencingToken+1,result})).kind).toBe('stale_attempt');}
+    accepted=result;
+   }else if(job.job_type==='ANALYSIS_SEAL_UNSUPPORTED')result={disposition:'UNSUPPORTED_COVERAGE_SEALED'};
+   else{const p=spawnSync(pythonExecutable,['-c',scaffold],{cwd:root,encoding:'utf8',timeout:30000,env:{...process.env,...pythonEnv},input:JSON.stringify({type:job.job_type,lease,attempt})});expect(p.status,p.stderr).toBe(0);result=JSON.parse(p.stdout);expect(result.outputCount).toBe(0);}
+   expect(await repo.completeJob(job.id,{...attempt,result})).toMatchObject({kind:'completed'});
+  }
+  expect(types).toHaveLength(9);expect(await repo.getCheck(id,actor)).toMatchObject({status:'PARTIAL',progress:100});return {checkId:id,saved:audit?null:await read(id),accepted};
+ }
+ it('prepares original full native audit using ordinary public command then persists mapped lighting claims',async()=>{
+  const audit=await run(true);checkId=audit.checkId;
+  expect([await repo.getCheck(checkId,actor),...(await repo.listObjectChecks(objectId,actor) as any[]).filter(c=>c.id===checkId)].map(c=>c?.purpose)).toEqual(['SOURCE_AUDIT_ONLY','SOURCE_AUDIT_ONLY']);
+  for(let i=0;i<2;i++){const {preview,input}=await request(i);expect(preview.result).toEqual({schemaVersion:'matrix-zu130-lighting-technology-source-v3-result-v1',status:'RECONSTRUCTED',declaration:expectedDeclarations[i]});inputs.push(input);stored[i]=success(await repo.recordSourceReviewCommand(objectId,files[i].id,input,command(actor)));expect(stored[i].lightingTechnologyScope.claims[0].declarationSnapshot).toEqual(expectedDeclarations[i]);}
+ });
+ it('executes actual v9 and independently admits native candidate with null confidence and conservative submission',async()=>{
+  positive=await run(false,true);positiveBefore=await frozen(positive.checkId);const s=positive.saved;
+  expect([await repo.getCheck(positive.checkId,actor),...(await repo.listObjectChecks(objectId,actor) as any[]).filter(c=>c.id===positive.checkId)].map(c=>Object.hasOwn(c!,'purpose'))).toEqual([false,false]);
+  expect(s.lightingTechnologyComparisons.results[0]).toMatchObject({kind:'SCOPED_COMPARISON',comparison:{status:'CANDIDATE',calibratedProbability:null,expectedTechnology:'LED',actualTechnology:'FLUORESCENT',reasonCode:'LED_REPLACED_BY_FLUORESCENT_OR_INCANDESCENT'}});
+  expect(s.lightingTechnologyComparisonEvidence).toHaveLength(2);for(const [i,e] of s.lightingTechnologyComparisonEvidence.entries()){expect(e.sourceSha256).toBe(files[i].sha256);expect(e.fragment).toEqual(expectedDeclarations[i].primaryFragments[0]);}
+  for(const key of ['inventoryComparisons','callInventoryComparisons','railInventoryComparisons','waterNodeComparisons'])expect(s[key].results).toMatchObject([{kind:'UNBOUND_ATOM_ABSTENTION',calibratedProbability:null}]);
+  expect(await repo.getSubmission(positive.checkId,actor)).toEqual(JSON.parse(positiveBefore.submission));expect(JSON.parse(positiveBefore.submission).checks.at(-1)).toMatchObject({parameter_code:'M-130',pd_value:null,rd_value:null,id_value:null,violation_label:'COMPARISON_IMPOSSIBLE',protocol_status:'COMPARISON_IMPOSSIBLE',evidence:[]});
+  expect((await repo.getCoverage(positive.checkId,actor) as any[]).find(c=>c.parameterCode==='ZU-130')).toMatchObject({executionStatus:'PARTIAL',atomic:{enabledAtomicRules:1,successfulComparisons:1}});
+ });
+ it('withdraws and restores only latest reviewed claim, while sealed historical reads stay exact after reopen',async()=>{
+  const latest:any=await repo.getSourceReview(objectId,files[1].id,actor);expect(latest.contentHash).toBe(stored[1].contentHash);const revoked=success(await repo.recordSourceReviewCommand(objectId,files[1].id,{...inputs[1],expectedReviewHash:latest.contentHash,lightingTechnologyScope:{schemaVersion:'matrix-zu130-lighting-technology-review-v1',claims:[]}},command(actor)));
+  const next=await run();expect(next.saved.lightingTechnologyComparisons.results[0]).toMatchObject({kind:'SCOPED_COMPARISON',comparison:{status:'ABSTAIN',calibratedProbability:null}});expect(next.saved.lightingTechnologyComparisonEvidence).toEqual([]);expect(await frozen(positive.checkId)).toEqual(positiveBefore);expect(await read(positive.checkId)).toEqual(positive.saved);
+  success(await repo.recordSourceReviewCommand(objectId,files[1].id,{...inputs[1],expectedReviewHash:revoked.contentHash},command(actor)));const restored=await run();expect(restored.saved.lightingTechnologyComparisons.results[0].comparison.status).toBe('CANDIDATE');await repo.close();
+  const url=new URL(adminUrl!);url.pathname=`/${name}`;repo=await PostgresInspectionRepository.create({connectionString:url.toString(),parameters:(await loadReferenceData()).parameters,analysisProfile:'MATRIX_V1',organizationSlug:org,storage:new LocalObjectStorage(dir)});expect(await read(restored.checkId)).toEqual(restored.saved);expect(await frozen(positive.checkId)).toEqual(positiveBefore);
+  const original=readFileSync(join(dir,files[0].storageKey));try{await writeFile(join(dir,files[0].storageKey),Buffer.alloc(original.length,32));expect(await repo.getMatrixExecution(restored.checkId,actor)).toBeUndefined();expect(await repo.getSubmission(restored.checkId,actor)).toBeUndefined();}finally{await writeFile(join(dir,files[0].storageKey),original);}
+  expect(await repo.getMatrixExecution(restored.checkId,stranger)).toBeUndefined();
+ });
+});

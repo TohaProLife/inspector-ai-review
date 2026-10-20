@@ -210,6 +210,16 @@ describe("fact-family proposal admission", () => {
     expect(normalizeFact(apartment, "m2")).toBeNull();
   });
 
+  it("normalizes pressure exactly while preserving SI case and dimension", () => {
+    const fact = { rawValue: "0,275", rawUnit: "кПа", attribute: "SMOKE_CONTROL_FAN_PRESSURE" };
+    expect(normalizeFact(fact, "Pa")).toEqual({ numerator: 275000n, denominator: 1000n });
+    expect(normalizeFact({ ...fact, rawValue: "275", rawUnit: "Pa" }, "Pa"))
+      .toEqual({ numerator: 275n, denominator: 1n });
+    for (const rawUnit of ["па", "КПа", "kpa", "pa", "кВт", "мм"]) {
+      expect(normalizeFact({ ...fact, rawUnit }, "Pa"), rawUnit).toBeNull();
+    }
+  });
+
   it("matches Python's strict concrete class syntax", () => {
     const fact = { rawValue: "В30", rawUnit: "В", attribute: "CONCRETE_CLASS" };
     expect(normalizeFact(fact, "B_CLASS")).toEqual({ numerator: 30n, denominator: 1n });

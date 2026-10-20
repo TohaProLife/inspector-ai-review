@@ -1,0 +1,19 @@
+/** Standalone snapshot and proleptic UTC expectations fixed before narrow correction. */
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {it,expect} from 'vitest';
+import {validateColumnPylonSectionReviewDecision} from '../src/matrix-column-pylon-section-v2.js';
+const packet=JSON.parse(readFileSync(new URL('../../../fixtures/matrix-column-pylon-section-v2/owner-manual-whole.json',import.meta.url),'utf8'));
+const canonical=(v:any):string=>v===null?'null':Array.isArray(v)?'['+v.map(canonical).join(',')+']':typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}':JSON.stringify(v);
+const hash=(v:any)=>createHash('sha256').update(canonical(v)).digest('hex');
+const omit=(v:any,key:string)=>Object.fromEntries(Object.entries(v).filter(([k])=>k!==key));
+function rehash(j:any){j.projection.contentHash=hash({hashDomain:'matrix-kr060-column-pylon-pair-projection-json-v2',projection:omit(j.projection,'contentHash')});j.contentHash=hash({hashDomain:'matrix-kr060-column-pylon-pair-journal-json-v2',journal:omit(j,'contentHash')});return j;}
+const journal=()=>structuredClone(packet.cases[0].input.review);
+it('standalone rejects stored native selection hash inconsistent with own target',()=>{const j=journal();j.projection.actual.selection.selectionContentHash='0'.repeat(64);rehash(j);expect(()=>validateColumnPylonSectionReviewDecision(j)).toThrowError(expect.objectContaining({code:'INVALID_DECISION'}));});
+it('standalone rejects literal target distinct from full snapshot page',()=>{const j=journal();j.projection.expected.selection.pageNumber=2;rehash(j);expect(()=>validateColumnPylonSectionReviewDecision(j)).toThrowError(expect.objectContaining({code:'INVALID_DECISION'}));});
+it.each([['0000-02-29T00:00:00.000Z',true],['0000-02-30T00:00:00.000Z',false],['0001-01-01T00:00:00.000Z',true],['1900-02-29T00:00:00.000Z',false],['2000-02-29T00:00:00.000Z',true]])('exact proleptic Gregorian %s', (date,valid)=>{const j=journal();j.createdAt=date;rehash(j);if(valid)expect(validateColumnPylonSectionReviewDecision(j)).toEqual(j);else expect(()=>validateColumnPylonSectionReviewDecision(j)).toThrow();});
+import {parseColumnPylonSectionReviewInput} from '../src/matrix-column-pylon-section-v2.js';
+it('uses frozen whitespace set rather than host trim tables for keys/reference',()=>{const p=JSON.parse(readFileSync(new URL('../../../fixtures/matrix-column-pylon-section-v2/owner-fresh-materialization.json',import.meta.url),'utf8'));p.request.reference='\ufeffliteral reference';expect(parseColumnPylonSectionReviewInput(p.request)).toEqual(p.request);p.request.reference='\u00a0literal reference';expect(parseColumnPylonSectionReviewInput(p.request)).toBeNull();});
+import {validateColumnPylonSectionApprovedClaims} from '../src/matrix-column-pylon-section-v2.js';
+it('internal approved claims check accepts full manual claims without asserting source authority',()=>expect(()=>validateColumnPylonSectionApprovedClaims(journal())).not.toThrow());
+it.each(['shape','gross','member','unit','scope','pair','missing-shape-basis'])('internal approved claims check rejects %s even behind external stage gate',field=>{const j=journal(),p=j.projection;if(field==='shape')p.actual.assertions.shape='UNKNOWN';if(field==='gross')p.actual.assertions.dimensionMeaning='UNKNOWN';if(field==='member')p.actual.assertions.physicalMember='UNKNOWN';if(field==='unit')p.actual.assertions.unit='UNKNOWN';if(field==='scope')p.actual.unitScopeAssertion='UNKNOWN';if(field==='pair')p.pairAssertion='UNKNOWN';if(field==='missing-shape-basis')p.actual.basis=p.actual.basis.filter((b:any)=>b.role!=='SECTION_SHAPE');rehash(j);expect(()=>validateColumnPylonSectionApprovedClaims(j)).toThrowError(expect.objectContaining({code:'INVALID_DECISION'}));});

@@ -98,3 +98,7 @@ sequenceDiagram
 ## Совместимость с ТЗ
 
 PENDING → OPEN без активного run; PARSING → QUEUED/RUNNING; READY/VERIFYING → sealed run с pending review; COMPLETED/VERIFICATION_COMPLETED → sealed run без pending candidates; FINALIZED/PROTOCOL_FINALIZED → inspection FINALIZED и действующий FINAL snapshot. PENDING_SYNC — только sync state. Производный display_status формируется API, не служит входом команды.
+
+## T62: source-only audit consistency
+
+`SOURCE_AUDIT_V3` — отдельный immutable scaffold с purpose `SOURCE_AUDIT_ONLY`; terminal completion принимает только полный exact released artifact. Для этого audit quality OCR_REQUIRED описывает исходный текст, но не назначает OCR jobs или machine eligibility. Authenticated read работает только по сохранённому artifact/sealed run; не запускает текущий extractor заново. Старый artifact не переадресуется после нового traversal profile. [Проверки restart](../operations/MATRIX_T62_DURABLE_TEXT_V3_20261018.md).

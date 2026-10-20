@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matrix-column-pylon-section-durable.schema.json",
+  "title": "PROPOSAL v12 seven-domain protected reviewed loader",
+  "$ref": "#/$defs/reviewedLoader",
+  "$defs": {
+    "reviewedLoader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "inventory",
+        "callInventory",
+        "railInventory",
+        "waterNode",
+        "lightingTechnology",
+        "steelComparison",
+        "steelApplicabilitySnapshot",
+        "objectApiId",
+        "columnPylonSection",
+        "columnPylonSectionSnapshot"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-reviewed-inventory-loader-inputs-v7"
+        },
+        "objectId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}(?![\\s\\S])"
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "inventory": {
+          "type": "object",
+          "description": "Existing frozen child boundary, validated completely by validateInventoryLoaderPackage; unchanged from loader v5."
+        },
+        "callInventory": {
+          "type": "object",
+          "description": "Existing frozen child boundary, validated completely by validateCallInventoryLoaderPackage; unchanged from loader v5."
+        },
+        "railInventory": {
+          "type": "object",
+          "description": "Existing frozen child boundary, validated completely by validateRailInventoryLoaderPackage; unchanged from loader v5."
+        },
+        "waterNode": {
+          "type": "object",
+          "description": "Existing frozen child boundary, validated completely by validateWaterNodeLoaderPackage; unchanged from loader v5."
+        },
+        "lightingTechnology": {
+          "type": "object",
+          "description": "Existing frozen child boundary, validated completely by validateLightingTechnologyLoaderPackage; unchanged from loader v5."
+        },
+        "steelComparison": {
+          "$ref": "matrix-steel-execution.schema.json#/definitions/loaderPackage"
+        },
+        "steelApplicabilitySnapshot": {
+          "$ref": "matrix-steel-durable.schema.json#/definitions/applicabilitySnapshot"
+        },
+        "objectApiId": {
+          "$ref": "matrix-column-pylon-section-v2.schema.json#/$defs/key"
+        },
+        "columnPylonSection": {
+          "$ref": "matrix-column-pylon-section-loader.schema.json#/$defs/loaderPackage"
+        },
+        "columnPylonSectionSnapshot": {
+          "$ref": "matrix-column-pylon-section-run-snapshot.schema.json#/$defs/snapshot"
+        }
+      }
+    }
+  },
+  "x-proposal": {
+    "status": "DRAFT_FOR_ROOT_QA_REVIEW",
+    "canonicalFrozen": false,
+    "productionImplementationAuthorized": false
+  },
+  "x-native-limits": {
+    "canonicalUtf8Bytes": 67108864,
+    "nodes": 4500018,
+    "depth": 69,
+    "containerItems": 32768,
+    "scalarStringCodePoints": 2000000
+  },
+  "x-semantics": [
+    "Exact13 parent fields. Root depth0; each value and object key a node; no array-index nodes; keys at parent+1. Whole canonical UTF8 bytes include punctuation and escaping",
+    "All old six children and steel snapshot retain exact independent frozen validators and policies; parent does not relax any child and does not fabricate old release",
+    "Existing children objectId equal parent INTERNAL objectId and manifest hash; KR060 child.objectId equals parent PUBLIC objectApiId, manifest equal normal manifest. KR060 snapshot binds both IDs",
+    "Lease internal objectId/inputManifestHash and release/provider/attempt/fence must equal protected parent; JobLease sourceDecisions has metadata not decisionId/contentHash: compare only available fields, full review pointers bound by authenticated child",
+    "Strict builtin-only safeint/Unicode scalar/native descriptor-first zero callbacks, dense arrays/no proxies/getters/cycles; ASCII object keys at outer boundary (existing nested v3/T82 schemas already fixed ASCII keys)",
+    "Enforce full byte/node/depth caps before DTO/selection; strict bounded HTTP decoder rejects duplicates/nonfinite/unsafe numeric fields, 64MiB response and 60second deadline; no auto fallback/custom budget",
+    "All retained children validated before worker text downloads/execution. Protected endpoint dedicated explicit v12 only, v6 route untouched",
+    "Snapshot/header/authenticated DB entry equality and journal/source/artifact/PDF fingerprints rechecked under inspection lock before start; entire immutable package used at completion and historical replay"
+  ]
+}

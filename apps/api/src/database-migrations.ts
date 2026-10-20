@@ -16,6 +16,52 @@ interface MigrationRequirement {
 }
 
 const knownMigrationRequirements: Record<string, MigrationRequirement> = {
+  "051_source_ocr_imports.sql": {
+    relations: ["source_ocr_imports", "source_ocr_reviews"],
+    triggers: ["source_ocr_imports_binding", "source_ocr_imports_immutable", "source_ocr_reviews_binding", "source_ocr_reviews_immutable"],
+    functions: ["verify_source_ocr_import_binding", "verify_source_ocr_review_binding"],
+  },
+  "050_native_source_comparison_nested_bindings.sql": {
+    triggers: ["native_capacity_comparisons_nested_binding", "native_airflow_comparisons_nested_binding"],
+    functions: ["verify_native_source_comparison_nested_binding"],
+  },
+  "049_native_airflow_comparisons.sql": {
+    relations: ["native_airflow_comparisons"],
+    triggers: ["native_airflow_comparisons_binding", "native_airflow_comparisons_immutable"],
+    functions: ["verify_native_airflow_comparison_binding"],
+  },
+  "048_native_capacity_comparisons.sql": {
+    relations: ["native_capacity_comparisons"],
+    triggers: ["native_capacity_comparisons_binding", "native_capacity_comparisons_immutable"],
+    functions: ["verify_native_capacity_comparison_binding"],
+  },
+  "047_protocol_rendered_artifacts.sql": {
+    relations: ["protocol_rendered_artifacts"],
+    triggers: ["protocol_rendered_artifacts_source_binding", "protocol_rendered_artifacts_immutable"],
+    functions: ["verify_protocol_rendered_artifact_source"],
+  },
+  "045_run_column_pylon_section_snapshots.sql": {
+    relations:["run_column_pylon_section_snapshot_states","run_column_pylon_section_snapshot_entries"],
+    triggers:["run_column_pylon_section_snapshot_state_binding","run_column_pylon_section_snapshot_entry_binding",
+      "run_column_pylon_section_snapshot_states_immutable","run_column_pylon_section_snapshot_entries_immutable"],
+    functions:["verify_column_pylon_snapshot_state_binding","verify_column_pylon_snapshot_entry_binding"],
+  },
+  "044_matrix_column_pylon_section_v2_reviews.sql": {
+    relations:["matrix_column_pylon_section_v2_decisions","matrix_column_pylon_v2_sequence_key",
+      "matrix_column_pylon_v2_predecessor_key","matrix_column_pylon_v2_initial_pair_idx",
+      "matrix_column_pylon_v2_next_decision_idx","matrix_column_pylon_v2_pair_latest_idx",
+      "matrix_column_pylon_v2_object_sequence_idx"],
+    triggers:["matrix_column_pylon_section_v2_decisions_immutable"],
+  },
+  "042_run_steel_applicability_snapshots.sql": {
+    relations:["run_steel_applicability_snapshot_states","run_steel_applicability_snapshot_entries"],
+    triggers:["run_steel_applicability_snapshot_states_immutable","run_steel_applicability_snapshot_entries_immutable"],
+  },
+  "041_matrix_steel_applicability_reviews.sql": {
+    relations:["matrix_steel_applicability_decisions","matrix_steel_applicability_sequence_key",
+      "matrix_steel_applicability_pair_latest_idx","matrix_steel_applicability_object_sequence_idx"],
+    triggers:["matrix_steel_applicability_decisions_immutable"],
+  },
   "001_initial.sql": {
     relations: [
       "inspection_objects", "document_files", "document_links", "parameter_catalog",
@@ -135,6 +181,13 @@ const knownMigrationRequirements: Record<string, MigrationRequirement> = {
       "ocr_fact_pair_quantity_decisions_history_idx",
       "run_ocr_fact_pair_snapshots_quantity_key"],
     triggers: ["ocr_fact_pair_quantity_decisions_immutable"],
+  },
+  "031_matrix_machine_execution.sql": {
+    relations:["machine_prediction_snapshots"],triggers:["machine_prediction_snapshots_immutable"],
+  },
+  "032_local_document_registration.sql": {
+    relations:["local_document_registration_reviews","local_document_registration_reviews_scope_idx"],
+    triggers:["local_document_registration_reviews_immutable"],
   },
   "029_review_candidate_decisions.sql": {
     relations: ["review_candidate_decisions", "review_candidate_decisions_history_idx"],

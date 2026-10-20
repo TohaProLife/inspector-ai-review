@@ -1,5 +1,11 @@
 # Geometry registration v1: pure review-only calibration
 
+Runtime update, 17.10.2026: the numerical module now has a bounded, authenticated
+read route through the independent signed operator trust store. See
+[provenance and runtime limits](FEEDBACK_GEOMETRY_PROVENANCE_20261017.md).
+The original pure-module qualification below remains historical; real building
+registration still requires independently approved control evidence.
+
 28.09.2026. Scope: numerical precursor for the nine `BOUNDARY_OVERLAY` and four
 `COORDINATE_ALIGNMENT` unresolved rules in
 [geometry evidence plan](GEOMETRY_EVIDENCE_PIPELINE_PLAN_20260928.md). No rule

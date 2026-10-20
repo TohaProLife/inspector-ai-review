@@ -36,6 +36,17 @@ describe("web API client", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/checks/CHK-1/coverage", expect.objectContaining({ headers: expect.any(Object) }));
   });
 
+  it("keeps CSRF and the caller's stable idempotency key when saving a local registration", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("document", { cookie: "inspector_csrf=local-review-csrf" });
+    await api.saveLocalRegistrationReview("OBJ-local", {} as Parameters<typeof api.saveLocalRegistrationReview>[1], "local-review-key");
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((init.headers as Headers).get("X-CSRF-Token")).toBe("local-review-csrf");
+    expect((init.headers as Headers).get("Idempotency-Key")).toBe("local-review-key");
+    expect(init.credentials).toBe("include");
+  });
+
   it("shows the API message for rejected actions", async () => {
     vi.stubGlobal(
       "fetch",

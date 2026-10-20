@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-column-pylon-section-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "KR-060",
+      "matrixCode": "M-060",
+      "ruleId": "matrix-kr-060-reviewed_rectangular_gross_section_area_decrease",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "EXACT_INTEGER_AREA_COMPARISON",
+      "executionKind": "REVIEWED_COLUMN_PYLON_RECTANGULAR_GROSS_SECTION_AREA_PD_RD",
+      "resultSchemaVersion": "matrix-kr060-column-pylon-comparison-v2",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:ONE_EXPLICIT_HUMAN_REVIEWED_SAME_COLUMN_OR_PYLON_RECTANGULAR_GROSS_SECTION_PD_RD_AREA_COMPARISON;OTHER_SHAPES_DIMENSION_MEANINGS_MEMBER_MATCHING_ALL_MEMBERS_COMPLETENESS_RENDERED_VISIBILITY_PHYSICAL_GEOMETRY_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+    }
+  ]
+}

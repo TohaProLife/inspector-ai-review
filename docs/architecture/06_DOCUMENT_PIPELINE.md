@@ -116,3 +116,7 @@ Output: link_id, run_id, entity_key, selected document_version_ids, role expecte
 ## 8. Qualification providers
 
 Перед выбором provider зафиксировать benchmark fixtures: digital PDF, scan, rotated/cropped sheet, большой чертёж, stamp, table, DOCX/XML и повреждённый вход. Сравнить качество, память, latency, offline-install, license/deployment ограничения. Выбрать один default renderer и OCR provider для R1, сохранить exact artifacts/config и отчёт. Замена provider — новый release и повтор geometry/OCR regression, не незаметный dependency update.
+
+## T62: полный исходный текст v3
+
+Durable opt-in source audit сохраняет raw text/LF, native paths/frame, отдельные located и unlocated records, полный extractor profile и recomputed quality. Новая explicit policy `pdfminer-analyzed-figures-boxes-flow-none-v1` задаёт boxes_flow=None для page/Form; два старых профиля читаются исторически. Нулевая native area и milli-point collapse сохраняются как unlocated, без выдуманной рамки. Whole-artifact limits/cache/release fences применяются до выдачи source-only DTO. Rendered visibility и source authority остаются UNVERIFIED, calibratedProbabilitynull. [Реальный full-PDF прогон](../operations/MATRIX_T62_DURABLE_TEXT_V3_20261018.md).

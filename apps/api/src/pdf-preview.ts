@@ -84,7 +84,12 @@ export async function renderVerifiedPdfPage(
   expected: { byteSize: number; sha256: string },
   pageNumber: number,
   crop?: NormalizedCrop,
+  resolution = 1200,
 ): Promise<Buffer> {
+  if (![1200, 2400, 4800].includes(resolution)) {
+    input.destroy();
+    throw new PdfPreviewError(400, "INVALID_RESOLUTION", "Недопустимое разрешение листа");
+  }
   if (!Number.isSafeInteger(pageNumber) || pageNumber < 1 || pageNumber > 10_000) {
     input.destroy();
     throw new PdfPreviewError(400, "INVALID_PAGE", "Номер страницы вне допустимого диапазона");
@@ -139,7 +144,7 @@ export async function renderVerifiedPdfPage(
     try {
       await execFileAsync("pdftoppm", [
         "-f", String(pageNumber), "-l", String(pageNumber), "-singlefile",
-        "-cropbox", ...(crop ? cropArguments(info.stdout, pageNumber, crop) : ["-scale-to", "1200"]),
+        "-cropbox", ...(crop ? cropArguments(info.stdout, pageNumber, crop) : ["-scale-to", String(resolution)]),
         "-png", source, join(directory, "page"),
       ], { timeout: 60_000, maxBuffer: 256 * 1024, env: { ...process.env, LC_ALL: "C" } });
     } catch {

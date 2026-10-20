@@ -12,8 +12,8 @@ from inspector_worker.ocr_pilot import canonical_hash
 from inspector_worker.ocr_table_rows import extract_ocr_table_rows
 
 
-_STAGE_PATH = (Path(__file__).resolve().parents[3] / "output" /
-               "public-index-20260927" / "f0202-v5-ocr-stage-20260928.json")
+_STAGE_PATH = (Path(__file__).resolve().parents[3] / "fixtures" /
+               "ocr-table-rows-public-v1" / "stage.json")
 _STAGE_SHA = "abc417e23740320ba4004dc05ec84d951b3715abde02a91c563c7954dffb327a"
 _PAGE_NINE_PAIRS = [(12, 13), (15, 16), (17, 18), (19, 20), (21, 22),
                     (24, 25), (26, 27), (28, 29), (30, 31), (32, 33),
@@ -21,8 +21,6 @@ _PAGE_NINE_PAIRS = [(12, 13), (15, 16), (17, 18), (19, 20), (21, 22),
 
 
 def _real_stage() -> dict:
-    if not _STAGE_PATH.is_file():
-        raise unittest.SkipTest(f"Recorded public OCR stage unavailable: {_STAGE_PATH}")
     body = _STAGE_PATH.read_bytes()
     if hashlib.sha256(body).hexdigest() != _STAGE_SHA:
         raise AssertionError("local committed OCR stage fixture changed")

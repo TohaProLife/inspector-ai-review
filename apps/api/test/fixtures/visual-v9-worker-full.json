@@ -1,0 +1,343 @@
+{
+  "schemaVersion": "synthetic-v9-worker-http-fixture-v1",
+  "runtime": "local stdlib fake HTTP server; no GPU/model inference",
+  "result": {
+    "schemaVersion": "analysis-stage-result-v2",
+    "jobType": "ENTITY_EXTRACTION",
+    "inputManifestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "disposition": "VISUAL_PROPOSAL_SCAN",
+    "reasonCode": "PROPOSAL_ONLY_UNVERIFIED",
+    "providerKind": "ENTITY_EXTRACTION_MODEL",
+    "providerProfileId": "red-vector-proposals-v9-full",
+    "providerConfigHash": "316488e0793d23652d62dd3d531f11282abe587645a06fcdb2a84609039147af",
+    "outputCount": 5,
+    "analysis": {
+      "schemaVersion": "visual-proposal-analysis-v9",
+      "objectId": "OBJ-V9-ORACLE",
+      "inputManifestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "profile": {
+        "schemaVersion": "visual-proposal-profile-v9",
+        "methodId": "red-vector-panel-blue-contact-v1",
+        "maxPagesPerSource": 10000,
+        "maxProposalsPerSource": 100000,
+        "coordinateSystem": "NORMALIZED_TOP_LEFT",
+        "contextMethodId": "metadata-outline-page-signals-v2",
+        "maxContextPages": 10000,
+        "vlmMethodId": "all-saved-proposals-server-nonnegative-v1",
+        "vlmModelId": "inspector-qwen3-vl-8b-fp8",
+        "vlmModelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+        "vlmModelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879",
+        "vlmModelShards": [
+          {
+            "filename": "model-00001-of-00002.safetensors",
+            "sha256": "e2dea2e85e643ef7045c31a485a426631a1e0a84e463f8b2c7e9c6682a06eafd"
+          },
+          {
+            "filename": "model-00002-of-00002.safetensors",
+            "sha256": "3dc64ec934af27a7007d265014e907aff9e16658d409e5cd4cf79869bf2bd8c1"
+          }
+        ],
+        "vlmPromptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+        "maxVlmObservationsPerSource": 100000,
+        "vlmCropMaxEdgePx": 2048,
+        "analysisMode": "FULL",
+        "vlmCropMethodId": "normalized-display-square-v2"
+      },
+      "sources": [
+        {
+          "sourceFileId": "FIL-V9",
+          "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+          "pageCount": 5,
+          "scannedPageCount": 5,
+          "status": "SCANNED",
+          "proposals": [
+            {
+              "pageNumber": 1,
+              "bboxNormalized": [
+                0.1,
+                0.1,
+                0.13,
+                0.6
+              ],
+              "status": "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
+            },
+            {
+              "pageNumber": 2,
+              "bboxNormalized": [
+                0.1,
+                0.1,
+                0.13,
+                0.6
+              ],
+              "status": "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
+            },
+            {
+              "pageNumber": 3,
+              "bboxNormalized": [
+                0.1,
+                0.1,
+                0.13,
+                0.6
+              ],
+              "status": "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
+            },
+            {
+              "pageNumber": 4,
+              "bboxNormalized": [
+                0.1,
+                0.1,
+                0.13,
+                0.6
+              ],
+              "status": "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
+            },
+            {
+              "pageNumber": 5,
+              "bboxNormalized": [
+                0.1,
+                0.1,
+                0.13,
+                0.6
+              ],
+              "status": "GEOMETRIC_PROPOSAL_NOT_CLASSIFIED"
+            }
+          ],
+          "proposalLimitReached": false,
+          "unretainedProposalCount": 0,
+          "documentContext": {
+            "schemaVersion": "document-context-v2",
+            "methodId": "metadata-outline-page-signals-v2",
+            "status": "MIXED",
+            "reasonCode": "MULTIPLE_SYSTEMS",
+            "domains": [
+              "HEATING",
+              "VENTILATION"
+            ],
+            "ambiguity": true,
+            "inspectedPages": [
+              {
+                "pageNumber": 1,
+                "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "textAvailable": false
+              },
+              {
+                "pageNumber": 2,
+                "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "textAvailable": false
+              },
+              {
+                "pageNumber": 3,
+                "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "textAvailable": false
+              },
+              {
+                "pageNumber": 4,
+                "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "textAvailable": false
+              },
+              {
+                "pageNumber": 5,
+                "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "textAvailable": false
+              }
+            ],
+            "signals": [
+              {
+                "kind": "METADATA",
+                "pageNumber": null,
+                "domain": "HEATING",
+                "snippet": "Система отопления\n\n",
+                "textSha256": "dc0fe1ac8f5d9453bbad20bd91d0990adcfa48fe2c5357a942adc67d9f03083d"
+              },
+              {
+                "kind": "OUTLINE",
+                "pageNumber": 3,
+                "domain": "VENTILATION",
+                "snippet": "Система вентиляции",
+                "textSha256": "db7ef3321f56654dea24e91c923bcfdb1fb1064e4e769db66d584f06e1074014"
+              }
+            ],
+            "unreadablePageCount": 5
+          },
+          "scannedPageNumbers": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "skippedPageCount": 0,
+          "vlm": {
+            "schemaVersion": "visual-vlm-observations-v1",
+            "methodId": "all-saved-proposals-server-nonnegative-v1",
+            "eligibleProposalCount": 5,
+            "selectedOrdinals": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "omittedProposalCount": 0,
+            "observations": [
+              {
+                "proposalOrdinal": 0,
+                "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+                "pageNumber": 1,
+                "bboxNormalized": [
+                  0.1,
+                  0.1,
+                  0.13,
+                  0.6
+                ],
+                "cropSha256": "6c5e03cb3d29ff86bb4c84e096436e1d1fd2b26e044abdfe2ea15978eeddca60",
+                "modelId": "inspector-qwen3-vl-8b-fp8",
+                "promptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+                "decision": "ABSTAIN",
+                "reasonCode": "MODEL_OTHER_UNTRUSTED",
+                "responseSha256": "f5b028d0fdbe0da935a4191e5aaf4f555ffce48002d8e620342057039f9dc603",
+                "modelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+                "modelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879"
+              },
+              {
+                "proposalOrdinal": 1,
+                "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+                "pageNumber": 2,
+                "bboxNormalized": [
+                  0.1,
+                  0.1,
+                  0.13,
+                  0.6
+                ],
+                "cropSha256": "6c5e03cb3d29ff86bb4c84e096436e1d1fd2b26e044abdfe2ea15978eeddca60",
+                "modelId": "inspector-qwen3-vl-8b-fp8",
+                "promptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+                "decision": "ABSTAIN",
+                "reasonCode": "MODEL_OTHER_UNTRUSTED",
+                "responseSha256": "f5b028d0fdbe0da935a4191e5aaf4f555ffce48002d8e620342057039f9dc603",
+                "modelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+                "modelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879"
+              },
+              {
+                "proposalOrdinal": 2,
+                "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+                "pageNumber": 3,
+                "bboxNormalized": [
+                  0.1,
+                  0.1,
+                  0.13,
+                  0.6
+                ],
+                "cropSha256": "6c5e03cb3d29ff86bb4c84e096436e1d1fd2b26e044abdfe2ea15978eeddca60",
+                "modelId": "inspector-qwen3-vl-8b-fp8",
+                "promptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+                "decision": "ABSTAIN",
+                "reasonCode": "MODEL_OTHER_UNTRUSTED",
+                "responseSha256": "f5b028d0fdbe0da935a4191e5aaf4f555ffce48002d8e620342057039f9dc603",
+                "modelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+                "modelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879"
+              },
+              {
+                "proposalOrdinal": 3,
+                "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+                "pageNumber": 4,
+                "bboxNormalized": [
+                  0.1,
+                  0.1,
+                  0.13,
+                  0.6
+                ],
+                "cropSha256": "6c5e03cb3d29ff86bb4c84e096436e1d1fd2b26e044abdfe2ea15978eeddca60",
+                "modelId": "inspector-qwen3-vl-8b-fp8",
+                "promptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+                "decision": "ABSTAIN",
+                "reasonCode": "MODEL_OTHER_UNTRUSTED",
+                "responseSha256": "f5b028d0fdbe0da935a4191e5aaf4f555ffce48002d8e620342057039f9dc603",
+                "modelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+                "modelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879"
+              },
+              {
+                "proposalOrdinal": 4,
+                "sourceSha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+                "pageNumber": 5,
+                "bboxNormalized": [
+                  0.1,
+                  0.1,
+                  0.13,
+                  0.6
+                ],
+                "cropSha256": "6c5e03cb3d29ff86bb4c84e096436e1d1fd2b26e044abdfe2ea15978eeddca60",
+                "modelId": "inspector-qwen3-vl-8b-fp8",
+                "promptSha256": "34a372ca6f4032b74ff51c11dd7adfe14df31b266ca356a5a2ec15b1d56c9611",
+                "decision": "ABSTAIN",
+                "reasonCode": "MODEL_OTHER_UNTRUSTED",
+                "responseSha256": "f5b028d0fdbe0da935a4191e5aaf4f555ffce48002d8e620342057039f9dc603",
+                "modelRevision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+                "modelLockSha256": "e2586e16f45deee017935d4c60b550e48059fdc02cbc9c9114053f2f1fe4d879"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "inputManifestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "objectId": "OBJ-V9-ORACLE",
+  "expectedSources": [
+    {
+      "apiId": "FIL-V9",
+      "sha256": "47badd149b24cb5bb7b790c4f5fe038f70cb90e04886690dfbccee256763eaca",
+      "pageCount": 5
+    }
+  ],
+  "releaseProfileId": "red-vector-proposals-v9-full",
+  "releaseConfigHash": "316488e0793d23652d62dd3d531f11282abe587645a06fcdb2a84609039147af",
+  "attemptProgress": {
+    "mode": "FULL",
+    "documentCount": 1,
+    "completedDocuments": 1,
+    "scannedPages": 5,
+    "skippedPages": 0,
+    "eligible": 5,
+    "selected": 5,
+    "processed": 5,
+    "failed": 0
+  },
+  "httpRequests": [
+    {
+      "path": "/v1/chat/completions",
+      "host": "vlm:8000",
+      "model": "inspector-qwen3-vl-8b-fp8",
+      "maxTokens": 8,
+      "imageMaxEdge": 834
+    },
+    {
+      "path": "/v1/chat/completions",
+      "host": "vlm:8000",
+      "model": "inspector-qwen3-vl-8b-fp8",
+      "maxTokens": 8,
+      "imageMaxEdge": 834
+    },
+    {
+      "path": "/v1/chat/completions",
+      "host": "vlm:8000",
+      "model": "inspector-qwen3-vl-8b-fp8",
+      "maxTokens": 8,
+      "imageMaxEdge": 834
+    },
+    {
+      "path": "/v1/chat/completions",
+      "host": "vlm:8000",
+      "model": "inspector-qwen3-vl-8b-fp8",
+      "maxTokens": 8,
+      "imageMaxEdge": 834
+    },
+    {
+      "path": "/v1/chat/completions",
+      "host": "vlm:8000",
+      "model": "inspector-qwen3-vl-8b-fp8",
+      "maxTokens": 8,
+      "imageMaxEdge": 834
+    }
+  ]
+}

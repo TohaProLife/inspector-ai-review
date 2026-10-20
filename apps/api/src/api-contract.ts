@@ -1,3 +1,21 @@
+import { sourceOcrImportApiSchemas, sourceOcrImportApiOperations } from "./source-ocr-import-api-contract.js";
+import { nativeAirflowApiSchemas, nativeAirflowApiOperations } from "./native-airflow-api-contract.js";
+import { nativeCapacityApiSchemas, nativeCapacityApiOperations } from "./native-capacity-api-contract.js";
+import { documentTextV4FullAuditApiSchemas, documentTextV4FullAuditApiOperations, documentTextV4FullAuditInternalOperations } from "./document-text-v4-full-audit-api-contract.js";
+import { iaisPullApiSchemas, iaisPullApiOperations } from "./iais-pull-api-contract.js";
+import {readFileSync} from 'node:fs';
+import { columnPylonSectionV2ApiSchemas, columnPylonSectionV2ApiOperations } from './column-pylon-section-v2-api-contract.js';
+import {lightingTechnologyApiSchemas,lightingTechnologyApiOperations} from './matrix-lighting-technology-api-contract.js';
+import { documentTextV3AuditApiSchemas, documentTextV3AuditApiOperations } from './document-text-v3-audit-api-contract.js';
+import { documentTextV3LargeAuditApiSchemas, documentTextV3LargeAuditApiOperations, documentTextV3LargeAuditInternalOperations } from './document-text-v3-large-audit-api-contract.js';
+import {waterNodeApiSchemas,waterNodeApiOperations} from './matrix-water-node-api-contract.js';
+import {railInventoryApiSchemas,railInventoryApiOperations} from './matrix-rail-inventory-api-contract.js';
+import {callInventoryApiSchemas,callInventoryApiOperations} from './matrix-call-inventory-api-contract.js';
+import { localRegistrationApiSchemas, localRegistrationApiOperations } from "./local-registration-api-contract.js";
+import { documentCoordinateApiSchemas, documentCoordinateApiOperations } from "./document-coordinate-api-contract.js";
+import { drainageSourceApiSchemas, drainageSourceApiOperations } from "./drainage-source-api-contract.js";
+import { ppm113SourceApiSchemas, ppm113SourceApiOperations } from "./ppm113-source-api-contract.js";
+import { z } from "zod";
 import type { FastifySchema } from "fastify";
 import {
   decisionTypes,
@@ -8,6 +26,9 @@ import {
   sourceSectionCodes,
   uploadPolicy,
   uploadStages,
+  matrixSteelComparisonScopeInputSchema,matrixSteelComparisonScopeDecisionSchema,
+  matrixSteelApplicabilityReviewInputSchema,matrixSteelApplicabilityReviewDecisionSchema,
+  matrixFactScopeSchema, matrixInventoryScopeInputSchema, matrixInventoryScopeDecisionSchema, matrixInventorySelectionSchema, matrixSourceInventorySchema,
 } from "@inspector-ai/contracts";
 
 type JsonSchema = Record<string, unknown>;
@@ -16,6 +37,20 @@ type HttpMethod = "get" | "post";
 const ref = (name: string): JsonSchema => ({ $ref: `#/components/schemas/${name}` });
 const nullableString = (): JsonSchema => ({ type: "string", nullable: true });
 const nullableInteger = (): JsonSchema => ({ type: "integer", nullable: true });
+const factScopeJson=z.toJSONSchema(matrixFactScopeSchema,{target:"draft-7",io:"input"});
+
+const steelSchemaDocuments=new Map(['matrix-steel-execution.schema.json','matrix-steel-comparison.schema.json','matrix-steel-durable.schema.json'].map(name=>[name,JSON.parse(readFileSync(new URL('../../../packages/contracts/src/'+name,import.meta.url),'utf8'))]));
+function inlineSteelSchema(value:any,document:any,depth=0):any{
+ if(depth>50)throw Error('Steel API schema recursion');
+ if(Array.isArray(value))return value.map(v=>inlineSteelSchema(v,document,depth+1));
+ if(!value||typeof value!=='object')return value;
+ if(value.$ref){const [file,pointer]=value.$ref.split('#'),target=file?steelSchemaDocuments.get(file):document;
+  if(!target||!pointer?.startsWith('/definitions/'))throw Error('Unknown steel API schema reference');
+  const node=pointer.slice(1).split('/').reduce((d:any,k:string)=>d?.[k],target);if(!node)throw Error('Missing steel API schema node');return inlineSteelSchema(node,target,depth+1);}
+ return Object.fromEntries(Object.entries(value).filter(([k])=>k!=='$id'&&k!=='$schema').map(([k,v])=>[k,inlineSteelSchema(v,document,depth+1)]));
+}
+const steelExecutionSchema=steelSchemaDocuments.get('matrix-steel-execution.schema.json');
+const steelDurableSchema=steelSchemaDocuments.get('matrix-steel-durable.schema.json');
 
 const statsProperties = {
   total: { type: "integer", minimum: 0 },
@@ -29,6 +64,31 @@ const statsProperties = {
 } as const;
 
 export const apiSchemas = {
+  ...iaisPullApiSchemas,
+  ...nativeCapacityApiSchemas,
+  ...nativeAirflowApiSchemas,
+  ...sourceOcrImportApiSchemas,
+  ...columnPylonSectionV2ApiSchemas,
+  MatrixSteelComparisons:inlineSteelSchema(steelExecutionSchema.definitions.comparisons,steelExecutionSchema),
+  MatrixSteelComparisonEvidence:inlineSteelSchema(steelExecutionSchema.definitions.evidence,steelExecutionSchema),
+  MatrixSteelApplicabilityRunSnapshot:inlineSteelSchema(steelDurableSchema.definitions.applicabilitySnapshot,steelDurableSchema),
+  SteelApplicabilityReviewInput:z.toJSONSchema(matrixSteelApplicabilityReviewInputSchema,{target:"draft-7",io:"input"}),
+  SteelApplicabilityReviewDecision:z.toJSONSchema(matrixSteelApplicabilityReviewDecisionSchema,{target:"draft-7",io:"input"}),
+  SteelApplicabilityReviewList:{type:"object",additionalProperties:false,required:["items","canReview"],
+    properties:{items:{type:"array",maxItems:16,items:ref("SteelApplicabilityReviewDecision")},canReview:{type:"boolean"}}},
+  MatrixSteelComparisonScopeInput:z.toJSONSchema(matrixSteelComparisonScopeInputSchema,{target:"draft-7",io:"input"}),
+  MatrixSteelComparisonScopeDecision:z.toJSONSchema(matrixSteelComparisonScopeDecisionSchema,{target:"draft-7",io:"input"}),
+  ...lightingTechnologyApiSchemas,
+  ...documentTextV3AuditApiSchemas,
+  ...documentTextV3LargeAuditApiSchemas,
+  ...documentTextV4FullAuditApiSchemas,
+  ...documentCoordinateApiSchemas,
+  ...drainageSourceApiSchemas,
+  ...ppm113SourceApiSchemas,
+  ...localRegistrationApiSchemas,
+  ...callInventoryApiSchemas,
+  ...waterNodeApiSchemas,
+  ...railInventoryApiSchemas,
   ApiError: {
     type: "object",
     additionalProperties: false,
@@ -120,6 +180,17 @@ export const apiSchemas = {
       "stats",
     ],
     properties: {
+      inspectionLifecycle: { type: "string", enum: ["OPEN", "FINALIZED"] },
+      readOnlyReason: { type: "string" },
+      revokeUnavailableReason: { type: "string" },
+      permissions: {
+        type: "object", additionalProperties: false,
+        required: ["upload", "review", "run", "finalize", "revoke"],
+        properties: {
+          upload: { type: "boolean" }, review: { type: "boolean" }, run: { type: "boolean" },
+          finalize: { type: "boolean" }, revoke: { type: "boolean" },
+        },
+      },
       id: { type: "string" },
       name: { type: "string" },
       address: { type: "string" },
@@ -175,10 +246,55 @@ export const apiSchemas = {
       createdAt: { type: "string", format: "date-time" },
     },
   },
+  MatrixSourceScope: {
+    type: "object", additionalProperties: false,
+    anyOf:[{required:["entityKey","reference","contexts"]},{required:["schemaVersion","bindings"]}],
+    properties: {
+      ...factScopeJson.properties,
+      entityKey: { type: "string", minLength: 1, maxLength: 200 },
+      reference: { type: "string", minLength: 8, maxLength: 1000 },
+      contexts: { type: "object", maxProperties: 100, propertyNames: { maxLength:180, pattern:"^[A-Z][A-Z0-9_]*(?::[A-Za-z0-9_-]+)?$" }, additionalProperties: {
+        type: "object", additionalProperties: false, required: ["reference"],
+        properties: {
+          reference: { type: "string", minLength: 8, maxLength: 1000 },
+          drawingSection: { type: "string", maxLength: 40 },
+          applicable: { type: "boolean" }, parameterCode: { type: "string", maxLength: 40 },
+          attribute: { type: "string", maxLength: 100 }, threshold: { type: "string", maxLength: 60 },
+          canonicalUnit: { type: "string", maxLength: 40 },
+          limitValue: { type: "string", pattern: "^[0-9]+(?:\\.[0-9]+)?$", maxLength: 60 },
+          approvedChangePresent: { type: "boolean" }, reductionConfirmed: { type: "boolean" },
+          componentRole: { type: "string", minLength: 1, maxLength: 100 },
+          componentKey: { type: "string", minLength: 1, maxLength: 200 },
+          zoneKey: { type: "string", minLength: 1, maxLength: 200 },
+          operatingModeKey: { type: "string", minLength: 1, maxLength: 200 },
+          measurementBasisKey: { type: "string", minLength: 1, maxLength: 200 },
+        },
+      } },
+    },
+  },
+  MatrixInventoryScopeInput:z.toJSONSchema(matrixInventoryScopeInputSchema,{target:"draft-7",io:"input"}),
+  MatrixInventoryScopeDecision:z.toJSONSchema(matrixInventoryScopeDecisionSchema,{target:"draft-7",io:"output"}),
+  MatrixInventoryPreviewInput:{type:"object",additionalProperties:false,required:["sourceFileId","selection"],properties:{
+    sourceFileId:{type:"string",minLength:1,maxLength:200},selection:z.toJSONSchema(matrixInventorySelectionSchema,{target:"draft-7",io:"input"})}},
+  MatrixInventorySourcePagesRead:{type:"object",additionalProperties:false,required:["checkId","sourceFileId","sourceSha256","inputManifestHash","textStageContentHash","textArtifactHash","stage","pageStages","latestReviewHash","textArtifact"],properties:{
+    checkId:{type:"string"},sourceFileId:{type:"string"},sourceSha256:{type:"string"},inputManifestHash:{type:"string"},textStageContentHash:{type:"string"},textArtifactHash:{type:"string"},stage:{type:"string",enum:["PD","RD","UNRESOLVED"]},pageStages:{type:"object",additionalProperties:{type:"string"}},latestReviewHash:{type:"string",nullable:true},textArtifact:{type:"object",additionalProperties:true}}},
+  MatrixInventoryPreviewRead:{type:"object",additionalProperties:false,required:["checkId","sourceFileId","sourceSha256","result"],properties:{
+    checkId:{type:"string"},sourceFileId:{type:"string"},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+    result:{oneOf:[{type:"object",additionalProperties:false,required:["schemaVersion","status","inventory"],properties:{schemaVersion:{const:"matrix-inventory-source-result-v1"},status:{const:"RECONSTRUCTED"},inventory:z.toJSONSchema(matrixSourceInventorySchema,{target:"draft-7",io:"output"})}},
+      {type:"object",additionalProperties:false,required:["schemaVersion","status","reasonCode"],properties:{schemaVersion:{const:"matrix-inventory-source-result-v1"},status:{const:"ABSTAIN"},reasonCode:{type:"string"}}}]},
+    target:((z.toJSONSchema(matrixInventoryScopeInputSchema,{target:"draft-7",io:"input"}).properties?.claims as any).items.properties.target)}},
   SourceReviewInput: {
     type: "object", additionalProperties: false,
     required: ["sourceSha256", "revisionStatus", "approvalStatus", "linkGroupId", "pageStages", "basis"],
     properties: {
+      expectedReviewHash:{type:"string",nullable:true,pattern:"^[a-f0-9]{64}$"},
+      inventoryScope:ref("MatrixInventoryScopeInput"),
+      callInventoryScope:ref("MatrixCallInventoryScopeInput"),
+      waterNodeScope:ref("MatrixWaterNodeScopeInput"),
+      lightingTechnologyScope:ref("MatrixLightingTechnologyScopeInput"),
+      steelComparisonScope:ref("MatrixSteelComparisonScopeInput"),
+      railInventoryScope:ref("MatrixRailInventoryScopeInput"),
+      matrixScope: ref("MatrixSourceScope"),
       sourceSha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
       revisionStatus: { type: "string", enum: ["CURRENT", "SUPERSEDED", "UNKNOWN"] },
       approvalStatus: { type: "string", enum: ["APPROVED", "UNAPPROVED", "UNKNOWN"] },
@@ -191,6 +307,11 @@ export const apiSchemas = {
       },
     },
   },
+  MatrixFactTargetsRead:{type:"object",additionalProperties:false,required:["checkId","executionContentHash","items"],
+    properties:{checkId:{type:"string"},executionContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      items:{type:"array",items:{type:"object",additionalProperties:false,required:["sourceFileId","target"],properties:{
+        sourceFileId:{type:"string"},target:((factScopeJson.properties?.bindings as Record<string,unknown>)?.items as {properties:Record<string,unknown>}).properties.target,
+        fragmentsHash:{type:"string",pattern:"^[a-f0-9]{64}$"}}}}}},
   SourceReviewDecision: {
     type: "object", additionalProperties: false,
     required: [
@@ -200,6 +321,13 @@ export const apiSchemas = {
     properties: {
       id: { type: "string", format: "uuid" },
       objectId: { type: "string" }, sourceFileId: { type: "string" },
+      inventoryScope:ref("MatrixInventoryScopeDecision"),
+      callInventoryScope:ref("MatrixCallInventoryScopeDecision"),
+      waterNodeScope:ref("MatrixWaterNodeScopeDecision"),
+      lightingTechnologyScope:ref("MatrixLightingTechnologyScopeDecision"),
+      steelComparisonScope:ref("MatrixSteelComparisonScopeDecision"),
+      railInventoryScope:ref("MatrixRailInventoryScopeDecision"),
+      matrixScope: ref("MatrixSourceScope"),
       sourceSha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
       revisionStatus: { type: "string", enum: ["CURRENT", "SUPERSEDED", "UNKNOWN"] },
       approvalStatus: { type: "string", enum: ["APPROVED", "UNAPPROVED", "UNKNOWN"] },
@@ -245,6 +373,8 @@ export const apiSchemas = {
     type: "object", additionalProperties: false,
     required: ["items", "permissions"],
     properties: {
+      inspectionLifecycle: { type: "string", enum: ["OPEN", "FINALIZED"] },
+      readOnlyReason: { type: "string" },
       items: { type: "array", items: ref("SourceFileSummary") },
       permissions: {
         type: "object", additionalProperties: false,
@@ -274,6 +404,11 @@ export const apiSchemas = {
       "stats",
     ],
     properties: {
+      failure: { type: "object", additionalProperties: false, required: ["jobType", "code", "message"],
+        properties: { jobType: { type: "string" }, code: { type: "string" }, message: { type: "string" } } },
+      visualProgress: ref("VisualRunProgress"),
+      purpose: {const:"SOURCE_AUDIT_ONLY"},
+      sourceAuditProfileVersion: {type:"string",enum:["SOURCE_AUDIT_V3_LARGE_VERTICAL_V1","SOURCE_AUDIT_V4_FULL_SOURCE_V1"]},
       id: { type: "string" },
       objectId: { type: "string" },
       status: { type: "string", enum: objectStatuses },
@@ -465,6 +600,13 @@ export const apiSchemas = {
       contentHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
     },
   },
+  VisualRunProgress: { type: "object", additionalProperties: false,
+    required: ["mode", "documentCount", "completedDocuments", "scannedPages", "skippedPages", "eligible", "selected", "processed", "failed"],
+    properties: { mode: { type: "string", enum: ["SAMPLE", "FULL"] },
+      ...Object.fromEntries(["documentCount", "completedDocuments", "scannedPages", "skippedPages", "eligible", "selected", "processed", "failed"].map(key => [key, { type: "integer", minimum: 0, maximum: 10000000 }])) } },
+  TrustedGeometryRegistrationRead: { type: "object", additionalProperties: true },
+  ObjectCheckHistory: { type: "object", additionalProperties: false, required: ["items"], properties: { items: { type: "array", items: ref("CheckRun") } } },
+  StartCheckInput: { type: "object", additionalProperties: false, properties: { analysisMode: { type: "string", enum: ["SAMPLE", "FULL"] } } },
   ReviewCandidateDecisionInput: {
     type: "object", additionalProperties: false,
     required: ["schemaVersion", "candidateId", "artifactHash", "decision", "note"],
@@ -472,7 +614,9 @@ export const apiSchemas = {
       schemaVersion: { type: "string", enum: ["review-candidate-decision-v1"] },
       candidateId: { type: "string", pattern: "^[a-f0-9]{64}$" },
       artifactHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
-      decision: { type: "string", enum: ["ACCEPT_FOR_REVIEW", "REJECT"] },
+      details: { type: "object", additionalProperties: true },
+      expectedDecisionHash: { type: "string", pattern: "^[a-f0-9]{64}$", nullable: true },
+      decision: { type: "string", enum: ["ACCEPT_FOR_REVIEW", "REJECT", "CONFIRM", "CLARIFY", "PARTIAL_CONFIRM", "CORRECT_EVIDENCE"] },
       note: { type: "string", minLength: 8, maxLength: 1000 },
     },
   },
@@ -484,7 +628,10 @@ export const apiSchemas = {
       schemaVersion: { type: "string", enum: ["review-candidate-decision-v1"] },
       candidateId: { type: "string", pattern: "^[a-f0-9]{64}$" },
       artifactHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
-      decision: { type: "string", enum: ["ACCEPT_FOR_REVIEW", "REJECT"] },
+      inheritedFrom: { type: "object", additionalProperties: true },
+      details: { type: "object", additionalProperties: true },
+      expectedDecisionHash: { type: "string", pattern: "^[a-f0-9]{64}$", nullable: true },
+      decision: { type: "string", enum: ["ACCEPT_FOR_REVIEW", "REJECT", "CONFIRM", "CLARIFY", "PARTIAL_CONFIRM", "CORRECT_EVIDENCE"] },
       note: { type: "string" }, id: { type: "string", format: "uuid" },
       checkId: { type: "string" }, actorId: { type: "string", format: "uuid" },
       decisionHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
@@ -1347,7 +1494,7 @@ export const apiSchemas = {
     additionalProperties: false,
     required: ["schemaVersion", "objectId", "inputManifestHash", "profile", "sources", "status", "artifactId", "contentHash"],
     properties: {
-      schemaVersion: { type: "string", enum: ["visual-proposal-analysis-v1", "visual-proposal-analysis-v2", "visual-proposal-analysis-v3", "visual-proposal-analysis-v4", "visual-proposal-analysis-v5", "visual-proposal-analysis-v6"] },
+      schemaVersion: { type: "string", enum: ["visual-proposal-analysis-v1", "visual-proposal-analysis-v2", "visual-proposal-analysis-v3", "visual-proposal-analysis-v4", "visual-proposal-analysis-v5", "visual-proposal-analysis-v6", "visual-proposal-analysis-v7", "visual-proposal-analysis-v8", "visual-proposal-analysis-v9"] },
       objectId: { type: "string" },
       inputManifestHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
       status: { type: "string", enum: ["PROPOSAL_ONLY_UNVERIFIED"] },
@@ -1357,14 +1504,14 @@ export const apiSchemas = {
         type: "object", additionalProperties: false,
         required: ["schemaVersion", "methodId", "maxPagesPerSource", "maxProposalsPerSource", "coordinateSystem"],
         properties: {
-          schemaVersion: { type: "string", enum: ["visual-proposal-profile-v1", "visual-proposal-profile-v2", "visual-proposal-profile-v3", "visual-proposal-profile-v4", "visual-proposal-profile-v5", "visual-proposal-profile-v6"] },
+          schemaVersion: { type: "string", enum: ["visual-proposal-profile-v1", "visual-proposal-profile-v2", "visual-proposal-profile-v3", "visual-proposal-profile-v4", "visual-proposal-profile-v5", "visual-proposal-profile-v6", "visual-proposal-profile-v7", "visual-proposal-profile-v8", "visual-proposal-profile-v9"] },
           methodId: { type: "string", enum: ["red-vector-panel-blue-contact-v1"] },
           maxPagesPerSource: { type: "integer", minimum: 1 },
           maxProposalsPerSource: { type: "integer", minimum: 1 },
           coordinateSystem: { type: "string", enum: ["NORMALIZED_TOP_LEFT"] },
-          contextMethodId: { type: "string", enum: ["first-two-pdf-cover-text-pages-v1"] },
-          maxContextPages: { type: "integer", enum: [2] },
-          vlmMethodId: { type: "string", enum: ["spread-two-saved-proposals-v1", "spread-two-saved-proposals-server-nonnegative-v1"] },
+          contextMethodId: { type: "string", enum: ["first-two-pdf-cover-text-pages-v1", "metadata-outline-page-signals-v2"] },
+          maxContextPages: { type: "integer", enum: [2, 10000] },
+          vlmMethodId: { type: "string", enum: ["spread-two-saved-proposals-v1", "spread-two-saved-proposals-server-nonnegative-v1", "all-saved-proposals-v1", "all-saved-proposals-server-nonnegative-v1"] },
           vlmModelId: { type: "string", enum: ["inspector-qwen3vl4b-eval", "inspector-qwen3-vl-8b-fp8"] },
           vlmModelWeightsSha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
           vlmModelProjectorSha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
@@ -1378,8 +1525,10 @@ export const apiSchemas = {
             },
           } },
           vlmPromptSha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
-          maxVlmObservationsPerSource: { type: "integer", enum: [2] },
-          vlmCropMaxEdgePx: { type: "integer", enum: [768] },
+          analysisMode: { type: "string", enum: ["SAMPLE", "FULL"] },
+          maxVlmObservationsPerSource: { type: "integer", enum: [2, 100000] },
+          vlmCropMaxEdgePx: { type: "integer", enum: [768, 2048] },
+          vlmCropMethodId: { type: "string", enum: ["normalized-display-square-v2"] },
         },
       },
       sources: {
@@ -1395,7 +1544,7 @@ export const apiSchemas = {
             status: { type: "string", enum: ["SCANNED", "SKIPPED_PAGE_LIMIT", "PARTIALLY_SCANNED_PAGE_LIMIT"] },
             scannedPageNumbers: { type: "array", items: { type: "integer", minimum: 1 } },
             skippedPageCount: { type: "integer", minimum: 0 },
-            documentContext: {
+            documentContext: { anyOf: [{
               type: "object", additionalProperties: false,
               required: ["schemaVersion", "methodId", "status", "reasonCode", "inspectedPages"],
               properties: {
@@ -1413,17 +1562,29 @@ export const apiSchemas = {
                   },
                 } },
               },
-            },
+            }, {
+              type: "object", additionalProperties: false,
+              required: ["schemaVersion", "methodId", "status", "reasonCode", "domains", "ambiguity", "inspectedPages", "signals", "unreadablePageCount"],
+              properties: {
+                schemaVersion: { type: "string", enum: ["document-context-v2"] },
+                methodId: { type: "string", enum: ["metadata-outline-page-signals-v2"] },
+                status: { type: "string" }, reasonCode: { type: "string" },
+                domains: { type: "array", items: { type: "string" } }, ambiguity: { type: "boolean" },
+                inspectedPages: { type: "array", items: { type: "object", additionalProperties: true } },
+                signals: { type: "array", items: { type: "object", additionalProperties: true } },
+                unreadablePageCount: { type: "integer", minimum: 0 },
+              },
+            }] },
             vlm: {
               type: "object", additionalProperties: false,
               required: ["schemaVersion", "methodId", "eligibleProposalCount", "selectedOrdinals", "omittedProposalCount", "observations"],
               properties: {
                 schemaVersion: { type: "string", enum: ["visual-vlm-observations-v1"] },
-                methodId: { type: "string", enum: ["spread-two-saved-proposals-v1", "spread-two-saved-proposals-server-nonnegative-v1"] },
+                methodId: { type: "string", enum: ["spread-two-saved-proposals-v1", "spread-two-saved-proposals-server-nonnegative-v1", "all-saved-proposals-v1", "all-saved-proposals-server-nonnegative-v1"] },
                 eligibleProposalCount: { type: "integer", minimum: 0 },
-                selectedOrdinals: { type: "array", maxItems: 2, items: { type: "integer", minimum: 0 } },
+                selectedOrdinals: { type: "array", maxItems: 100000, items: { type: "integer", minimum: 0 } },
                 omittedProposalCount: { type: "integer", minimum: 0 },
-                observations: { type: "array", maxItems: 2, items: {
+                observations: { type: "array", maxItems: 100000, items: {
                   type: "object", additionalProperties: false,
                   required: ["proposalOrdinal", "sourceSha256", "pageNumber", "bboxNormalized", "cropSha256", "modelId", "promptSha256", "decision", "reasonCode", "responseSha256"],
                   properties: {
@@ -2177,6 +2338,160 @@ export const apiSchemas = {
       canRun: { type: "boolean" },
     },
   },
+  SourceDeclarationFragment: {
+    type: "object", additionalProperties: false,
+    required: ["pageNumber","blockIndex","lineIndex","rawText","bboxMilliPoints"],
+    properties: { pageNumber: {type:"integer",minimum:1}, blockIndex: {type:"integer",minimum:0},
+      lineIndex: {type:"integer",minimum:0},rawText:{type:"string"},
+      bboxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0}} },
+  },
+  SteelSourceProductScope: {
+    oneOf: [
+      { type:"object",additionalProperties:false,required:["role","productKind","profile","count","tier","productStandard","gradeStandard"],
+        properties:{role:{const:"DISTRIBUTION_BELT_I_BEAMS"},productKind:{const:"I_BEAM"},profile:{const:"70Б3"},
+          count:{const:3},tier:{const:2},productStandard:{const:"ГОСТ Р 35087-2024"},gradeStandard:{const:"ГОСТ 27772-2015"}} },
+      { type:"object",additionalProperties:false,required:["role","productKind","profile","count","tier","productStandard","gradeStandard"],
+        properties:{role:{const:"I_BEAM_GENERIC_DECLARATION"},productKind:{const:"I_BEAM"},profile:{type:"null"},
+          count:{type:"null"},tier:{type:"null"},productStandard:{const:"ГОСТ Р 57837-2017"},gradeStandard:{const:"ГОСТ 27772-2021"}} },
+    ],
+  },
+  MatrixSteelSourceDeclaration: {
+    type:"object",additionalProperties:false,
+    required:["schemaVersion","id","kind","extractorVersion","sourceFileId","sourceSha256","textArtifactHash","stage",
+      "pageNumber","widthMilliPoints","heightMilliPoints","value","rawValue","rawUnit","canonicalUnit","entityKey",
+      "applicabilityStatus","primaryFragments","scopeFragments","productScope"],
+    properties:{schemaVersion:{const:"matrix-source-declaration-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      kind:{const:"SOURCE_AUTHORED_STEEL_DECLARATION"},extractorVersion:{const:"matrix-steel-prose-v1"},
+      sourceFileId:{type:"string",minLength:1,maxLength:200},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      textArtifactHash:{type:"string",pattern:"^[a-f0-9]{64}$"},stage:{enum:["PD","RD"]},pageNumber:{type:"integer",minimum:1},
+      widthMilliPoints:{type:"integer",minimum:1},heightMilliPoints:{type:"integer",minimum:1},
+      value:{enum:["С245","С345"]},rawValue:{enum:["C245","С245","C345","С345"]},rawUnit:{type:"null"},
+      canonicalUnit:{const:"steel_catalog_example"},entityKey:{type:"null"},applicabilityStatus:{const:"UNREVIEWED"},
+      primaryFragments:{type:"array",minItems:1,items:ref("SourceDeclarationFragment")},
+      scopeFragments:{type:"array",minItems:1,items:ref("SourceDeclarationFragment")},productScope:ref("SteelSourceProductScope")},
+  },
+  MatrixSourceDeclarations: {
+    type:"object",additionalProperties:false,required:["schemaVersion","objectId","inputManifestHash","extractorVersion","purpose","declarations"],
+    properties:{schemaVersion:{const:"matrix-source-declarations-v1"},objectId:{type:"string",minLength:1,maxLength:200},
+      inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},extractorVersion:{const:"matrix-source-declarations-v1"},
+      purpose:{const:"EVIDENCE_ONLY"},declarations:{type:"array",items:ref("MatrixSteelSourceDeclaration")}},
+  },
+  MatrixFireResistanceSourceDeclaration: {
+    type:"object",additionalProperties:false,
+    required:["schemaVersion","id","kind","extractorVersion","sourceFileId","sourceSha256","textArtifactHash","stage",
+      "pageNumber","widthMilliPoints","heightMilliPoints","criterion","minutes","rawValue","rawUnit","canonicalUnit",
+      "constructionLabelLines","entityKey","applicabilityStatus","primaryFragments","scopeFragments","headerFragments",
+      "unitFragments","bindingPolicyVersion","tableBoxMilliPoints"],
+    properties:{schemaVersion:{const:"matrix-source-declaration-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      kind:{const:"SOURCE_AUTHORED_FIRE_RESISTANCE_DECLARATION"},extractorVersion:{const:"matrix-fire-resistance-table-v1"},
+      sourceFileId:{type:"string",minLength:1,maxLength:200},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      textArtifactHash:{type:"string",pattern:"^[a-f0-9]{64}$"},stage:{enum:["PD","RD"]},
+      pageNumber:{type:"integer",minimum:1,maximum:9007199254740991},widthMilliPoints:{type:"integer",minimum:1,maximum:9007199254740991},
+      heightMilliPoints:{type:"integer",minimum:1,maximum:9007199254740991},criterion:{enum:["R","REI"]},
+      minutes:{type:"integer",minimum:1,maximum:9007199254740991},rawValue:{type:"string",minLength:1,maxLength:8192},
+      rawUnit:{const:"мин"},canonicalUnit:{const:"min"},entityKey:{type:"null"},applicabilityStatus:{const:"UNREVIEWED"},
+      constructionLabelLines:{type:"array",minItems:1,maxItems:2,items:{type:"string",minLength:1,maxLength:8192}},
+      primaryFragments:{type:"array",minItems:1,maxItems:1,items:ref("SourceDeclarationFragment")},
+      scopeFragments:{type:"array",minItems:1,maxItems:2,items:ref("SourceDeclarationFragment")},
+      headerFragments:{type:"array",minItems:2,maxItems:2,items:ref("SourceDeclarationFragment")},
+      unitFragments:{type:"array",minItems:1,maxItems:1,items:ref("SourceDeclarationFragment")},
+      bindingPolicyVersion:{const:"matrix-fire-resistance-upper-table-v1"},
+      tableBoxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0,maximum:9007199254740991}}},
+  },
+  MatrixSourceDeclarationsVersionTwo: {
+    type:"object",additionalProperties:false,required:["schemaVersion","objectId","inputManifestHash","extractorVersion","purpose","declarations"],
+    properties:{schemaVersion:{const:"matrix-source-declarations-v2"},objectId:{type:"string",minLength:1,maxLength:200},
+      inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},extractorVersion:{const:"matrix-source-declarations-v2"},
+      purpose:{const:"EVIDENCE_ONLY"},declarations:{type:"array",items:{oneOf:[ref("MatrixSteelSourceDeclaration"),ref("MatrixFireResistanceSourceDeclaration")]}}},
+  },
+  MatrixInventoryComparisons: {
+    type:"object",additionalProperties:false,required:["schemaVersion","purpose","objectId","inputManifestHash","capabilityRegistryHash","results"],
+    properties:{schemaVersion:{const:"matrix-inventory-comparisons-v1"},purpose:{const:"MACHINE_COMPARISON"},
+      objectId:{type:"string",minLength:1,maxLength:200},inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      capabilityRegistryHash:{type:"string",pattern:"^[a-f0-9]{64}$"},results:{type:"array",minItems:1,maxItems:128,items:{
+        type:"object",additionalProperties:true,required:["schemaVersion","id","ruleId","ruleVersion","parameterCode","comparisonVariant","kind"],
+        properties:{schemaVersion:{const:"matrix-inventory-execution-result-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+          ruleId:{const:"matrix-ar-053-declared_joint_damping_tape_omission"},ruleVersion:{const:"1"},parameterCode:{const:"AR-053"},comparisonVariant:{const:"PD_RD"},
+          kind:{enum:["SCOPED_COMPARISON","UNBOUND_ATOM_ABSTENTION"]},calibratedProbability:{type:"null"},
+          comparison:{type:"object",additionalProperties:true,required:["schemaVersion","status","reasonCode","calibratedProbability"],properties:{
+            schemaVersion:{const:"matrix-ar053-inventory-comparison-v1"},status:{enum:["ABSTAIN","CANDIDATE"]},reasonCode:{type:"string"},calibratedProbability:{type:"null"}}}}}}},
+  },
+  MatrixInventoryComparisonEvidence: {type:"object",additionalProperties:false,
+    required:["resultId","role","sourceFileId","sourceSha256","reviewDecisionId","reviewContentHash","inventoryContentHash","originCheckId","pageNumber","pageFrame","fragmentRole","fragment"],
+    properties:{resultId:{type:"string",pattern:"^[a-f0-9]{64}$"},role:{enum:["EXPECTED","ACTUAL"]},sourceFileId:{type:"string"},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      reviewDecisionId:{type:"string"},reviewContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},inventoryContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},originCheckId:{type:"string"},
+      pageNumber:{type:"integer",minimum:1},pageFrame:{type:"object",additionalProperties:false,required:["widthMilliPoints","heightMilliPoints"],properties:{widthMilliPoints:{type:"integer",minimum:1},heightMilliPoints:{type:"integer",minimum:1}}},
+      fragmentRole:{enum:["HEADER","SCOPE","FEATURE"]},fragment:{type:"object",additionalProperties:false,required:["pageNumber","blockIndex","lineIndex","rawText","bboxMilliPoints"],properties:{
+        pageNumber:{type:"integer",minimum:1},blockIndex:{type:"integer",minimum:0},lineIndex:{type:"integer",minimum:0},rawText:{type:"string",maxLength:8192},
+        bboxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0,maximum:Number.MAX_SAFE_INTEGER}}}}}},
+  MatrixCallInventoryComparisons: {
+    type:"object",additionalProperties:false,required:["schemaVersion","purpose","objectId","inputManifestHash","capabilityRegistryHash","results"],
+    properties:{schemaVersion:{const:"matrix-call-inventory-comparisons-v1"},purpose:{const:"MACHINE_COMPARISON"},
+      objectId:{type:"string",minLength:1,maxLength:200},inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      capabilityRegistryHash:{type:"string",pattern:"^[a-f0-9]{64}$"},results:{type:"array",minItems:1,maxItems:128,items:{
+        type:"object",additionalProperties:true,required:["schemaVersion","id","ruleId","ruleVersion","parameterCode","comparisonVariant","kind"],
+        properties:{schemaVersion:{const:"matrix-call-inventory-execution-result-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+          ruleId:{const:"matrix-odi-123-declared_sanitary_room_personnel_call_button_omission"},ruleVersion:{const:"1"},parameterCode:{const:"ODI-123"},comparisonVariant:{const:"PD_RD"},
+          kind:{enum:["SCOPED_COMPARISON","UNBOUND_ATOM_ABSTENTION"]},calibratedProbability:{type:"null"},
+          comparison:{type:"object",additionalProperties:true,required:["schemaVersion","status","reasonCode","calibratedProbability"],properties:{
+            schemaVersion:{const:"matrix-odi123-call-inventory-comparison-v1"},status:{enum:["ABSTAIN","CANDIDATE"]},reasonCode:{type:"string"},calibratedProbability:{type:"null"}}}}}}},
+  },
+  MatrixCallInventoryComparisonEvidence: {type:"object",additionalProperties:false,
+    required:["resultId","role","sourceFileId","sourceSha256","reviewDecisionId","reviewContentHash","inventoryContentHash","originCheckId","pageNumber","pageFrame","fragmentRole","fragment"],
+    properties:{resultId:{type:"string",pattern:"^[a-f0-9]{64}$"},role:{enum:["EXPECTED","ACTUAL"]},sourceFileId:{type:"string"},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      reviewDecisionId:{type:"string"},reviewContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},inventoryContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},originCheckId:{type:"string"},
+      pageNumber:{type:"integer",minimum:1},pageFrame:{type:"object",additionalProperties:false,required:["widthMilliPoints","heightMilliPoints"],properties:{widthMilliPoints:{type:"integer",minimum:1},heightMilliPoints:{type:"integer",minimum:1}}},
+      fragmentRole:{enum:["HEADER","SCOPE","END","FEATURE"]},fragment:{type:"object",additionalProperties:false,required:["pageNumber","blockIndex","lineIndex","rawText","bboxMilliPoints"],properties:{
+        pageNumber:{type:"integer",minimum:1},blockIndex:{type:"integer",minimum:0},lineIndex:{type:"integer",minimum:0},rawText:{type:"string",maxLength:8192},
+        bboxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0,maximum:Number.MAX_SAFE_INTEGER}}}}}},
+  MatrixWaterNodeComparisons: {
+    type:"object",additionalProperties:false,required:["schemaVersion","purpose","objectId","inputManifestHash","capabilityRegistryHash","results"],
+    properties:{schemaVersion:{const:"matrix-water-node-comparisons-v1"},purpose:{const:"MACHINE_COMPARISON"},
+      objectId:{type:"string",minLength:1,maxLength:200},inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      capabilityRegistryHash:{type:"string",pattern:"^[a-f0-9]{64}$"},results:{type:"array",minItems:1,maxItems:128,items:{
+        type:"object",additionalProperties:true,required:["schemaVersion","id","ruleId","ruleVersion","parameterCode","comparisonVariant","kind"],
+        properties:{schemaVersion:{const:"matrix-water-node-execution-result-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+          ruleId:{const:"matrix-zu-129-declared_cold_water_inlet_meter_omission"},ruleVersion:{const:"1"},parameterCode:{const:"ZU-129"},comparisonVariant:{const:"PD_RD"},
+          kind:{enum:["SCOPED_COMPARISON","UNBOUND_ATOM_ABSTENTION"]},calibratedProbability:{type:"null"},
+          comparison:{type:"object",additionalProperties:true,required:["schemaVersion","status","reasonCode","calibratedProbability"],properties:{
+            schemaVersion:{const:"matrix-zu129-water-node-comparison-v1"},status:{enum:["ABSTAIN","CANDIDATE"]},reasonCode:{type:"string"},calibratedProbability:{type:"null"}}}}}}},
+  },
+  MatrixWaterNodeComparisonEvidence: {type:"object",additionalProperties:false,
+    required:["resultId","role","sourceFileId","sourceSha256","reviewDecisionId","reviewContentHash","inventoryContentHash","originCheckId","pageNumber","pageFrame","fragmentRole","fragment"],
+    properties:{resultId:{type:"string",pattern:"^[a-f0-9]{64}$"},role:{enum:["EXPECTED","ACTUAL"]},sourceFileId:{type:"string"},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      reviewDecisionId:{type:"string"},reviewContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},inventoryContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},originCheckId:{type:"string"},
+      pageNumber:{type:"integer",minimum:1},pageFrame:{type:"object",additionalProperties:false,required:["widthMilliPoints","heightMilliPoints"],properties:{widthMilliPoints:{type:"integer",minimum:1},heightMilliPoints:{type:"integer",minimum:1}}},
+      fragmentRole:{enum:["HEADER","SCOPE","END","FEATURE"]},fragment:{type:"object",additionalProperties:false,required:["pageNumber","blockIndex","lineIndex","rawText","bboxMilliPoints"],properties:{
+        pageNumber:{type:"integer",minimum:1},blockIndex:{type:"integer",minimum:0},lineIndex:{type:"integer",minimum:0},rawText:{type:"string",maxLength:8192},
+        bboxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0,maximum:Number.MAX_SAFE_INTEGER}}}}}},
+  MatrixRailInventoryComparisons: {
+    type:"object",additionalProperties:false,required:["schemaVersion","purpose","objectId","inputManifestHash","capabilityRegistryHash","results"],
+    properties:{schemaVersion:{const:"matrix-rail-inventory-comparisons-v1"},purpose:{const:"MACHINE_COMPARISON"},
+      objectId:{type:"string",minLength:1,maxLength:200},inputManifestHash:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      capabilityRegistryHash:{type:"string",pattern:"^[a-f0-9]{64}$"},results:{type:"array",minItems:1,maxItems:128,items:{
+        type:"object",additionalProperties:true,required:["schemaVersion","id","ruleId","ruleVersion","parameterCode","comparisonVariant","kind"],
+        properties:{schemaVersion:{const:"matrix-rail-inventory-execution-result-v1"},id:{type:"string",pattern:"^[a-f0-9]{64}$"},
+          ruleId:{const:"matrix-odi-120-declared_accessible_room_wc_rails_omission"},ruleVersion:{const:"1"},parameterCode:{const:"ODI-120"},comparisonVariant:{const:"PD_RD"},
+          kind:{enum:["SCOPED_COMPARISON","UNBOUND_ATOM_ABSTENTION"]},calibratedProbability:{type:"null"},
+          comparison:{type:"object",additionalProperties:true,required:["schemaVersion","status","reasonCode","calibratedProbability"],properties:{
+            schemaVersion:{const:"matrix-odi120-rail-inventory-comparison-v1"},status:{enum:["ABSTAIN","CANDIDATE"]},reasonCode:{type:"string"},calibratedProbability:{type:"null"}}}}}}},
+  },
+  MatrixRailInventoryComparisonEvidence: {type:"object",additionalProperties:false,
+    required:["resultId","role","sourceFileId","sourceSha256","reviewDecisionId","reviewContentHash","inventoryContentHash","originCheckId","pageNumber","pageFrame","fragmentRole","fragment"],
+    properties:{resultId:{type:"string",pattern:"^[a-f0-9]{64}$"},role:{enum:["EXPECTED","ACTUAL"]},sourceFileId:{type:"string"},sourceSha256:{type:"string",pattern:"^[a-f0-9]{64}$"},
+      reviewDecisionId:{type:"string"},reviewContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},inventoryContentHash:{type:"string",pattern:"^[a-f0-9]{64}$"},originCheckId:{type:"string"},
+      pageNumber:{type:"integer",minimum:1},pageFrame:{type:"object",additionalProperties:false,required:["widthMilliPoints","heightMilliPoints"],properties:{widthMilliPoints:{type:"integer",minimum:1},heightMilliPoints:{type:"integer",minimum:1}}},
+      fragmentRole:{enum:["HEADER","SCOPE","END","FEATURE"]},fragment:{type:"object",additionalProperties:false,required:["pageNumber","blockIndex","lineIndex","rawText","bboxMilliPoints"],properties:{
+        pageNumber:{type:"integer",minimum:1},blockIndex:{type:"integer",minimum:0},lineIndex:{type:"integer",minimum:0},rawText:{type:"string",maxLength:8192},
+        bboxMilliPoints:{type:"array",minItems:4,maxItems:4,items:{type:"integer",minimum:0,maximum:Number.MAX_SAFE_INTEGER}}}}}},
+  MatrixExecutionRead: { type: "object", additionalProperties: true,
+    properties: {steelComparisons:ref("MatrixSteelComparisons"),steelApplicabilitySnapshot:ref("MatrixSteelApplicabilityRunSnapshot"),steelComparisonEvidence:{type:"array",items:ref("MatrixSteelComparisonEvidence")},sourceDeclarations:{oneOf:[ref("MatrixSourceDeclarations"),ref("MatrixSourceDeclarationsVersionTwo")]},
+      lightingTechnologyComparisons:ref("MatrixLightingTechnologyComparisons"),lightingTechnologyComparisonEvidence:{type:"array",items:ref("MatrixLightingTechnologyComparisonEvidence")},
+      waterNodeComparisons:ref("MatrixWaterNodeComparisons"),waterNodeComparisonEvidence:{type:"array",items:ref("MatrixWaterNodeComparisonEvidence")},
+      railInventoryComparisons:ref("MatrixRailInventoryComparisons"),railInventoryComparisonEvidence:{type:"array",items:ref("MatrixRailInventoryComparisonEvidence")},
+      callInventoryComparisons:ref("MatrixCallInventoryComparisons"),callInventoryComparisonEvidence:{type:"array",items:ref("MatrixCallInventoryComparisonEvidence")},
+      inventoryComparisons:ref("MatrixInventoryComparisons"),inventoryComparisonEvidence:{type:"array",items:ref("MatrixInventoryComparisonEvidence")},
+      effectiveCoverage:{type:"array",minItems:132,maxItems:132,items:{type:"object",additionalProperties:true}}} },
   ParameterCoverageItem: {
     type: "object",
     additionalProperties: false,
@@ -2185,7 +2500,8 @@ export const apiSchemas = {
       parameterId: { type: "integer" },
       parameterCode: { type: "string" },
       parameterName: { type: "string" },
-      executionStatus: { type: "string", enum: ["UNSUPPORTED", "PARTIAL"] },
+      atomic: { type: "object", additionalProperties: true },
+      executionStatus: { type: "string", enum: ["UNSUPPORTED", "PARTIAL", "PENDING", "EVALUATED", "TECHNICAL_FAILURE"] },
       reason: { type: "string" },
     },
   },
@@ -2517,6 +2833,7 @@ export const apiSchemas = {
     properties: {
       schemaVersion: { type: "string", enum: ["1.0"] },
       protocol: ref("ProtocolVersion"),
+      candidateReview: { type: "object", additionalProperties: true },
       findings: { type: "array", items: ref("Finding") },
       snapshotHash: { type: "string", pattern: "^[a-f0-9]{64}$" },
       validity: { type: "string", enum: ["DRAFT", "VALID", "REVOKED"] },
@@ -2543,6 +2860,7 @@ export const apiSchemas = {
     additionalProperties: false,
     required: ["attemptId", "fencingToken"],
     properties: {
+      visualProgress: ref("VisualRunProgress"),
       attemptId: { type: "string", format: "uuid" },
       fencingToken: { type: "integer", minimum: 1 },
     },
@@ -2661,6 +2979,37 @@ const jsonDownloadHeaders = {
 } satisfies Record<string, JsonSchema>;
 
 export const apiOperationContracts = [
+  {id:"getSteelApplicabilityReviews",method:"get",fastifyPath:"/api/objects/:id/steel-applicability-reviews",
+    openApiPath:"/objects/{id}/steel-applicability-reviews",summary:"Получить последние неизменяемые решения применимости пар марок стали",
+    params:idParams,security:[{sessionCookie:[]}],responses:{"200":response("Последние решения пар, включая отозванные и устаревшие ссылки","SteelApplicabilityReviewList"),
+      "401":apiError("Сессия отсутствует"),"404":apiError("Объект или проверенный журнал не найден"),"503":apiError("Хранилище недоступно"),"500":apiError("Внутренняя ошибка")}},
+  {id:"recordSteelApplicabilityReview",method:"post",fastifyPath:"/api/objects/:id/steel-applicability-reviews",
+    openApiPath:"/objects/{id}/steel-applicability-reviews",summary:"Зафиксировать решение инспектора о применимости пары деклараций марки стали",
+    params:idParams,bodySchema:"SteelApplicabilityReviewInput",security:[{sessionCookie:[]}],
+    openApiHeaders:[{name:"Idempotency-Key",required:true,description:"Стабильный ключ повтора решения",schema:{type:"string",minLength:8,maxLength:200}},
+      {name:"X-CSRF-Token",required:true,description:"CSRF-токен сессии",schema:{type:"string"}}],
+    responses:{"201":response("Неизменяемое решение с независимыми projection и journal hashes","SteelApplicabilityReviewDecision"),
+      "400":apiError("Некорректное решение"),"401":apiError("Сессия отсутствует"),"403":apiError("Нет права оценивать пару либо CSRF запрещён"),
+      "404":apiError("Объект не найден либо недоступен"),"409":apiError("Изменились источники, решение пары или ключ повтора"),
+      "413":apiError("Превышен объём запроса"),"428":apiError("Не передан Idempotency-Key"),"503":apiError("Хранилище недоступно"),"500":apiError("Внутренняя ошибка")}},
+  ...lightingTechnologyApiOperations,
+  ...documentTextV3AuditApiOperations,
+  ...documentTextV3LargeAuditApiOperations,
+  ...documentTextV4FullAuditApiOperations,
+  ...iaisPullApiOperations,
+  ...nativeCapacityApiOperations,
+  ...nativeAirflowApiOperations,
+  ...sourceOcrImportApiOperations,
+  ...columnPylonSectionV2ApiOperations,
+  ...documentTextV3LargeAuditInternalOperations,
+  ...documentTextV4FullAuditInternalOperations,
+  ...localRegistrationApiOperations,
+  ...documentCoordinateApiOperations,
+  ...drainageSourceApiOperations,
+  ...ppm113SourceApiOperations,
+  ...callInventoryApiOperations,
+  ...waterNodeApiOperations,
+  ...railInventoryApiOperations,
   {
     id: "getHealth",
     method: "get",
@@ -2926,6 +3275,7 @@ export const apiOperationContracts = [
     querystring: {
       type: "object", additionalProperties: false,
       properties: {
+        resolution: { type: "integer", enum: [1200, 2400, 4800] },
         crop: { type: "string", minLength: 7, maxLength: 64,
           description: "Нормализованная рамка x0,y0,x1,y1 в координатах показанного листа; ответ включает контекст вокруг неё" },
       },
@@ -3014,6 +3364,15 @@ export const apiOperationContracts = [
       "500": apiError("Внутренняя ошибка"),
     },
   },
+  { id: "getGeometryRegistration", method: "get", fastifyPath: "/api/objects/:id/files/:sourceFileId/geometry-registrations/:registrationId",
+    openApiPath: "/objects/{id}/files/{sourceFileId}/geometry-registrations/{registrationId}", summary: "Проверить независимую подписанную геопривязку",
+    params: { type: "object", additionalProperties: false, required: ["id", "sourceFileId", "registrationId"],
+      properties: { id: { type: "string" }, sourceFileId: { type: "string" }, registrationId: { type: "string", pattern: "^[a-zA-Z0-9_-]{1,80}$" } } },
+    security: [{ sessionCookie: [] }], responses: { "200": response("Происхождение и измеренные ошибки", "TrustedGeometryRegistrationRead"),
+      "401": apiError("Требуется вход"), "404": apiError("Источник недоступен"), "422": apiError("Привязка не подтверждена"), "503": apiError("Независимый источник не настроен") } },
+  { id: "listObjectChecks", method: "get", fastifyPath: "/api/objects/:id/checks", openApiPath: "/objects/{id}/checks",
+    summary: "История запусков объекта, до 100 последних", params: idParams, security: [{ sessionCookie: [] }],
+    responses: { "200": response("История проверок", "ObjectCheckHistory"), "401": apiError("Требуется вход"), "404": apiError("История недоступна") } },
   {
     id: "startCheck",
     method: "post",
@@ -3021,6 +3380,7 @@ export const apiOperationContracts = [
     openApiPath: "/objects/{id}/checks",
     summary: "Создать и выполнить текущую проверку",
     params: idParams,
+    bodySchema: "StartCheckInput", validateBody: false,
     openApiHeaders: [
       {
         name: "Idempotency-Key",
@@ -3094,6 +3454,26 @@ export const apiOperationContracts = [
       "503": apiError("Identity adapter не настроен"),
       "500": apiError("Внутренняя ошибка"),
     },
+  },
+  {
+    id: "getCheckMatrixExecution", method: "get",
+    fastifyPath: "/api/checks/:id/matrix-execution", openApiPath: "/checks/{id}/matrix-execution",
+    summary: "Неизменяемые факты, атомарные результаты и ограничения общего реестра",
+    params: idParams, security: [{ sessionCookie: [] }], responses: {
+      "200": response("Сохранённый машинный результат", "MatrixExecutionRead"),
+      "401": apiError("Требуется аутентификация"), "404": apiError("Результат отсутствует или недоступен"),
+      "503": apiError("Identity adapter недоступен"), "500": apiError("Внутренняя ошибка"),
+    },
+  },
+  {id:"getMatrixInventorySourcePages",method:"get",fastifyPath:"/api/checks/:id/source-inventory-pages",openApiPath:"/checks/{id}/source-inventory-pages",
+    summary:"Неизменяемый исходный текст для выбора области перечня",params:idParams,querystring:{type:"object",additionalProperties:false,required:["sourceFileId"],properties:{sourceFileId:{type:"string",minLength:1,maxLength:200}}},security:[{sessionCookie:[]}],responses:{"200":response("Исходный текст","MatrixInventorySourcePagesRead"),"401":apiError("Требуется аутентификация"),"404":apiError("Источник недоступен"),"500":apiError("Внутренняя ошибка")}},
+  {id:"previewMatrixInventorySource",method:"post",fastifyPath:"/api/checks/:id/source-inventory-preview",openApiPath:"/checks/{id}/source-inventory-preview",
+    summary:"Предпросмотр исходного перечня без записи",params:idParams,bodySchema:"MatrixInventoryPreviewInput",security:[{sessionCookie:[]}],responses:{"200":response("Реконструкция области","MatrixInventoryPreviewRead"),"400":apiError("Некорректная область"),"401":apiError("Требуется аутентификация"),"403":apiError("CSRF"),"404":apiError("Источник недоступен"),"413":apiError("Лимит запроса"),"500":apiError("Внутренняя ошибка")}},
+  {
+    id:"getMatrixFactTargets",method:"get",fastifyPath:"/api/checks/:id/matrix-fact-targets",openApiPath:"/checks/{id}/matrix-fact-targets",
+    summary:"Адреса неизменяемых фактов для проверки привязки инспектором",params:idParams,security:[{sessionCookie:[]}],responses:{
+      "200":response("Исходные адреса фактов","MatrixFactTargetsRead"),"401":apiError("Требуется аутентификация"),
+      "404":apiError("Результат отсутствует или недоступен"),"503":apiError("Хранилище недоступно"),"500":apiError("Внутренняя ошибка")},
   },
   {
     id: "getCheckPilotResults",
@@ -3778,6 +4158,32 @@ export const apiOperationContracts = [
     },
   },
   {
+    id: "downloadRenderedProtocolArtifact",
+    method: "get",
+    fastifyPath: "/api/protocols/:id/artifacts/:format",
+    openApiPath: "/protocols/{id}/artifacts/{format}",
+    summary: "Скачать PDF/DOCX/XML сохранённой версии протокола по приложению №2",
+    params: { type: "object", required: ["id", "format"], additionalProperties: false,
+      properties: { id: { type: "string", minLength: 1, maxLength: 200 }, format: { type: "string", enum: ["pdf", "docx", "xml"] } } },
+    binaryResponse: true,
+    security: [{}, { sessionCookie: [] }],
+    responses: {
+      "200": { description: "Сохранённый файл: application/pdf, DOCX или application/xml в зависимости от format", schema: "BinaryArtifact", contentType: "application/octet-stream", headers: {
+        ETag: { schema: { type: "string" } }, "X-Content-SHA256": { schema: { type: "string" } },
+        "X-Protocol-Snapshot-SHA256": { schema: { type: "string" } }, "X-Protocol-Template-Version": { schema: { type: "string" } },
+        "X-Protocol-Validity": { schema: { type: "string" } },
+      } },
+      "400": apiError("Недопустимый формат"),
+      "401": apiError("Для NORMAL-протокола требуется аутентификация"),
+      "404": apiError("Протокол не найден или недоступен"),
+      "409": apiError("Не удалось подтвердить сохранённый снимок или целостность файла"),
+      "413": apiError("Превышен явный лимит экспорта"),
+      "422": apiError("Исторический snapshot не поддерживает этот формат отчёта"),
+      "503": apiError("Экспорт занят или identity adapter не настроен"),
+      "500": apiError("Внутренняя ошибка"),
+    },
+  },
+  {
     id: "listParameters",
     method: "get",
     fastifyPath: "/api/parameters",
@@ -3898,6 +4304,102 @@ export const apiOperationContracts = [
       "503": apiError("Worker control plane или artifact повреждён"),
       "500": apiError("Внутренняя ошибка"),
     },
+  },
+  {
+    id:"downloadJobInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-ar053-loader-inputs-v1 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-ar053-loader-inputs-v1"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/reviewed-inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v2 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v2"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobWaterNodeReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/water-node-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/water-node-reviewed-inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v4 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v4"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobSteelReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/steel-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/steel-reviewed-inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v6 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v6"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobColumnPylonSectionReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/column-pylon-section-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/column-pylon-section-reviewed-inventory-comparison-inputs",summary:"Полный immutable пакет семи доменов и сохранённых пар сечений для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v7 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v7"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobConcreteWallReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/concrete-wall-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/concrete-wall-reviewed-inventory-comparison-inputs",summary:"Полный immutable пакет семи доменов для точной v13 worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v7 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v7"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobLightingTechnologyReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/lighting-technology-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/lighting-technology-reviewed-inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v5 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v5"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
+  },
+  {
+    id:"downloadJobRailReviewedInventoryComparisonInputs",method:"get",fastifyPath:"/api/internal/v1/jobs/:id/rail-reviewed-inventory-comparison-inputs",
+    openApiPath:"/internal/v1/jobs/{id}/rail-reviewed-inventory-comparison-inputs",summary:"Аутентифицированный immutable пакет перечней для текущей worker lease",
+    params:idParams,querystring:{type:"object",additionalProperties:false,required:["attemptId","fencingToken"],properties:{
+      attemptId:{type:"string",format:"uuid"},fencingToken:{type:"integer",minimum:1,maximum:Number.MAX_SAFE_INTEGER}}},
+    binaryResponse:true,openApiHeaders:[{name:"X-Worker-Token",required:true,description:"Worker token",schema:{type:"string"}}],security:[{workerToken:[]}],
+    responses:{"200":{description:"Canonical authenticated matrix-reviewed-inventory-loader-inputs-v3 JSON",schema:"BinaryArtifact",contentType:"application/json",headers:{
+      "Content-Length":{schema:{type:"integer",minimum:1,maximum:67108864}},"X-Content-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},
+      "X-Input-Manifest-SHA256":{schema:{type:"string",pattern:"^[a-f0-9]{64}$"}},"X-Artifact-Schema-Version":{schema:{const:"matrix-reviewed-inventory-loader-inputs-v3"}}}},
+      "401":apiError("Worker token требуется"),"404":apiError("Job недоступен"),"409":apiError("Lease устарела или job завершён"),
+      "503":apiError("Исходные данные не прошли проверку целостности"),"500":apiError("Внутренняя ошибка")},
   },
   {
     id: "downloadJobOcrLayoutArtifact",

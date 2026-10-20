@@ -71,3 +71,15 @@ Workers не изменяют доменные таблицы напрямую. 
 Первый рабочий релиз закрывает PDF → извлечение → несколько High-правил → evidence → решение → дозагрузка → сохранный протокол. Все 132 параметра присутствуют в coverage ledger, но неисполненные правила обозначаются UNSUPPORTED. DWG, live ИАИС/УКЭП и 100-user load test не входят в первый хакатонный gate. Это ограниченный прототип, а не полное соответствие ТЗ.
 
 Дальнейшие релизы расширяют форматы и семейства правил, добавляют управляемый GOLD, свободный поиск, нормативное администрирование, интеграции и эксплуатационные гарантии. Остаток виден в продукте и release manifest. Разделение этапов не отменяет требований ТЗ.
+
+## T62: сохранённый исходный текст v3
+
+Отдельный opt-in `SOURCE_AUDIT_V3` замораживает фактический extractor/processor/cache release; default machine profile не меняется. Полный v3 artifact имеет located/unlocated raw records с native paths и frame. Authenticated source endpoint и web поиск используют полный immutable origin. Третий traversal policy исключает process-specific grouping ties; исторические profiles не переписываются. [Приёмка и ограничения](operations/MATRIX_T62_DURABLE_TEXT_V3_20261018.md).
+
+## T73: отдельный durable v10 и снимок pair applicability
+
+Локальное ядро v10 добавляет шестой typed domain KR-056 к frozen v9. Source/member review и pair applicability имеют отдельные журналы и CAS. Admission сохраняет последние pair decisions до status/ref filtering в append-only run snapshot; full original text/PDF и оба journal/projection хеша проверяются при загрузке, completion, seal и historical read. Снимок отделён от manifest preimage, поэтому hash cycle отсутствует. UNKNOWN/WITHDRAWN и stale refs не заменяются старым APPROVED. Машинный кандидат/null отделён от человеческого согласования scope; старые результаты сохраняют свой снимок. [Локальная приёмка и лимиты](operations/MATRIX_T73_STEEL_DURABLE_20261018.md). Feedback activation и T74 UI проходят отдельные проверки.
+
+## T67–T68: frozen v9 и confidence-v2
+
+На feedback стенде исполнен отдельный v9 с пятью typed overlays поверх scalar engine. Source-only аудитv3 и normal comparison разделены по purpose. Full-origin reconstruction, current-review/PDF checks и независимая API пересборка сохраняют границу между исходным утверждением, человеческой привязкой и машинным выводом. Новый profile применяет strict>80%confidence-v2; историческиеprofiles/порогv1 не переосмысливаются. [Фактическая приёмка и оставшиеся границы](operations/MATRIX_T67_T68_V9_20261018.md).

@@ -1,0 +1,9 @@
+/** ODI120 membership omission is a scoped candidate with no calibrated probability. */
+import type {MatrixRailRoomIdentity} from './matrix-rail-inventory-review.js';
+import type {MatrixInventoryComparisonReference,MatrixInventoryComparisonEvidence} from './matrix-inventory-execution.js';
+export type MatrixOdi120RailInventoryComparison={schemaVersion:'matrix-odi120-rail-inventory-comparison-v1';status:'ABSTAIN';reasonCode:string;calibratedProbability:null}|{
+ schemaVersion:'matrix-odi120-rail-inventory-comparison-v1';status:'CANDIDATE';ruleId:'matrix-odi-120-declared_accessible_room_wc_rails_omission';ruleVersion:'1';parameterCode:'ODI-120';reasonCode:'BOTH_WC_RAIL_TYPES_NOT_LISTED_IN_REVIEWED_RD_ROOM_INVENTORY';calibratedProbability:null;comparisonScope:'REVIEWED_NAMED_ACCESSIBLE_ROOM_DECLARED_REGIONS_ONLY';identity:MatrixRailRoomIdentity;expected:MatrixInventoryComparisonReference;actual:MatrixInventoryComparisonReference;missingFeatureKeys:['WC_FIXED_RAIL','WC_FOLDING_RAIL']};
+type Common={schemaVersion:'matrix-rail-inventory-execution-result-v1';id:string;ruleId:'matrix-odi-120-declared_accessible_room_wc_rails_omission';ruleVersion:'1';parameterCode:'ODI-120';comparisonVariant:'PD_RD'};
+export type MatrixRailInventoryExecutionResult=Common&({kind:'SCOPED_COMPARISON';identity:MatrixRailRoomIdentity;comparison:MatrixOdi120RailInventoryComparison}|{kind:'UNBOUND_ATOM_ABSTENTION';reasonCode:'REVIEWED_RAIL_INVENTORY_IDENTITY_MISSING';calibratedProbability:null});
+export interface MatrixRailInventoryComparisons {schemaVersion:'matrix-rail-inventory-comparisons-v1';purpose:'MACHINE_COMPARISON';objectId:string;inputManifestHash:string;capabilityRegistryHash:string;results:MatrixRailInventoryExecutionResult[]}
+export type MatrixRailInventoryComparisonEvidence=Omit<MatrixInventoryComparisonEvidence,'fragmentRole'>&{fragmentRole:'HEADER'|'SCOPE'|'END'|'FEATURE'};

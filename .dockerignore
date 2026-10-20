@@ -11,3 +11,17 @@ docs/
 *.tsbuildinfo
 **/__pycache__/
 **/*.py[cod]
+apps/api/runtime/
+
+# Local credentials and Python environments are never build inputs.
+.env
+.env.*
+**/.env
+**/.env.*
+infra/feedback.env
+.venv/
+**/.venv/
+var/
+**/.pytest_cache/
+**/.ruff_cache/
+services/worker/historical_tests/

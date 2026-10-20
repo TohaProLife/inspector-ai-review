@@ -405,10 +405,18 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
       "027_run_ocr_fact_pair_snapshots.sql",
       "028_ocr_fact_pair_quantity_reviews.sql",
       "029_review_candidate_decisions.sql",
+      "030_inspector_candidate_review.sql",
+      "031_matrix_machine_execution.sql",
+      "032_local_document_registration.sql",
+      "033_matrix_source_scope.sql",
+      "034_matrix_inventory_scope.sql",
+      "035_matrix_call_inventory_scope.sql",
+      "036_matrix_rail_inventory_scope.sql",
+      "037_matrix_water_node_scope.sql",
     ]);
     expect(firstRun.backfilledArtifacts).toBe(0);
     const secondRun = await runDatabaseMigrations(connectionString);
-    expect(secondRun.skipped).toHaveLength(29);
+    expect(secondRun.skipped).toHaveLength(37);
     expect(secondRun.backfilledArtifacts).toBe(0);
   }, 30_000);
 
@@ -905,7 +913,7 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
     const replacement = await repository.reprocess(check!.id);
     expect(replacement?.id).not.toBe(check!.id);
     expect((await app.inject({ method: "GET", url: resultsUrl,
-      headers: { cookie: readerCookie } })).statusCode).toBe(404);
+      headers: { cookie: readerCookie } })).statusCode).toBe(200);
     const activeRead = await app.inject({ method: "GET",
       url: `/api/checks/${replacement!.id}/pilot-results`, headers: { cookie: readerCookie } });
     expect(activeRead.json()).toEqual({ checkId: replacement!.id, status: "PROCESSING", items: [],
@@ -1509,8 +1517,8 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
       await repository.registerIngestedFiles(object.id, [file]);
       const reviewer = await provisionLocalUser(database, {
         organizationSlug, login: `ocr-heat-reviewer-${randomUUID()}`, displayName: "OCR Heat Reviewer",
-        password: readerPassword, role: "INSPECTOR", capabilities: ["SOURCE_REVIEW"],
-        objectApiIds: [object.id], objectPermissions: ["READ", "REVIEW_DECIDE"],
+        password: readerPassword, role: "INSPECTOR", capabilities: ["SOURCE_REVIEW", "REVIEW_DECIDE"],
+        objectApiIds: [object.id], objectPermissions: ["READ", "REVIEW_DECIDE", "FINALIZE"],
       });
       const workerToken = `worker-${randomUUID()}`;
       const identity = PostgresIdentityService.create({ connectionString, organizationSlug });
@@ -1684,6 +1692,18 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
         expect((await complete(type, lease, scaffold(type, lease))).statusCode).toBe(200);
       }
       const entity = await claim("ENTITY_EXTRACTION");
+      const visualProgress = { mode: "FULL", documentCount: 1, completedDocuments: 0, scannedPages: 1,
+        skippedPages: 0, eligible: 3, selected: 3, processed: 1, failed: 0 };
+      const entityJob = { id: await jobId("ENTITY_EXTRACTION") };
+      const progressResponse = await app.inject({ method: "POST", url: `/api/internal/v1/jobs/${entityJob.id}/heartbeat`,
+        headers: { "x-worker-token": workerToken }, payload: { attemptId: entity.attemptId, fencingToken: entity.fencingToken, visualProgress } });
+      expect(progressResponse.statusCode).toBe(200);
+      expect((await app.inject({ method: "GET", url: `/api/checks/${check!.id}`, headers: { cookie: readerCookie } })).json().visualProgress).toEqual(visualProgress);
+      const staleProgress = await app.inject({ method: "POST", url: `/api/internal/v1/jobs/${entityJob.id}/heartbeat`,
+        headers: { "x-worker-token": workerToken }, payload: { attemptId: entity.attemptId, fencingToken: entity.fencingToken + 1,
+          visualProgress: { ...visualProgress, processed: 3 } } });
+      expect(staleProgress.statusCode).toBe(409);
+      expect((await app.inject({ method: "GET", url: `/api/checks/${check!.id}`, headers: { cookie: readerCookie } })).json().visualProgress).toEqual(visualProgress);
       expect((await complete("ENTITY_EXTRACTION", entity, visualProposalResult(entity, 0))).statusCode).toBe(200);
       const rules = await claim("RULE_EVALUATION");
       expect(rules.release.providerSlot).toMatchObject({ profileId: expectedProfile });
@@ -1706,6 +1726,15 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
       const ocrHeatRows = { schemaVersion: "ocr-heat-row-proposals-v1",
         profileId: "conservative-ocr-heat-rows-v1", inputManifestHash: rules.inputManifestHash,
         proposals: [], abstentions: [], findingCount: 0 };
+      const reviewCandidates = observationsProfile && !ocrCandidateProfile && candidateFixture ? JSON.parse(spawnSync(pythonExecutable, ["-c", `import sys,json
+from inspector_worker.review_candidates import evaluate_review_candidates
+d=json.load(sys.stdin)
+s={**d['source'],**d['review'],'objectId':d['objectId']}
+json.dump(evaluate_review_candidates(d['objectId'],d['manifestHash'],[s],[d['artifact']]),sys.stdout,ensure_ascii=False)`], {
+        input: JSON.stringify({ objectId: rules.objectId, manifestHash: rules.inputManifestHash,
+          source: rules.inputs.sourceFiles[0], review: rules.inputs.sourceDecisions[file.id], artifact: candidateFixture.artifact }),
+        encoding: "utf8", env: { ...process.env, ...pythonEnv, PYTHONPATH: fileURLToPath(new URL("../../../services/worker", import.meta.url)) },
+      }).stdout) : null;
       const ruleResult = { schemaVersion: "analysis-stage-result-v2", jobType: "RULE_EVALUATION",
         inputManifestHash: rules.inputManifestHash, disposition: "RULES_EVALUATED",
         providerKind: "RULE_ENGINE", providerProfileId: expectedProfile,
@@ -1726,7 +1755,7 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
           ? { candidateFamilyObservations: candidateFixture.observations } : {}),
         ...(candidateOcrObservations
           ? { candidateFamilyOcrObservations: candidateOcrObservations } : {}),
-        ...(ocrTableRows ? { ocrTableRows } : {}) };
+        ...(ocrTableRows ? { ocrTableRows } : {}), ...(reviewCandidates ? { reviewCandidates } : {}) };
       expect((await complete("RULE_EVALUATION", rules, {
         ...ruleResult, ocrHeatRows: { ...ocrHeatRows, findingCount: 1 },
       })).statusCode).toBe(409);
@@ -1799,7 +1828,7 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
       const seal = await claim("ANALYSIS_SEAL_UNSUPPORTED");
       const sealed = await complete("ANALYSIS_SEAL_UNSUPPORTED", seal,
         { disposition: "UNSUPPORTED_COVERAGE_SEALED" });
-      expect(sealed.statusCode).toBe(200);
+      expect(sealed.statusCode, sealed.body).toBe(200);
       expect(sealed.json()).toMatchObject({ check: { status: "PARTIAL",
         stats: { unsupported: factProfile ? 125 : 130 } } });
       const pilotRead = await app.inject({ method: "GET", url: pilotUrl,
@@ -1868,6 +1897,102 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
         `SELECT COUNT(*)::text AS count FROM review_items item JOIN analysis_runs run ON run.id = item.run_id
          WHERE run.api_id = $1`, [check!.id]);
       expect(findings.rows[0].count).toBe("0");
+
+      if (reviewCandidates) {
+        const endpoint = `/api/checks/${check!.id}/review-candidate-decisions`;
+        expect(reviewCandidates.candidates.length).toBeGreaterThan(0);
+        const candidate = reviewCandidates.candidates[0];
+        const mutationHeaders = { cookie: reviewerSession.cookie, "x-csrf-token": reviewerSession.csrf };
+        const current = async () => app.inject({ method: "GET", url: `/api/checks/${check!.id}`, headers: { cookie: reviewerSession.cookie } });
+        const finalize = async () => {
+          const read = await current(), body = read.json();
+          return app.inject({ method: "POST", url: `/api/checks/${check!.id}/finalize`,
+            headers: { ...mutationHeaders, "if-match": read.headers.etag, "idempotency-key": randomUUID() },
+            payload: { runId: check!.id, decisionSetHash: body.decisionSetHash,
+              acknowledgedGapsHash: body.gapsHash, acknowledgementReason: "Synthetic partial protocol acceptance" } });
+        };
+        expect((await finalize()).json().error).toBe("PENDING_CANDIDATE_REVIEW");
+        const base = { schemaVersion: "review-candidate-decision-v1", candidateId: candidate.candidateId,
+          artifactHash: reviewCandidates.contentHash, note: "Synthetic reviewer examined original" };
+        const details = { entity: "Synthetic room 1", sameElementConfirmed: false, comparisonPair: "PD_RD",
+          sources: [{ id: "RD", sourceFileId: file.id, sourceSha256: file.sha256, stage: "RD", pageNumber: 1,
+            sheet: "1", revision: "test", bbox: [.1,.1,.2,.2], value: "42", unit: "м²", element: "Synthetic room 1" }],
+          rule: null, clarification: "Missing PD original for synthetic test", parts: [] };
+        const save = (payload: Record<string, unknown>) => app.inject({ method: "POST", url: endpoint,
+          headers: { ...mutationHeaders, "idempotency-key": randomUUID() }, payload: { ...base, ...payload } });
+        expect((await save({ decision: "CONFIRM", details, expectedDecisionHash: null })).statusCode).toBe(409);
+        const clarify = await save({ decision: "CLARIFY", details, expectedDecisionHash: null });
+        expect(clarify.statusCode, clarify.body).toBe(201);
+        expect((await save({ decision: "REJECT", expectedDecisionHash: null })).json().error).toBe("REVIEW_VERSION_CONFLICT");
+        const wrong = structuredClone(details); wrong.sources[0].pageNumber = 2;
+        expect((await save({ decision: "CORRECT_EVIDENCE", details: wrong,
+          expectedDecisionHash: clarify.json().decisionHash })).json().error).toBe("EVIDENCE_OUTSIDE_MANIFEST");
+        const corrected = await save({ decision: "CORRECT_EVIDENCE", details,
+          expectedDecisionHash: clarify.json().decisionHash });
+        expect(corrected.statusCode, corrected.body).toBe(201);
+        expect((await finalize()).json().error).toBe("PENDING_CANDIDATE_REVIEW");
+        const rejected = await save({ decision: "REJECT", details, expectedDecisionHash: corrected.json().decisionHash });
+        expect(rejected.statusCode, rejected.body).toBe(201);
+        const history = await app.inject({ method: "GET", url: endpoint, headers: { cookie: reviewerSession.cookie } });
+        expect(history.json().items.map((event: any) => event.decision)).toEqual(["CLARIFY", "CORRECT_EVIDENCE", "REJECT"]);
+        // Fixture-only copy into a new durable run tests inheritance independently of model output.
+        const originalRun = (await database.query(`SELECT * FROM analysis_runs WHERE api_id = $1`, [check!.id])).rows[0];
+        const seedNewRunArtifacts = async (nextId: string) => {
+          const next = (await database.query(`SELECT * FROM analysis_runs WHERE api_id = $1`, [nextId])).rows[0];
+          const newJobs = (await database.query(`SELECT id, job_type FROM analysis_jobs WHERE run_id = $1`, [next.id])).rows;
+          await database.query(`INSERT INTO analysis_text_artifacts
+            (id, job_id, run_id, source_file_id, schema_version, input_sha256, content_hash, byte_size, page_count, text_page_count, content_json)
+            SELECT gen_random_uuid(), $2, $3, source_file_id, schema_version, input_sha256, content_hash, byte_size, page_count, text_page_count, content_json
+            FROM analysis_text_artifacts WHERE run_id = $1`, [originalRun.id, newJobs.find((job: any) => job.job_type === "DOCUMENT_TEXT_LAYER").id, next.id]);
+          const stage = (await database.query(`SELECT * FROM analysis_stage_artifacts WHERE run_id = $1 AND job_type = 'RULE_EVALUATION'`, [originalRun.id])).rows[0];
+          await database.query(`INSERT INTO analysis_stage_artifacts (id, job_id, run_id, job_type, schema_version,
+            input_manifest_hash, disposition, reason_code, provider_kind, provider_profile_id, provider_config_hash, output_count, content_hash, byte_size, content_json)
+            VALUES (gen_random_uuid(),$1,$2,'RULE_EVALUATION',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+            [newJobs.find((job: any) => job.job_type === "RULE_EVALUATION").id, next.id, stage.schema_version,
+              stage.input_manifest_hash, stage.disposition, stage.reason_code, stage.provider_kind, stage.provider_profile_id,
+              stage.provider_config_hash, stage.output_count, stage.content_hash, stage.byte_size, stage.content_json]);
+          const client = await database.connect();
+          try { await (repository as any).carryUnchangedCandidateReviews(client, next);
+            return await (repository as any).candidateReviewSnapshot(client, next.id, nextId);
+          } finally { client.release(); }
+        };
+        const replacement = await repository.startCheck(object.id);
+        const carried = await seedNewRunArtifacts(replacement!.id);
+        expect(carried.decisions).toHaveLength(1);
+        expect(carried.decisions[0].inheritedFrom.decisionHash).toBe(rejected.json().decisionHash);
+        expect(carried.decisions[0].details.sources[0].value).toBe("42");
+        // Restore test aggregate; no application path is allowed to switch a historical run back.
+        await database.query(`UPDATE analysis_runs SET run_state = 'CANCELLED' WHERE api_id = $1`, [replacement!.id]);
+        const extra = { ...file, id: `FIL-${randomUUID()}`, sha256: "c".repeat(64), name: "unknown-new.pdf",
+          storageKey: `objects/${object.id}/originals/${"c".repeat(64)}/unknown-new.pdf` };
+        await repository.registerIngestedFiles(object.id, [extra]);
+        const changed = await repository.startCheck(object.id);
+        const invalidated = await seedNewRunArtifacts(changed!.id);
+        expect(invalidated.decisions).toHaveLength(0);
+        await database.query(`UPDATE analysis_runs SET run_state = 'CANCELLED' WHERE api_id = $1`, [changed!.id]);
+        const classifyExtra = await app.inject({ method: "POST", url: `/api/objects/${object.id}/files/${extra.id}/source-review`,
+          headers: { ...mutationHeaders, "idempotency-key": randomUUID() },
+          payload: { sourceSha256: extra.sha256, revisionStatus: "CURRENT", approvalStatus: "APPROVED",
+            linkGroupId: "other-section", sectionCode: "KR", pageStages: {}, basis: { reference: "Synthetic unrelated KR source" } } });
+        expect(classifyExtra.statusCode, classifyExtra.body).toBe(201);
+        const unaffected = await repository.startCheck(object.id);
+        const retained = await seedNewRunArtifacts(unaffected!.id);
+        expect(retained.decisions).toHaveLength(1);
+        expect(retained.decisions[0].inheritedFrom.decisionHash).toBe(rejected.json().decisionHash);
+        await database.query(`UPDATE analysis_runs SET run_state = 'CANCELLED' WHERE api_id = $1`, [unaffected!.id]);
+        await database.query(`UPDATE inspections SET active_run_id = $2 WHERE id = $1`, [originalRun.inspection_id, originalRun.id]);
+        const runs = await app.inject({ method: "GET", url: `/api/objects/${object.id}/checks`, headers: { cookie: reviewerSession.cookie } });
+        expect(runs.statusCode, runs.body).toBe(200); expect(runs.json().items).toHaveLength(4);
+        const final = await finalize(); expect(final.statusCode, final.body).toBe(201);
+        const exported = await app.inject({ method: "GET", url: `/api/protocols/${final.json().id}/export`, headers: { cookie: reviewerSession.cookie } });
+        expect(exported.statusCode, exported.body).toBe(200);
+        expect(exported.json().candidateReview.decisions).toHaveLength(3);
+        expect(exported.json().candidateReview.decisions.at(-1).details.sources[0].value).toBe("42");
+        expect((await save({ decision: "REJECT", expectedDecisionHash: rejected.json().decisionHash })).statusCode).toBe(409);
+        const locked = await app.inject({ method: "GET", url: endpoint, headers: { cookie: reviewerSession.cookie } });
+        expect(locked.json().canReview).toBe(false);
+        await expect(database.query(`UPDATE review_candidate_decisions SET note = 'mutated note'`)).rejects.toThrow(/append-only/);
+      }
 
       delete process.env.INSPECTOR_OCR_HEAT_ROW_PROFILE;
       delete process.env.INSPECTOR_FACT_FAMILY_PROFILE;
@@ -2360,7 +2485,7 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
     );
     const migrationRerun = await runDatabaseMigrations(connectionString);
     expect(migrationRerun.applied).toEqual([]);
-    expect(migrationRerun.skipped).toHaveLength(29);
+    expect(migrationRerun.skipped).toHaveLength(37);
     expect(migrationRerun.backfilledArtifacts).toBe(1);
     const historicalArtifactResult = await fixtureDatabase.query<{
       api_id: string;
@@ -4775,6 +4900,14 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
       sourceSha256: file.sha256, revisionStatus: "CURRENT", approvalStatus: "APPROVED",
       linkGroupId: "building-1", pageStages: {},
       basis: { reference: "Титульный лист, согласованная версия" },
+      matrixScope: { entityKey: "pump-P1", reference: "Synthetic pump original and duty point reviewed", contexts: {
+        "ATOMIC_SUBRULE_SCOPE:matrix-ios2-073-pump_flow_rate": {
+          reference: "Synthetic component, zone and measurement basis reviewed", parameterCode: "IOS2-073",
+          attribute: "PUMP_FLOW_RATE", canonicalUnit: "m3/h", componentRole: "POTABLE_WATER_PUMP",
+          componentKey: "pump-P1", zoneKey: "zone-A", operatingModeKey: "normal-design-point",
+          measurementBasisKey: "volumetric-flow-at-duty-point",
+        },
+      } },
     };
     const reviewHeaders = {
       cookie: session.cookie, "x-csrf-token": session.csrf,
@@ -4818,6 +4951,7 @@ databaseSuite("PostgreSQL repository", { timeout: 30_000 }, () => {
     expect(reviewed.json()).toMatchObject({
       sourceFileId: file.id, sourceSha256: file.sha256,
       revisionStatus: "CURRENT", approvalStatus: "APPROVED", sectionCode: null,
+      matrixScope: reviewInput.matrixScope,
     });
     expect(reviewed.json().contentHash).toBe(sha256(canonicalJson({
       objectApiId: object.id, sourceFileApiId: file.id, ...reviewInput, actorId: reviewer.id,

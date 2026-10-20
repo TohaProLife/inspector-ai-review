@@ -1,0 +1,382 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:matrix-lighting-technology-execution-v1",
+  "title": "Typed original-backed named lighting transition execution",
+  "$ref": "#/definitions/comparisons",
+  "definitions": {
+    "loaderPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "sources",
+        "origins",
+        "identities"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-zu130-lighting-technology-loader-inputs-v1"
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "matrix-lighting-technology-comparison.schema.json#/definitions/source"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "matrix-lighting-technology-comparison.schema.json#/definitions/origin"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "identities": {
+          "type": "array",
+          "items": {
+            "$ref": "matrix-lighting-technology-comparison.schema.json#/definitions/identity"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        }
+      }
+    },
+    "executionResult": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "id",
+            "ruleId",
+            "ruleVersion",
+            "parameterCode",
+            "comparisonVariant",
+            "kind",
+            "identity",
+            "comparison"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-lighting-technology-execution-result-v1"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "ruleId": {
+              "const": "matrix-zu-130-declared_led_technology_replacement"
+            },
+            "ruleVersion": {
+              "const": "1"
+            },
+            "parameterCode": {
+              "const": "ZU-130"
+            },
+            "comparisonVariant": {
+              "const": "PD_RD"
+            },
+            "kind": {
+              "const": "SCOPED_COMPARISON"
+            },
+            "identity": {
+              "$ref": "matrix-lighting-technology-comparison.schema.json#/definitions/identity"
+            },
+            "comparison": {
+              "$ref": "matrix-lighting-technology-comparison.schema.json#/definitions/result"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "id",
+            "ruleId",
+            "ruleVersion",
+            "parameterCode",
+            "comparisonVariant",
+            "kind",
+            "reasonCode",
+            "calibratedProbability"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-lighting-technology-execution-result-v1"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "ruleId": {
+              "const": "matrix-zu-130-declared_led_technology_replacement"
+            },
+            "ruleVersion": {
+              "const": "1"
+            },
+            "parameterCode": {
+              "const": "ZU-130"
+            },
+            "comparisonVariant": {
+              "const": "PD_RD"
+            },
+            "kind": {
+              "const": "UNBOUND_ATOM_ABSTENTION"
+            },
+            "reasonCode": {
+              "const": "REVIEWED_LIGHTING_POSITION_IDENTITY_MISSING"
+            },
+            "calibratedProbability": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    },
+    "comparisons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "purpose",
+        "objectId",
+        "inputManifestHash",
+        "capabilityRegistryHash",
+        "results"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-lighting-technology-comparisons-v1"
+        },
+        "purpose": {
+          "const": "MACHINE_COMPARISON"
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "capabilityRegistryHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/executionResult"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resultId",
+        "role",
+        "sourceFileId",
+        "sourceSha256",
+        "reviewDecisionId",
+        "reviewContentHash",
+        "declarationContentHash",
+        "originCheckId",
+        "pageNumber",
+        "pageFrame",
+        "nativeFrame",
+        "fragmentRole",
+        "fragment"
+      ],
+      "properties": {
+        "resultId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "role": {
+          "enum": [
+            "EXPECTED",
+            "ACTUAL"
+          ]
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reviewDecisionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "reviewContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "declarationContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "originCheckId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pageFrame": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "widthMilliPoints",
+            "heightMilliPoints"
+          ],
+          "properties": {
+            "widthMilliPoints": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "heightMilliPoints": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "nativeFrame": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeFrame"
+        },
+        "fragmentRole": {
+          "const": "PRIMARY"
+        },
+        "fragment": {
+          "$ref": "matrix-lighting-technology-source-v3.schema.json#/definitions/primaryFragment"
+        }
+      }
+    }
+  },
+  "x-local-ref-allowlist": [
+    "matrix-lighting-technology-comparison.schema.json",
+    "document-text-v3.schema.json",
+    "matrix-lighting-technology-source-v3.schema.json"
+  ],
+  "x-semantic-contract": {
+    "stage": "T65",
+    "status": "DESIGN_BEFORE_CANONICAL_MANUAL_AND_CODE",
+    "purpose": "Typed full-v3 lighting execution, exact original evidence and additive coverage; runtime wiring follows immediately",
+    "loaderSchema": "matrix-zu130-lighting-technology-loader-inputs-v1",
+    "loaderFields": [
+      "schemaVersion",
+      "objectId",
+      "inputManifestHash",
+      "sources",
+      "origins",
+      "identities"
+    ],
+    "sourcesAndOrigins": "Exact T64 full native DTO; database/actor/original-PDF-byte authority remains protected loader responsibility",
+    "identities": "Canonical codepoint sorted unique complete identity DTOs derived from EVERY claim; caller list must equal derived list, max128",
+    "validation": "Full bounded total package plus all retained origins/claims through T64 sentinel before selecting; INVALID_INPUT/INPUT_LIMIT/SOURCE_PROVENANCE_UNVERIFIED/DECLARATION_RECONSTRUCTION_UNVERIFIED are integrity failures, never stored operational abstentions",
+    "result": "matrix-lighting-technology-comparisons-v1 envelope, purpose MACHINE_COMPARISON, object/manifest/registry hash, max128 deterministic ordered results. SCOPED_COMPARISON retains exact T64 result and identity; empty identities gives exactly one UNBOUND_ATOM_ABSTENTION/REVIEWED_LIGHTING_POSITION_IDENTITY_MISSING/null",
+    "resultId": "SHA256(portable codepoint canonical {hashDomain:matrix-lighting-technology-execution-result-id-v1,objectId,inputManifestHash,capabilityRegistryHash,result:bodyWithoutId})",
+    "evidence": "Only exact CANDIDATE produces EXPECTED/ACTUAL evidence. All original primary fragments retained with raw text, sourcePath, nativeBoxPointStrings, usedTextRange, page/native frame; exact source ID/SHA/review/hash/declaration/target check. No approximated block geometry or relabelled v2 fragments.",
+    "coverage": "Only ZU-130 prior UNSUPPORTED zero row changes to PARTIAL one enabled/evaluated atom. Gap explicitly named-position directed LED replacement only; other technologies, unnamed groups, efficiency/capacity/quantity/control/normative compliance unsupported. Candidate count success; all operational refusals abstentions; no clean-negative certificate.",
+    "registry": "Separate immutable matrix-lighting-technology-capabilities-v1 JSON, one rule matrix-zu-130-declared_led_technology_replacement v1/PD_RD/ENUM_TRANSITION",
+    "exportsTS": [
+      "deriveLightingTechnologyIdentities",
+      "validateLightingTechnologyLoaderPackage",
+      "buildLightingTechnologyComparisons",
+      "validateLightingTechnologyComparisons",
+      "lightingTechnologyComparisonEvidence",
+      "mergeLightingTechnologyCoverage",
+      "LIGHTING_TECHNOLOGY_CAPABILITY_REGISTRY",
+      "lightingTechnologyCapabilityRegistryHash"
+    ],
+    "exportsPython": "Same snake_case plus LIGHTING_TECHNOLOGY_CAPABILITY_REGISTRY and LIGHTING_TECHNOLOGY_CAPABILITY_REGISTRY_HASH",
+    "compatibility": "New modules only; frozen T64 comparator, T63 source, v1-v8 policy definitions and legacy scalar/coverage bytes unchanged. No counted increase on stand until v9 durable integration accepted.",
+    "next": "T66 authorized review/preview/whole-v3 origin loader; T67 additive v9 runtime and controlled lifecycle; T68 web and current strict >80 confidence policy; no stop between stages",
+    "browser": "Pending existing security hold; no browser retry or substitute browser tool",
+    "h100Used": false,
+    "fullClaimIntegrityPrepass": "Before interpreting any sentinel or scoped operational refusal, independently reconstruct EVERY retained claim from whole authenticated-by-loader origin using snapshot.stage plus ENTIRE reviewed pageStages/selection. This snapshot.stage is only immutable DTO reconstruction input, never current stage authority. Compare entire rebuilt declaration, target hash, source ID/SHA and all origin-target hashes. Then T64 comparator enforces current source stage eligibility. This prevents one stage-invalid retained claim from masking a forged second snapshot at global gate5. Failed prepass is integrity failure.",
+    "signatures": {
+      "deriveLightingTechnologyIdentities": "(sources) -> detached canonical sorted unique complete identity[], throws on malformed source/review/claim DTO/association; no full origin auth claim",
+      "validateLightingTechnologyLoaderPackage": "(package) -> detached validated full package; throws on integrity/limits",
+      "buildLightingTechnologyComparisons": "(package, registryOptional=privateCanonicalRegistry) -> detached typed envelope; throws on invalid registry or inputs",
+      "validateLightingTechnologyComparisons": "(envelope) -> detached structurally/hash validated envelope; throws; cannot authenticate origin by itself",
+      "lightingTechnologyComparisonEvidence": "(package, envelope, registryOptional=privateCanonicalRegistry) -> detached evidence[] after exact independent full reconstruction/equality; throws",
+      "mergeLightingTechnologyCoverage": "(base132Coverage, envelope, registryOptional=privateCanonicalRegistry) -> detached132rows; throws; target implemented/enabled/evaluated1, successes candidates, abstentions others,failures0",
+      "lightingTechnologyCapabilityRegistryHash": "exported string constant; Python LIGHTING_TECHNOLOGY_CAPABILITY_REGISTRY_HASH",
+      "LIGHTING_TECHNOLOGY_CAPABILITY_REGISTRY": "exported detached public constant; private immutable canonical registry/default cannot change through public mutation",
+      "errors": "Error in TS / ValueError in Python; reason text informative, no required class/exact error message; invalid never returns null",
+      "modulePaths": [
+        "apps/api/src/matrix-lighting-technology-execution.ts",
+        "services/worker/inspector_worker/lighting_technology_execution.py"
+      ]
+    }
+  },
+  "x-capability-registry": {
+    "schemaVersion": "matrix-lighting-technology-capabilities-v1",
+    "entries": [
+      {
+        "parameterCode": "ZU-130",
+        "matrixCode": "M-130",
+        "ruleId": "matrix-zu-130-declared_led_technology_replacement",
+        "ruleVersion": "1",
+        "enabled": true,
+        "comparisonVariant": "PD_RD",
+        "family": "ENUM_TRANSITION",
+        "executionKind": "REVIEWED_NAMED_LIGHTING_TECHNOLOGY",
+        "resultSchemaVersion": "matrix-zu130-lighting-technology-comparison-v1",
+        "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_LUMINAIRE_LIGHT_SOURCE_POSITION_PD_LED_TO_RD_FLUORESCENT_OR_INCANDESCENT_ONLY;UNNAMED_GROUPS_OTHER_TECHNOLOGIES_EFFICIENCY_CAPACITY_QUANTITIES_CONTROLS_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+      }
+    ]
+  },
+  "x-integrity-abstentions": [
+    "INVALID_INPUT",
+    "INPUT_LIMIT",
+    "SOURCE_PROVENANCE_UNVERIFIED",
+    "DECLARATION_RECONSTRUCTION_UNVERIFIED"
+  ],
+  "x-runtime-authority": "Pure full-projection consistency only; repository must authenticate complete sealed origins/reviews/current membership and original bytes. No active profile/coverage increase in this pure stage."
+}

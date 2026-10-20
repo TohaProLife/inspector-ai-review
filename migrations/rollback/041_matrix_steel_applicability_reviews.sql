@@ -1,0 +1,1 @@
+DROP TABLE matrix_steel_applicability_decisions;

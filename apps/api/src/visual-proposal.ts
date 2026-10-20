@@ -1,3 +1,4 @@
+import { validDocumentContextV2 } from "./document-context.js";
 import { randomUUID } from "node:crypto";
 import { canonicalJson, sha256 } from "./canonical-json.js";
 
@@ -50,6 +51,61 @@ export const v6VisualProposalProfile = {
   maxVlmObservationsPerSource: 2,
   vlmCropMaxEdgePx: 768,
 } as const;
+
+export const v7SampleVisualProposalProfile = {
+  ...v5VisualProposalProfile, schemaVersion: "visual-proposal-profile-v7",
+  contextMethodId: "metadata-outline-page-signals-v2", maxContextPages: 10000,
+  analysisMode: "SAMPLE", vlmCropMaxEdgePx: 2048,
+} as const;
+export const v7FullVisualProposalProfile = {
+  ...v7SampleVisualProposalProfile, analysisMode: "FULL", vlmMethodId: "all-saved-proposals-v1", maxPagesPerSource: 10000,
+  maxProposalsPerSource: 100000, maxVlmObservationsPerSource: 100000,
+} as const;
+export const v7SampleVisualProposalProfileId = "red-vector-proposals-v7-sample";
+export const v7FullVisualProposalProfileId = "red-vector-proposals-v7-full";
+export const v7SampleVisualProposalConfigHash = sha256(canonicalJson(v7SampleVisualProposalProfile));
+export const v7FullVisualProposalConfigHash = sha256(canonicalJson(v7FullVisualProposalProfile));
+
+// A new release preserves the meaning and hashes of already saved v7 crops.
+export const v8SampleVisualProposalProfile = {
+  ...v7SampleVisualProposalProfile, schemaVersion: "visual-proposal-profile-v8",
+  vlmCropMethodId: "normalized-display-square-v2",
+} as const;
+export const v8FullVisualProposalProfile = {
+  ...v7FullVisualProposalProfile, schemaVersion: "visual-proposal-profile-v8",
+  vlmCropMethodId: "normalized-display-square-v2",
+} as const;
+export const v8SampleVisualProposalProfileId = "red-vector-proposals-v8-sample";
+export const v8FullVisualProposalProfileId = "red-vector-proposals-v8-full";
+export const v8SampleVisualProposalConfigHash = sha256(canonicalJson(v8SampleVisualProposalProfile));
+export const v8FullVisualProposalConfigHash = sha256(canonicalJson(v8FullVisualProposalProfile));
+
+// New server release: retain every V1-V8 profile and saved crop identity.
+export const v9SampleVisualProposalProfile = {
+  ...v6VisualProposalProfile, schemaVersion: "visual-proposal-profile-v9",
+  contextMethodId: "metadata-outline-page-signals-v2", maxContextPages: 10000,
+  analysisMode: "SAMPLE", vlmCropMaxEdgePx: 2048,
+  vlmCropMethodId: "normalized-display-square-v2",
+} as const;
+export const v9FullVisualProposalProfile = {
+  ...v9SampleVisualProposalProfile, analysisMode: "FULL",
+  vlmMethodId: "all-saved-proposals-server-nonnegative-v1",
+  maxPagesPerSource: 10000, maxProposalsPerSource: 100000,
+  maxVlmObservationsPerSource: 100000,
+} as const;
+export const v9SampleVisualProposalProfileId = "red-vector-proposals-v9-sample";
+export const v9FullVisualProposalProfileId = "red-vector-proposals-v9-full";
+export const v9SampleVisualProposalConfigHash = sha256(canonicalJson(v9SampleVisualProposalProfile));
+export const v9FullVisualProposalConfigHash = sha256(canonicalJson(v9FullVisualProposalProfile));
+
+export type VisualProfile = "V4" | "V5" | "V6" | "V7_SAMPLE" | "V7_FULL" | "V8_SAMPLE" | "V8_FULL" | "V9_SAMPLE" | "V9_FULL";
+
+export function visualProfileForAnalysisMode(profile: VisualProfile, mode: "SAMPLE" | "FULL"): VisualProfile {
+  if (profile === "V6" || profile.startsWith("V9_")) return mode === "FULL" ? "V9_FULL" : "V9_SAMPLE";
+  return profile.startsWith("V8_")
+    ? mode === "FULL" ? "V8_FULL" : "V8_SAMPLE"
+    : mode === "FULL" ? "V7_FULL" : "V7_SAMPLE";
+}
 
 export const legacyVisualProposalConfigHash = sha256(canonicalJson(legacyVisualProposalProfile));
 export const legacyVisualProposalProfileId = "red-vector-proposals-v1";
@@ -124,7 +180,9 @@ function validDocumentContext(value: unknown, pageCount: number): boolean {
   return value.status === expectedStatus && value.reasonCode === expectedReason;
 }
 
-export function selectedVisualVlmOrdinals(count: number): number[] {
+export function selectedVisualVlmOrdinals(count: number, mode: "SAMPLE" | "FULL" = "SAMPLE"): number[] {
+  if (!Number.isSafeInteger(count) || count < 0) throw new Error("invalid proposal count");
+  if (mode === "FULL") return Array.from({ length: count }, (_, index) => index);
   if (count <= v5VisualProposalProfile.maxVlmObservationsPerSource) {
     return Array.from({ length: count }, (_, index) => index);
   }
@@ -132,17 +190,18 @@ export function selectedVisualVlmOrdinals(count: number): number[] {
     Math.floor(((2 * index + 1) * count) / (2 * v5VisualProposalProfile.maxVlmObservationsPerSource)));
 }
 
-function validVlmObservations(value: unknown, source: Record<string, unknown>, version: "v5" | "v6"): boolean {
-  const profile = version === "v6" ? v6VisualProposalProfile : v5VisualProposalProfile;
+function validVlmObservations(value: unknown, source: Record<string, unknown>, version: "v5" | "v6" | "v9", mode: "SAMPLE" | "FULL" = "SAMPLE"): boolean {
+  const server = version === "v6" || version === "v9";
+  const profile = server ? v6VisualProposalProfile : v5VisualProposalProfile;
   if (!record(value) || !keys(value, [
     "schemaVersion", "methodId", "eligibleProposalCount", "selectedOrdinals",
     "omittedProposalCount", "observations",
   ]) || value.schemaVersion !== "visual-vlm-observations-v1"
-    || value.methodId !== profile.vlmMethodId
+    || value.methodId !== (mode === "FULL" ? version === "v9" ? "all-saved-proposals-server-nonnegative-v1" : "all-saved-proposals-v1" : profile.vlmMethodId)
     || !Array.isArray(source.proposals)
     || value.eligibleProposalCount !== source.proposals.length
     || !Array.isArray(value.selectedOrdinals) || !Array.isArray(value.observations)) return false;
-  const ordinals = selectedVisualVlmOrdinals(source.proposals.length);
+  const ordinals = selectedVisualVlmOrdinals(source.proposals.length, mode);
   if (value.selectedOrdinals.length !== ordinals.length
     || value.selectedOrdinals.some((item, index) => item !== ordinals[index])
     || value.omittedProposalCount !== source.proposals.length - ordinals.length
@@ -153,7 +212,7 @@ function validVlmObservations(value: unknown, source: Record<string, unknown>, v
     if (!record(observation) || !record(proposal) || !keys(observation, [
       "proposalOrdinal", "sourceSha256", "pageNumber", "bboxNormalized",
       "cropSha256", "modelId", "promptSha256", "decision", "reasonCode", "responseSha256",
-      ...(version === "v6" ? ["modelRevision", "modelLockSha256"]
+      ...(server ? ["modelRevision", "modelLockSha256"]
         : ["modelWeightsSha256", "modelProjectorSha256"]),
     ]) || observation.proposalOrdinal !== ordinals[index]
       || observation.sourceSha256 !== source.sourceSha256
@@ -161,7 +220,7 @@ function validVlmObservations(value: unknown, source: Record<string, unknown>, v
       || canonicalJson(observation.bboxNormalized) !== canonicalJson(proposal.bboxNormalized)
       || observation.modelId !== profile.vlmModelId
       || observation.promptSha256 !== profile.vlmPromptSha256
-      || (version === "v6" ? (
+      || (server ? (
         observation.modelRevision !== v6VisualProposalProfile.vlmModelRevision
         || observation.modelLockSha256 !== v6VisualProposalProfile.vlmModelLockSha256
       ) : (
@@ -173,11 +232,11 @@ function validVlmObservations(value: unknown, source: Record<string, unknown>, v
     const validHash = (item: unknown) => typeof item === "string" && /^[a-f0-9]{64}$/.test(item);
     if (observation.reasonCode === "MODEL_RESPONSE") {
       if (!validHash(crop) || !validHash(response)
-        || !(version === "v6" ? observation.decision === "RADIATOR_HINT"
+        || !(server ? observation.decision === "RADIATOR_HINT"
           : ["RADIATOR_HINT", "OTHER_HINT"].includes(String(observation.decision)))) return false;
     } else if (observation.reasonCode === "MODEL_ABSTAIN") {
       if (!validHash(crop) || !validHash(response) || observation.decision !== "ABSTAIN") return false;
-    } else if (version === "v6" && observation.reasonCode === "MODEL_OTHER_UNTRUSTED") {
+    } else if (server && observation.reasonCode === "MODEL_OTHER_UNTRUSTED") {
       if (!validHash(crop) || !validHash(response) || observation.decision !== "ABSTAIN") return false;
     } else if (observation.reasonCode === "CROP_RENDER_ERROR") {
       if (crop !== null || response !== null || observation.decision !== "ABSTAIN") return false;
@@ -210,14 +269,26 @@ export function validateVisualProposalStageResult(
   const v3 = releaseProfileId === v3VisualProposalProfileId;
   const v5 = releaseProfileId === v5VisualProposalProfileId;
   const v6 = releaseProfileId === v6VisualProposalProfileId;
-  if (!legacy && !v2 && !v3 && !v5 && !v6 && releaseProfileId !== visualProposalProfileId) return undefined;
-  const profile = legacy ? legacyVisualProposalProfile : v2 ? v2VisualProposalProfile
+  const v7Full = releaseProfileId === v7FullVisualProposalProfileId;
+  const v7Sample = releaseProfileId === v7SampleVisualProposalProfileId;
+  const v7 = v7Full || v7Sample;
+  const v8Full = releaseProfileId === v8FullVisualProposalProfileId;
+  const v8Sample = releaseProfileId === v8SampleVisualProposalProfileId;
+  const v8 = v8Full || v8Sample;
+  const v9Full = releaseProfileId === v9FullVisualProposalProfileId;
+  const v9Sample = releaseProfileId === v9SampleVisualProposalProfileId;
+  const v9 = v9Full || v9Sample;
+  const expandedScope = v7 || v8 || v9, full = v7Full || v8Full || v9Full;
+  if (!legacy && !v2 && !v3 && !v5 && !v6 && !expandedScope && releaseProfileId !== visualProposalProfileId) return undefined;
+  const profile = v9Full ? v9FullVisualProposalProfile : v9Sample ? v9SampleVisualProposalProfile : v8Full ? v8FullVisualProposalProfile : v8Sample ? v8SampleVisualProposalProfile
+    : v7Full ? v7FullVisualProposalProfile : v7Sample ? v7SampleVisualProposalProfile : legacy ? legacyVisualProposalProfile : v2 ? v2VisualProposalProfile
     : v3 ? v3VisualProposalProfile : v5 ? v5VisualProposalProfile
       : v6 ? v6VisualProposalProfile : visualProposalProfile;
-  const profileHash = legacy ? legacyVisualProposalConfigHash
+  const profileHash = v9Full ? v9FullVisualProposalConfigHash : v9Sample ? v9SampleVisualProposalConfigHash : v8Full ? v8FullVisualProposalConfigHash : v8Sample ? v8SampleVisualProposalConfigHash
+    : v7Full ? v7FullVisualProposalConfigHash : v7Sample ? v7SampleVisualProposalConfigHash : legacy ? legacyVisualProposalConfigHash
     : v2 ? v2VisualProposalConfigHash : v3 ? v3VisualProposalConfigHash
     : v5 ? v5VisualProposalConfigHash : v6 ? v6VisualProposalConfigHash : visualProposalConfigHash;
-  const analysisVersion = legacy ? "v1" : v2 ? "v2" : v3 ? "v3" : v5 ? "v5" : v6 ? "v6" : "v4";
+  const analysisVersion = v9 ? "v9" : v8 ? "v8" : v7 ? "v7" : legacy ? "v1" : v2 ? "v2" : v3 ? "v3" : v5 ? "v5" : v6 ? "v6" : "v4";
   if (!keys(result, [
     "schemaVersion", "jobType", "inputManifestHash", "disposition", "reasonCode",
     "providerKind", "providerProfileId", "providerConfigHash", "outputCount", "analysis",
@@ -249,7 +320,7 @@ export function validateVisualProposalStageResult(
       "proposals", "proposalLimitReached", "unretainedProposalCount",
       ...(!legacy ? ["scannedPageNumbers", "skippedPageCount"] : []),
       ...(!legacy && !v2 && !v3 ? ["documentContext"] : []),
-      ...(v5 || v6 ? ["vlm"] : []),
+      ...(v5 || v6 || expandedScope ? ["vlm"] : []),
     ]) || source.sourceFileId !== sourceExpected.apiId
       || source.sourceSha256 !== sourceExpected.sha256
       || source.pageCount !== sourceExpected.pageCount
@@ -257,8 +328,9 @@ export function validateVisualProposalStageResult(
       || typeof source.proposalLimitReached !== "boolean"
       || !Array.isArray(source.proposals)
       || source.proposals.length > profile.maxProposalsPerSource
-      || (!legacy && !v2 && !v3 && !validDocumentContext(source.documentContext, sourceExpected.pageCount))
-      || ((v5 || v6) && !validVlmObservations(source.vlm, source, v6 ? "v6" : "v5"))) return undefined;
+      || (!legacy && !v2 && !v3 && !(expandedScope ? validDocumentContextV2(source.documentContext, sourceExpected.pageCount) : validDocumentContext(source.documentContext, sourceExpected.pageCount)))
+      || ((v5 || v6 || expandedScope) && !validVlmObservations(source.vlm, source, v9 ? "v9" : v6 ? "v6" : "v5", full ? "FULL" : "SAMPLE"))
+      || (full && (source.unretainedProposalCount !== 0 || source.skippedPageCount !== 0))) return undefined;
 
     const exceedsLimit = sourceExpected.pageCount > profile.maxPagesPerSource;
     const pageNumbers = legacy && exceedsLimit ? []

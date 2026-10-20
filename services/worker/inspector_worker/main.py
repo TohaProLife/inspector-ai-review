@@ -80,10 +80,23 @@ class LeaseHeartbeat:
 
 
 def post_worker_command(job_id: str, command: str, payload: dict[str, object]) -> dict[str, object]:
+    if command == "complete-source-audit-v4-full-source-v1":
+        from .durable_text_v4_full import post_source_audit_v4_full_completion
+
+        return post_source_audit_v4_full_completion(job_id, payload)
+    if command == "complete-source-audit-v3-large-v1":
+        from .durable_text_v3_large import post_source_audit_v3_large_completion
+
+        return post_source_audit_v3_large_completion(job_id, payload)
+    # v12 server verification has a fixed55s budget. Keep all older commands'
+    # transport unchanged; this internal alias uses the same completion API.
+    column_completion = command == "complete-column-pylon-section-v12"
+    wall_completion = command == "complete-concrete-wall-v13"
+    route_command = "complete" if column_completion or wall_completion else command
     base_url = os.environ["INSPECTOR_API_INTERNAL_URL"].rstrip("/")
     token = os.environ["INTERNAL_WORKER_TOKEN"]
     request = urllib.request.Request(
-        f"{base_url}/jobs/{job_id}/{command}",
+        f"{base_url}/jobs/{job_id}/{route_command}",
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
@@ -92,7 +105,7 @@ def post_worker_command(job_id: str, command: str, payload: dict[str, object]) -
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=15) as response:
+        with urllib.request.urlopen(request, timeout=60 if column_completion or wall_completion else 15) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="replace")
@@ -131,6 +144,65 @@ def worker_heartbeat_interval() -> float:
     if interval <= 0:
         raise WorkerControlError("WORKER_HEARTBEAT_SECONDS must be a positive number")
     return interval
+
+
+def _uses_concrete_wall_completion(lease: dict[str, object], job_type: str) -> bool:
+    """Detect only a claimed v13 lease, then require its own full policy marker.
+
+    Presence is not acceptance: even null/malformed leaves must reach the genuine
+    marker and refuse, never fall through the inherited column/generic selector.
+    A worker result is deliberately not an argument to this selector.
+    """
+    if job_type not in {"RULE_EVALUATION", "ANALYSIS_SEAL_UNSUPPORTED"}:
+        return False
+    if type(lease) is not dict:
+        return False
+    release = lease.get("release")
+    if type(release) is not dict:
+        return False
+    slot = release.get("providerSlot")
+    rules = release.get("rules")
+    definitions = rules.get("matrixDefinitions") if type(rules) is dict else None
+    claimed_slot = (job_type == "RULE_EVALUATION" and type(slot) is dict
+                    and slot.get("profileId") == "matrix-text-facts-concrete-walls-v13")
+    claimed_leaf = type(definitions) is dict and "concreteWallExecution" in definitions
+    if not claimed_slot and not claimed_leaf:
+        return False
+    from .durable_concrete_wall_matrix_v13 import _completion_marker_v13
+
+    if _completion_marker_v13(lease, job_type) is not True:
+        raise WorkerControlError("claimed concrete wall release marker rejected")
+    return True
+
+
+def _uses_column_pylon_completion(lease: dict[str, object], job_type: str) -> bool:
+    """Select transport from the authenticated claim, never from worker output.
+
+    This selects a socket timeout, not release authority; the server verifies
+    the complete pinned release again before accepting the result.
+    """
+    if job_type not in {"RULE_EVALUATION", "ANALYSIS_SEAL_UNSUPPORTED"}:
+        return False
+    release = lease.get("release")
+    if not isinstance(release, dict):
+        return False
+    rules = release.get("rules")
+    if not isinstance(rules, dict) or rules.get("executionStatus") != "PILOT":
+        return False
+    definitions = rules.get("matrixDefinitions")
+    column = definitions.get("columnPylonSectionExecution") if isinstance(definitions, dict) else None
+    if not isinstance(column, dict) or (
+        column.get("schemaVersion") != "matrix-column-pylon-section-comparisons-v1"
+        or column.get("durableWrapperVersion") != "matrix-column-pylon-section-durable-v12"
+    ):
+        return False
+    if job_type == "RULE_EVALUATION":
+        slot = release.get("providerSlot")
+        return isinstance(slot, dict) and (
+            slot.get("profileId") == "matrix-text-facts-column-pylon-section-v12"
+            and slot.get("adapterVersion") == "12"
+        )
+    return True
 
 
 def inventory_manifest(lease: dict[str, object], worker_id: str) -> dict[str, object]:
@@ -191,11 +263,30 @@ def execute_durable_job(payload: dict[str, object]) -> dict[str, object]:
         heartbeat_interval,
     )
     heartbeat.start()
+    full_source_audit = False
+    large_source_audit = False
     try:
         if job_type == "ANALYSIS_INVENTORY":
             result = inventory_manifest(lease, worker_id)
         elif job_type == "DOCUMENT_TEXT_LAYER":
-            result = process_document_text_layer(lease, attempt, worker_id)
+            release = lease.get("release")
+            text_layer = release.get("textLayer") if isinstance(release, dict) else None
+            if isinstance(text_layer, dict) and text_layer.get("sourceAuditProfileVersion") == "SOURCE_AUDIT_V4_FULL_SOURCE_V1":
+                from .durable_text_v4_full import process_document_text_layer_v4_full
+
+                result = process_document_text_layer_v4_full(lease, attempt, worker_id)
+                full_source_audit = True
+            elif isinstance(text_layer, dict) and text_layer.get("sourceAuditProfileVersion") == "SOURCE_AUDIT_V3_LARGE_VERTICAL_V1":
+                from .durable_text_v3_large import process_document_text_layer_v3_large
+
+                result = process_document_text_layer_v3_large(lease, attempt, worker_id)
+                large_source_audit = True
+            elif isinstance(text_layer, dict) and text_layer.get("artifactSchemaVersion") == "document-text-v3":
+                from .durable_text_v3 import process_document_text_layer_v3
+
+                result = process_document_text_layer_v3(lease, attempt, worker_id)
+            else:
+                result = process_document_text_layer(lease, attempt, worker_id)
         elif job_type in SCAFFOLD_JOB_TYPES:
             result = DEFAULT_STAGE_PROVIDER_REGISTRY.execute(job_type, lease, attempt)
         elif job_type == "ANALYSIS_SEAL_UNSUPPORTED":
@@ -207,6 +298,7 @@ def execute_durable_job(payload: dict[str, object]) -> dict[str, object]:
             raise ValueError(f"unsupported durable job_type {job_type}")
     except InputDownloadError as error:
         heartbeat.stop()
+        attempt.pop("visualProgress", None)
         heartbeat.raise_if_failed()
         return post_with_retry(job_id, "fail", {
             **attempt,
@@ -216,6 +308,7 @@ def execute_durable_job(payload: dict[str, object]) -> dict[str, object]:
         })
     except Exception as error:
         heartbeat.stop()
+        attempt.pop("visualProgress", None)
         heartbeat.raise_if_failed()
         return post_with_retry(job_id, "fail", {
             **attempt,
@@ -225,7 +318,18 @@ def execute_durable_job(payload: dict[str, object]) -> dict[str, object]:
         })
     heartbeat.stop()
     heartbeat.raise_if_failed()
-    return post_with_retry(job_id, "complete", {**attempt, "result": result})
+    wall_completion = _uses_concrete_wall_completion(lease, job_type)
+    column_completion = False if wall_completion else _uses_column_pylon_completion(lease, job_type)
+    if "visualProgress" in attempt or column_completion or wall_completion:
+        response = post_with_retry(job_id, "heartbeat", attempt)
+        if response.get("status") != "LEASE_EXTENDED":
+            raise LeaseLostError("final completion heartbeat lost lease" if column_completion or wall_completion else "final visual progress lost lease")
+    attempt.pop("visualProgress", None)
+    command = ("complete-source-audit-v4-full-source-v1" if full_source_audit
+               else "complete-source-audit-v3-large-v1" if large_source_audit
+               else "complete-concrete-wall-v13" if wall_completion
+               else "complete-column-pylon-section-v12" if column_completion else "complete")
+    return post_with_retry(job_id, command, {**attempt, "result": result})
 
 
 def process_file(path: str) -> None:

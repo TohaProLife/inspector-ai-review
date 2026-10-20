@@ -1,4 +1,12 @@
-import type { CheckRun, SessionUser } from "@inspector-ai/contracts";
+import type { CheckRun, InspectionObject, SessionUser } from "@inspector-ai/contracts";
+
+export function protocolRevocationBlock(object: InspectionObject, user: SessionUser | null): string | null {
+  if (!user?.roles.some(role => role === "SUPERVISOR" || role === "ADMIN"))
+    return "Отзыв финального протокола доступен руководителю или администратору с правом на этот объект.";
+  if (object.permissions?.revoke !== true)
+    return object.revokeUnavailableReason ?? "Право отзыва протокола этого объекта не подтверждено. Обновите объект или обратитесь к администратору.";
+  return null;
+}
 
 export function protocolRequiresGapAcknowledgement(check: CheckRun): boolean {
   return check.mode === "NORMAL" && (check.status === "PARTIAL" || check.stats.unsupported > 0);

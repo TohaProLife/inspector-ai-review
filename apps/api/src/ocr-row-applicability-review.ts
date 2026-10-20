@@ -131,7 +131,8 @@ function verifiedSourceReview(context: OcrRowApplicabilityVerificationContext): 
   const hashInput = sectionCode ? { ...legacy, sectionCode } : legacy;
   const expectedHash = sha256(canonicalJson({
     objectApiId: objectId, sourceFileApiId: source.sourceFileId,
-    ...hashInput, actorId: decision.actorId,
+    ...hashInput, ...(decision.matrixScope?{matrixScope:decision.matrixScope}:{}),
+    ...(decision.inventoryScope?{inventoryScope:decision.inventoryScope}:{}),...(decision.callInventoryScope?{callInventoryScope:decision.callInventoryScope}:{}),...(decision.railInventoryScope?{railInventoryScope:decision.railInventoryScope}:{}),actorId: decision.actorId,
   }));
   return expectedHash === snapshot.decisionHash;
 }

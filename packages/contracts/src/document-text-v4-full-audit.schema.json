@@ -1,0 +1,745 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:document-text-v4-full-audit",
+  "title": "Explicit complete 1024-page full source audit",
+  "description": "Separate opt-in source audit. Complete original native text and geometry do not establish rendered visibility, project authority, engineering correctness, calibrated probability or coverage. Actual installed producer/processor/cache bytes are bound by the complete immutable release.",
+  "definitions": {
+    "sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "extractorProfile": {
+      "allOf": [
+        {
+          "$ref": "document-text-v4.schema.json#/definitions/extractorProfile"
+        },
+        {
+          "type": "object",
+          "required": [
+            "traversalPolicyVersion"
+          ],
+          "properties": {
+            "traversalPolicyVersion": {
+              "const": "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1"
+            }
+          }
+        }
+      ]
+    },
+    "artifact": {
+      "allOf": [
+        {
+          "$ref": "document-text-v4.schema.json#/definitions/artifact"
+        },
+        {
+          "type": "object",
+          "required": [
+            "extractorProfile"
+          ],
+          "properties": {
+            "extractorProfile": {
+              "$ref": "#/definitions/extractorProfile"
+            }
+          }
+        }
+      ]
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactSchemaVersion",
+        "purpose",
+        "sourceAuditProfileVersion",
+        "resourcePolicyVersion",
+        "extractorProfile",
+        "extractorProfileHash",
+        "processorVersion",
+        "processorSourceSha256",
+        "cachePolicyVersion",
+        "cacheSourceSha256"
+      ],
+      "properties": {
+        "artifactSchemaVersion": {
+          "const": "document-text-v4"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "sourceAuditProfileVersion": {
+          "const": "SOURCE_AUDIT_V4_FULL_SOURCE_V1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v4-full-source-bounds-v1"
+        },
+        "extractorProfile": {
+          "$ref": "#/definitions/extractorProfile"
+        },
+        "extractorProfileHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "processorVersion": {
+          "const": "durable-document-text-v4-full-source-v1"
+        },
+        "processorSourceSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "cachePolicyVersion": {
+          "const": "durable-text-layer-v4-full-source-cache-v1"
+        },
+        "cacheSourceSha256": {
+          "$ref": "#/definitions/sha256"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "purpose",
+        "resourcePolicyVersion",
+        "sources",
+        "workerId"
+      ],
+      "properties": {
+        "disposition": {
+          "const": "DOCUMENT_TEXT_LAYER_COMPLETED"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v4-full-source-bounds-v1"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceFileId",
+                  "inputSha256",
+                  "status",
+                  "artifact"
+                ],
+                "properties": {
+                  "sourceFileId": {
+                    "$ref": "#/definitions/id"
+                  },
+                  "inputSha256": {
+                    "$ref": "#/definitions/sha256"
+                  },
+                  "status": {
+                    "const": "EXTRACTED"
+                  },
+                  "artifact": {
+                    "$ref": "#/definitions/artifact"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceFileId",
+                  "inputSha256",
+                  "status",
+                  "reason"
+                ],
+                "properties": {
+                  "sourceFileId": {
+                    "$ref": "#/definitions/id"
+                  },
+                  "inputSha256": {
+                    "$ref": "#/definitions/sha256"
+                  },
+                  "status": {
+                    "const": "SKIPPED_UNSUPPORTED_FORMAT"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "workerId": {
+          "$ref": "#/definitions/id"
+        }
+      }
+    },
+    "sourceRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "purpose",
+        "sourceAuditProfileVersion",
+        "resourcePolicyVersion",
+        "checkId",
+        "sourceFileId",
+        "sourceSha256",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactByteSha256",
+        "textArtifactContentHash",
+        "extractorProfileHash",
+        "stage",
+        "pageStages",
+        "latestReviewHash",
+        "authorityStatus",
+        "renderedVisibility",
+        "calibratedProbability",
+        "textArtifact"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-v4-full-source-read-v1"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "sourceAuditProfileVersion": {
+          "const": "SOURCE_AUDIT_V4_FULL_SOURCE_V1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v4-full-source-bounds-v1"
+        },
+        "checkId": {
+          "$ref": "#/definitions/id"
+        },
+        "sourceFileId": {
+          "$ref": "#/definitions/id"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "inputManifestHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textStageContentHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textArtifactByteSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textArtifactContentHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "extractorProfileHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD",
+            "UNRESOLVED"
+          ]
+        },
+        "pageStages": {
+          "type": "object",
+          "maxProperties": 1024,
+          "propertyNames": {
+            "pattern": "^(?:[1-9][0-9]{0,2}|10[01][0-9]|102[0-4])$"
+          },
+          "additionalProperties": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "latestReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorityStatus": {
+          "const": "SOURCE_DECLARED_UNVERIFIED"
+        },
+        "renderedVisibility": {
+          "const": "UNVERIFIED"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        },
+        "textArtifact": {
+          "$ref": "#/definitions/artifact"
+        }
+      }
+    },
+    "startInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "completeTransportInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attemptId",
+        "fencingToken",
+        "result"
+      ],
+      "properties": {
+        "attemptId": {
+          "$ref": "#/definitions/id"
+        },
+        "fencingToken": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "wireReadResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "value",
+            "canonical"
+          ],
+          "properties": {
+            "status": {
+              "const": "VALID"
+            },
+            "value": {
+              "$ref": "#/definitions/completeTransportInput"
+            },
+            "canonical": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reasonCode"
+          ],
+          "properties": {
+            "status": {
+              "const": "ABSTAIN"
+            },
+            "reasonCode": {
+              "enum": [
+                "INVALID_INPUT",
+                "INPUT_LIMIT"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "cacheRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "sourceAuditProfileVersion",
+        "resourcePolicyVersion",
+        "sourceFileId",
+        "sourceSha256",
+        "extractorProfile",
+        "extractorProfileHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "durable-text-layer-v4-full-source-cache-v1"
+        },
+        "sourceAuditProfileVersion": {
+          "const": "SOURCE_AUDIT_V4_FULL_SOURCE_V1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v4-full-source-bounds-v1"
+        },
+        "sourceFileId": {
+          "$ref": "#/definitions/id"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "extractorProfile": {
+          "$ref": "#/definitions/extractorProfile"
+        },
+        "extractorProfileHash": {
+          "$ref": "#/definitions/sha256"
+        }
+      }
+    },
+    "cachePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "request",
+        "artifact",
+        "contentHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "durable-text-layer-v4-full-source-cache-v1"
+        },
+        "request": {
+          "$ref": "#/definitions/cacheRequest"
+        },
+        "artifact": {
+          "$ref": "#/definitions/artifact"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/sha256"
+        }
+      }
+    },
+    "pageBatchRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "purpose",
+        "sourceAuditProfileVersion",
+        "resourcePolicyVersion",
+        "checkId",
+        "sourceFileId",
+        "sourceSha256",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactByteSha256",
+        "textArtifactContentHash",
+        "extractorProfileHash",
+        "stage",
+        "pageStages",
+        "latestReviewHash",
+        "authorityStatus",
+        "renderedVisibility",
+        "calibratedProbability",
+        "wholeArtifactPageCount",
+        "startPage",
+        "pageLimit",
+        "nextPage",
+        "pages"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-v4-full-source-page-batch-v1"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "sourceAuditProfileVersion": {
+          "const": "SOURCE_AUDIT_V4_FULL_SOURCE_V1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v4-full-source-bounds-v1"
+        },
+        "checkId": {
+          "$ref": "#/definitions/id"
+        },
+        "sourceFileId": {
+          "$ref": "#/definitions/id"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "inputManifestHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textStageContentHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textArtifactByteSha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "textArtifactContentHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "extractorProfileHash": {
+          "$ref": "#/definitions/sha256"
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD",
+            "UNRESOLVED"
+          ]
+        },
+        "pageStages": {
+          "type": "object",
+          "maxProperties": 1024,
+          "propertyNames": {
+            "pattern": "^(?:[1-9][0-9]{0,2}|10[01][0-9]|102[0-4])$"
+          },
+          "additionalProperties": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "latestReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorityStatus": {
+          "const": "SOURCE_DECLARED_UNVERIFIED"
+        },
+        "renderedVisibility": {
+          "const": "UNVERIFIED"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        },
+        "wholeArtifactPageCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "startPage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "pageLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "nextPage": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "document-text-v4.schema.json#/definitions/page"
+          }
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/sourceRead",
+  "x-canonical-target": "packages/contracts/src/document-text-v4-full-audit.schema.json",
+  "x-reference-allowlist": [
+    "document-text-v4.schema.json#/definitions/extractorProfile",
+    "document-text-v4.schema.json#/definitions/artifact"
+  ],
+  "x-prerequisite": {
+    "T76": "Complete large reader/producer and fixed resource policy must be accepted.",
+    "T78": "Fourth vertical traversal must be accepted in canonical native schema/readers/producer.",
+    "pinResolution": "Read actual installed text_layer/document_text_v4/new processor/new cache bytes at builder call. No schema-embedded producer SHA, no dummy value and no current SHA substituted into historical release."
+  },
+  "x-fixed-resource-policy": {
+    "profileVersion": "SOURCE_AUDIT_V4_FULL_SOURCE_V1",
+    "resourcePolicyVersion": "document-text-v4-full-source-bounds-v1",
+    "arbitraryCallerBudgets": false,
+    "completion": {
+      "rawUtf8Bytes": 33554432,
+      "wholeCanonicalUtf8Bytes": 33554432,
+      "resultCanonicalUtf8Bytes": 32000000,
+      "nativeNodesIncludingKeys": 1500000,
+      "nativeDepthRootZero": 68,
+      "containerItems": 32768,
+      "stringCodepoints": 2000000
+    },
+    "artifact": {
+      "canonicalUtf8Bytes": 32000000,
+      "nativeNodesIncludingKeys": 1400000,
+      "nativeDepthRootZero": 64,
+      "containerItems": 32768,
+      "stringCodepoints": 2000000,
+      "pages": 1024,
+      "wholeLocatedAndUnlocatedRecords": 100000
+    },
+    "cacheEnvelope": {
+      "rawUtf8Bytes": 33554432,
+      "canonicalUtf8Bytes": 33554432,
+      "nativeNodesIncludingKeys": 1500000,
+      "nativeDepthRootZero": 65,
+      "containerItems": 32768,
+      "stringCodepoints": 2000000
+    },
+    "sourceReadEnvelope": {
+      "canonicalUtf8Bytes": 33554432,
+      "nativeNodesIncludingKeys": 1500000,
+      "nativeDepthRootZero": 65,
+      "containerItems": 32768,
+      "stringCodepoints": 2000000
+    },
+    "depthProof": {
+      "completeRoot": 0,
+      "result": 1,
+      "sourcesArray": 2,
+      "sourceItem": 3,
+      "artifactRoot": 4,
+      "artifactLocalMaximum": 64,
+      "completeAbsoluteMaximum": 68,
+      "resultRootAbsoluteMaximum": 67,
+      "cacheOrSourceReadArtifactRoot": 1,
+      "cacheOrSourceReadAbsoluteMaximum": 65
+    },
+    "oldLimitsPreserved": {
+      "sourceAuditResultCanonicalUtf8Bytes": 8000000,
+      "artifactReaderNativeNodesIncludingKeys": 200000,
+      "oldCompletionRawBytes": 10485760,
+      "legacySqlArtifactBytes": 8388608
+    },
+    "sourcePdfBytes": 67108864,
+    "pageBatch": {
+      "maxPages": 128,
+      "inputIsWholeAuthenticatedArtifact": true,
+      "continuationRequiresExpectedArtifactContentHash": true
+    }
+  },
+  "x-wire-contract": {
+    "normalizeExport": "normalizeDocumentTextV4FullCompletion(value:unknown)",
+    "parseExport": "parseDocumentTextV4FullCompletion(raw:Buffer)",
+    "layers": "Wire VALID proves exact completeTransportInput/native transport bounds only. It does not prove result/release/source/artifact semantics; semantic result admission follows before any persistence. Empty plain result is transport-valid and semantic-invalid.",
+    "raw": "Buffer only. Reject before decode if raw exceeds fixed ceiling. Strict scalar UTF8, no BOM, duplicate decoded object keys at any depth, unsafe/nonfinite/float/exponent tokens, lone surrogates, suffix or malformed JSON. Permit surrounding JSON whitespace within raw cap. Number tokens follow JSON integer grammar, then positive-safe fence and whole-safe numeric validation.",
+    "native": "Descriptor-first plain Object.prototype objects and exact dense arrays; detect proxy before prototype/descriptor access. Reject getters/setters, hidden or symbol keys, functions, custom prototypes, toJSON, custom iteration, sparse arrays, cycles, nonfinite/unsafe/noninteger numbers, invalid Unicode in keys and values. No callbacks. Shared acyclic children allowed and counted for each occurrence.",
+    "canonical": "Recursive Unicode codepoint-sorted object keys, exact integer JSON, compact punctuation, scalar UTF8, no ASCII escaping requirement for Unicode. Count root plus all object keys plus all values and array entries; root depth0. Limits include punctuation and escaping. Do not use insertion order or UTF16 sort. VALID value is deep detached.",
+    "attemptId": "Opaque string1..200 Unicode codepoints; no UUID requirement. Semantic attempt/job lookup still required.",
+    "policy": "Fixed new operation policy only; no options/budget arguments and no fallback to old completion route."
+  },
+  "x-semantic-contract": {
+    "closedKeys": "All objects declared additionalProperties:false require exactly their required keys. Native artifact/profile retain complete canonical native schema. Transport result is the only intentionally generic object until separate semantic admission.",
+    "sourceSet": "Result sources must bijectively cover all1..64 immutable run manifest sources by sourceFileId, with exact inputSha256, no duplicate/foreign/missing source. EXTRACTED only for PDF, SKIPPED only unsupported non-PDF. Validate all sources and nested artifacts before any SQL insert or domain effect.",
+    "artifact": "Use complete readDocumentTextV4FullArtifact/read_document_text_v4_full_artifact with no slicing or normalization. Each artifact.sourceFileId/inputSha256 equals corresponding immutable source, and whole extractorProfile/hash equals exact release profile. Preserve every page, unrelated/unlocated record, rawText, path, native box and quantization.",
+    "releaseAdmission": "New route admits only exact persisted immutable full manifest matching new release ID prefix, UTF8 size and content SHA, DRAFT lifecycle/source-audit scaffold configuration, no configured rules/providerSlots, no external network/OCR. Nested release must exactly match current installed accepted producer/processor/cache pins and fixed profile/resource literals. A caller marker or profile hash alone grants no authority.",
+    "historicalRead": "Require sealed actual NORMAL PARTIAL/SUCCEEDED check; exact object/run/manifest/source-review origin, persisted full historical release canonical hash/size/ID and known source-only scaffold shape, succeeded text job and corresponding immutable artifact row. Authenticate STORED complete historical pins without rebuilding with current producer SHA. Artifact row resource marker, release marker, profile, source original SHA, byte size, byte SHA and semantic content hash must agree.",
+    "sourceReadIdentity": "checkId equals requested check, sourceFileId equals requested immutable source. textStageContentHash and textArtifactByteSha256 both equal SHA256 of full canonical artifact bytes for this source-read contract, while textArtifactContentHash uses separate artifact domain. No aggregate-stage hash substitution.",
+    "pageStages": "stage is frozen run source stage. pageStages/latestReviewHash remain authenticated current source-review metadata, never replace immutable origin stage or native source identity; keys1..actual artifact.pageCount. They do not prove project eligibility or validate an engineering claim.",
+    "originalBytes": "Original PDF storage identity/size/SHA validated before extraction/cache use. Cache cannot replace original SHA verification. Cache request/payload/profile/resource/source correspondence exact.",
+    "nativeFirst": "All public unknown input entry points run fixed callback-free native guard before field access/canonicalization. Transport invalid/limit returns typed ABSTAIN without throwing or callbacks. Semantic admission rejection has no partial writes.",
+    "queue": "Explicit NORMAL source-only command creates existing9 normal durable jobs/outbox entries. requestHash and active-run reuse include exact sourceAuditProfileVersion, preventing standard/large reuse. Retain CSRF/session/organization/object RUN_START/RUN/open inspection, idempotency and lease/fencing.",
+    "metadata": "CheckRun optional sourceAuditProfileVersion is emitted only for this actual persisted full release; old checks omit. Do not derive from request marker alone. Standard audit selectors exclude marked large audit; explicit new selector uses marker and purpose.",
+    "refusal": "Finite bound or malformed/native/semantic failure remains explicit technical refusal, never truncated success, candidate parameter, synthesized approval or OCR/model confidence. No automatic old/large fallback.",
+    "compatibility": "Old audit schema/route/release/result/cache/reader resource semantics and old completion body ceiling unchanged. Existing stored profile/artifact/source/machine/submission hashes remain byte exact. Shared producer source updates honestly change only newly built profile/release identity; never rebase in-flight old leases or historical stored pins.",
+    "authority": "Full source text only: SOURCE_DECLARED_UNVERIFIED, UNVERIFIED visibility, calibratedProbability null; no parameter coverage/comparison/correctness/area/rectangle/member/equivalence claim."
+  },
+  "x-hash-contract": {
+    "canonicalization": "Same codepoint-sorted canonical scalar UTF8 integer JSON used by existing v3. SHA lowercase64 characters with absolute end. Different domains are not interchangeable.",
+    "extractorProfileHash": "SHA256(canonical({hashDomain:\"document-text-extractor-profile-v1\",profile:completeExtractorProfile}))",
+    "textArtifactContentHash": "SHA256(canonical({hashDomain:\"document-text-v4-content-v1\",artifact:completeArtifact}))",
+    "textArtifactByteSha256": "SHA256(UTF8(canonical(completeArtifact))); also stored content_hash and source-read textStageContentHash.",
+    "releaseId": "release:source-audit-v4-full-source-v1: + first24hex(SHA256(UTF8(canonical(fullSourceAuditReleaseIdentityWithoutReleaseId))))",
+    "releaseIdentity": "Existing complete source-only scaffold base excluding releaseId, lifecycle:DRAFT,purpose:SOURCE_AUDIT_ONLY,textLayer:complete new release. No outer mutable defaults or partial-layer-only hash.",
+    "releaseContentHash": "SHA256(UTF8(canonical(fullPersistedReleaseManifestIncludingReleaseId))); byteSize from same bytes.",
+    "cacheKey": "SHA256(UTF8(canonical(completeCacheRequest))); new schemaVersion/profile/resource marker prevents legacy collision.",
+    "cachePayloadContentHash": "SHA256(UTF8(canonical({schemaVersion:cacheVersion,request:completeCacheRequest,artifact:completeArtifact}))); contentHash excluded from own preimage.",
+    "resourcePolicy": "Reader resource policy is not added to native artifact content hash. Same artifact admitted by standard and large readers has same semantic hash. Release/cache/result/read envelopes bind named resource policy explicitly."
+  },
+  "x-operations": {
+    "start": {
+      "method": "POST",
+      "path": "/api/objects/:id/source-audit-v4-full-source-v1",
+      "bodyDefinition": "startInput",
+      "bodyLimitBytes": 524288,
+      "headers": [
+        "Idempotency-Key",
+        "X-CSRF-Token"
+      ],
+      "security": "sessionCookie + fresh organization/object RUN_START/RUN/open inspection; no new permission",
+      "successStatus": 201,
+      "successSchema": "existing CheckRun plus optional authentic sourceAuditProfileVersion",
+      "errors": [
+        400,
+        401,
+        403,
+        404,
+        409,
+        428,
+        503,
+        500
+      ]
+    },
+    "complete": {
+      "method": "POST",
+      "path": "/api/internal/v1/jobs/:id/complete-source-audit-v4-full-source-v1",
+      "bodyDefinition": "completeTransportInput",
+      "bodyLimitBytes": 33554432,
+      "resultSemanticDefinition": "result",
+      "security": "existing authenticated worker + exact attempt/job/run/release/generation/fencing",
+      "clientEncoding": "json.dumps(payload,ensure_ascii=False,separators=(comma,colon)).encode(utf8); new path only",
+      "timeoutSeconds": 60,
+      "retry": "existing bounded attempt/fencing/idempotent command behavior; no alternate route on refusal",
+      "response": "existing completion success/error DTOs; no new success body invented"
+    },
+    "sourceRead": {
+      "method": "GET",
+      "path": "/api/checks/:id/source-text-v4-full-source-v1",
+      "queryKeys": [
+        "sourceFileId"
+      ],
+      "responseDefinition": "sourceRead",
+      "security": "fresh session + organization/object READ; sealed source audit only",
+      "cacheControl": "private, no-store",
+      "successStatus": 200,
+      "errors": [
+        400,
+        401,
+        404,
+        500
+      ]
+    }
+  },
+  "x-storage-association": {
+    "migrationRequired": true,
+    "proposedMigration": "043_document_text_v4_full_audit.sql (recheck free number before code)",
+    "newColumn": "analysis_text_artifacts.resource_policy_version nullable TEXT, no default/backfill",
+    "conditionalCheck": "(resource_policy_version IS NULL AND byte_size<=8388608) OR (resource_policy_version=\"document-text-v4-full-source-bounds-v1\" AND schema_version=\"document-text-v4\" AND byte_size<=32000000); retain existing positive byte checks",
+    "applicationGate": "Marker is necessary, insufficient: full persisted authenticated release/job/run/source/artifact association must match at admission/read. Old SQL-null rows use old path; unknown/non-null marker or large release/null row fails closed.",
+    "rollback": "Refuse when any new marked artifact exists. Never delete artifacts or modify old migration checksums."
+  },
+  "x-generators": {
+    "TypeScript": "scripts/generate-document-text-v4-full-audit-types.py derives shared DTOs from this canonical schema using allowlisted local refs only.",
+    "Python": "No generated Python type module required. Exact dict validation and cross-language canonical fixtures consume same finite literals/schema; no redundant handwritten public wire shape."
+  }
+}

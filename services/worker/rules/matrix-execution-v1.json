@@ -1,0 +1,4263 @@
+{
+  "schemaVersion": "matrix-execution-registry-v1",
+  "version": "1",
+  "catalogSha256": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+  "scope": "SCOPED_TEXT_FACT_COMPARISONS",
+  "negativePolicy": "EXPLICIT_FULL_RULE_SCOPE_REQUIRED",
+  "probabilityPolicy": "UNAVAILABLE_UNTIL_CALIBRATED",
+  "entries": [
+    {
+      "parameterCode": "PZ-001",
+      "matrixCode": "M-001",
+      "name": "Площадь застройки",
+      "trigger": "Расхождение контуров здания на генплане с данными БТИ или РД > 0.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-002",
+      "matrixCode": "M-002",
+      "name": "Общая площадь здания",
+      "trigger": "Дельта общей площади между ПД и РД (или ИД) > 1%.",
+      "family": "RELATIVE_DELTA",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-002-building_total_area",
+          "version": "1",
+          "attribute": "BUILDING_TOTAL_AREA",
+          "canonicalUnit": "m2",
+          "labels": [
+            "Общая площадь здания",
+            "Общая площадь здания S"
+          ],
+          "unitAliases": [
+            "м²",
+            "м2",
+            "кв.м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "1",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-003",
+      "matrixCode": "M-003",
+      "name": "Полезная / Расчетная площадь",
+      "trigger": "Сокращение полезной площади в РД в пользу технических зон.",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-004",
+      "matrixCode": "M-004",
+      "name": "Строительный объем (Общий)",
+      "trigger": "Изменение внешних объемных габаритов здания в РД без корректировки ПД.",
+      "family": "DIFFERENT",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-004-building_volume",
+          "version": "1",
+          "attribute": "BUILDING_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Строительный объем здания",
+            "Строительный объем (Общий)",
+            "Строительный объем"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3",
+            "m3",
+            "куб.м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DIFFERENT",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR",
+            "KR"
+          ],
+          "requiredContext": [
+            "APPROVED_CHANGE_STATUS",
+            "EXTERNAL_VOLUME_GEOMETRY",
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-005",
+      "matrixCode": "M-005",
+      "name": "Строительный объем (Подземный)",
+      "trigger": "Изменение глубины заложения или объема паркинга/подвала в РД.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-006",
+      "matrixCode": "M-006",
+      "name": "Строительный объем (Надземный)",
+      "trigger": "Изменение общего числа этажей (включая технический) в РД.",
+      "family": null,
+      "gap": "SOURCE_TRIGGER_CONFLICT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-007",
+      "matrixCode": "M-007",
+      "name": "Этажность (надземная)",
+      "trigger": "Несовпадение количества надземных этажей в РД с утвержденной ПД.",
+      "family": "DIFFERENT",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-007-above_ground_floor_count",
+          "version": "1",
+          "attribute": "ABOVE_GROUND_FLOOR_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Этажность (надземная)",
+            "Количество надземных этажей",
+            "Надземная этажность"
+          ],
+          "unitAliases": [
+            "ед.",
+            "шт.",
+            "шт",
+            "этажей",
+            "этажа",
+            "этаж"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "DIFFERENT",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "FLOOR_COUNT_CONVENTION",
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-008",
+      "matrixCode": "M-008",
+      "name": "Высота здания",
+      "trigger": "Увеличение высоты здания в РД (риск нарушения ограничений приаэродромных зон).",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-008-building_height",
+          "version": "1",
+          "attribute": "BUILDING_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота здания",
+            "Высота здания h"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "BUILDING_HEIGHT_DATUM"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-009",
+      "matrixCode": "M-009",
+      "name": "Абсолютная отметка 0.000",
+      "trigger": "Несоответствие абсолютной отметки нуля на чертежах РД геоподоснове ПД.",
+      "family": null,
+      "gap": "PARTIAL_SUBRULES_ONLY:DECLARED_PROJECT_ZERO_ABSOLUTE_ELEVATION_ONLY;INDEPENDENT_GEOREFERENCE_TOPOGRAPHIC_BASE_CONTROL_POINTS_DATUM_TRANSFORM_AND_COMPLETE_INVENTORY_UNSUPPORTED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-009-declared_project_zero_absolute_elevation",
+          "version": "1",
+          "attribute": "PROJECT_ZERO_ABSOLUTE_ELEVATION",
+          "canonicalUnit": "m",
+          "labels": [
+            "Абсолютная отметка проектного нуля"
+          ],
+          "unitAliases": [
+            "м",
+            "метрах"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DIFFERENT",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "KR",
+            "AR"
+          ],
+          "requiredContext": [
+            "APPROVED_CHANGE_STATUS",
+            "PROJECT_ZERO_GEODETIC_AUTHORITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-pz-009-declared_project_zero_absolute_elevation"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "PROJECT_ZERO_DATUM",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-010",
+      "matrixCode": "M-010",
+      "name": "Количество квартир",
+      "trigger": "Изменение общего количества жилых единиц (перепланировка в РД).",
+      "family": "DIFFERENT",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-010-apartment_count",
+          "version": "1",
+          "attribute": "APARTMENT_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество квартир"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "DIFFERENT",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "HOUSING_UNIT_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-011",
+      "matrixCode": "M-011",
+      "name": "Квартирография",
+      "trigger": "Изменение пропорций (например, замена 3-комнатной на две студии).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-012",
+      "matrixCode": "M-012",
+      "name": "Количество машино-мест (подземных)",
+      "trigger": "Сокращение количества машино-мест в РД (нарушение местных нормативов).",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-012-underground_parking_count",
+          "version": "1",
+          "attribute": "UNDERGROUND_PARKING_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество подземных машино-мест",
+            "Количество машино-мест (подземных)"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "UNDERGROUND_PARKING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-013",
+      "matrixCode": "M-013",
+      "name": "Технологическая мощность / Вместимость",
+      "trigger": "Снижение мощности (выпуск продукции в год) или вместимости (школа/детсад).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-014",
+      "matrixCode": "M-014",
+      "name": "Расчетная электрическая мощность",
+      "trigger": "Превышение расчетной мощности в РД над лимитом ТУ, выданным в ПД.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-014-design_electric_power",
+          "version": "1",
+          "attribute": "DESIGN_ELECTRIC_POWER",
+          "canonicalUnit": "kW",
+          "labels": [
+            "Расчетная электрическая мощность"
+          ],
+          "unitAliases": [
+            "кВт"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "EOM"
+          ],
+          "requiredContext": [
+            "TECHNICAL_CONDITIONS_LIMIT"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-015",
+      "matrixCode": "M-015",
+      "name": "Категория надежности электроснабжения",
+      "trigger": "Снижение категории (например, перевод ИТП с 1-й на 2-ю категорию).",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-015-power_supply_reliability_category",
+          "version": "1",
+          "attribute": "POWER_SUPPLY_RELIABILITY_CATEGORY",
+          "canonicalUnit": "reliability_category",
+          "labels": [
+            "Категория надежности электроснабжения"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "1",
+            "2",
+            "3",
+            "I",
+            "II",
+            "III"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "EOM"
+          ],
+          "requiredContext": [
+            "CONSUMER_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-016",
+      "matrixCode": "M-016",
+      "name": "Суточный расход водопотребления",
+      "trigger": "Выход расчетного расхода в РД за объемы, утвержденные экспертизой в ПД.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-016-daily_water_consumption",
+          "version": "1",
+          "attribute": "DAILY_WATER_CONSUMPTION",
+          "canonicalUnit": "m3/day",
+          "labels": [
+            "Суточный расход водопотребления"
+          ],
+          "unitAliases": [
+            "м³/сут",
+            "м3/сут"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "VK"
+          ],
+          "requiredContext": [
+            "WATER_SUPPLY_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-017",
+      "matrixCode": "M-017",
+      "name": "Суммарная тепловая нагрузка",
+      "trigger": "Превышение суммарной тепловой нагрузки в спецификациях и таблицах РД.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-017-total_heating_load",
+          "version": "1",
+          "attribute": "TOTAL_HEATING_LOAD",
+          "canonicalUnit": "Gcal/h",
+          "labels": [
+            "Суммарная тепловая нагрузка"
+          ],
+          "unitAliases": [
+            "Гкал/ч"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "HEATING_LOAD_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-018",
+      "matrixCode": "M-018",
+      "name": "Максимальный часовой расход газа",
+      "trigger": "Увеличение потребления газа в РД выше лимита, одобренного в ПД.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-018-max_hourly_gas_flow",
+          "version": "1",
+          "attribute": "MAX_HOURLY_GAS_FLOW",
+          "canonicalUnit": "m3/h",
+          "labels": [
+            "Максимальный часовой расход газа"
+          ],
+          "unitAliases": [
+            "м³/ч",
+            "м3/ч"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "GSV"
+          ],
+          "requiredContext": [
+            "GAS_SUPPLY_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-019",
+      "matrixCode": "M-019",
+      "name": "Коэффициент застройки (КЗ)",
+      "trigger": "Превышение КЗ над предельным значением, утвержденным в ПД.",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-020",
+      "matrixCode": "M-020",
+      "name": "Коэффициент использования территории (КИТ)",
+      "trigger": "Выход за нормативные рамки плотности, утвержденные в ПД.",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PZ-021",
+      "matrixCode": "M-021",
+      "name": "Класс энергетической эффективности",
+      "trigger": "Снижение класса энергоэффективности в РД/ИД относительно ПД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-021-energy_efficiency_class",
+          "version": "1",
+          "attribute": "ENERGY_EFFICIENCY_CLASS",
+          "canonicalUnit": "energy_class",
+          "labels": [
+            "Класс энергетической эффективности"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "А",
+            "В",
+            "С",
+            "Д",
+            "Е"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR",
+            "OV"
+          ],
+          "requiredContext": [
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-022",
+      "matrixCode": "M-022",
+      "name": "Степень огнестойкости здания",
+      "trigger": "Снижение степени огнестойкости (например, с I на II) в РД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-022-fire_resistance_degree",
+          "version": "1",
+          "attribute": "FIRE_RESISTANCE_DEGREE",
+          "canonicalUnit": "fire_resistance_degree",
+          "labels": [
+            "Степень огнестойкости здания"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "I",
+            "II",
+            "III",
+            "IV",
+            "V"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR",
+            "KR"
+          ],
+          "requiredContext": [
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "prosePolicy": "FIRE_CLASS_SENTENCE_V1"
+        }
+      ]
+    },
+    {
+      "parameterCode": "PZ-023",
+      "matrixCode": "M-023",
+      "name": "Класс конструктивной пожарной опасности",
+      "trigger": "Снижение класса пожарной опасности (например, с С0 на С1) в РД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pz-023-structural_fire_hazard_class",
+          "version": "1",
+          "attribute": "STRUCTURAL_FIRE_HAZARD_CLASS",
+          "canonicalUnit": "structural_fire_hazard_class",
+          "labels": [
+            "Класс конструктивной пожарной опасности"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "С0",
+            "С1",
+            "С2",
+            "С3",
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PZ"
+          ],
+          "actualSections": [
+            "AR",
+            "KR"
+          ],
+          "requiredContext": [
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "prosePolicy": "FIRE_CLASS_SENTENCE_V1"
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-024",
+      "matrixCode": "M-024",
+      "name": "Объем грунта (выемка/насыпь)",
+      "trigger": "Дельта объемов выемки и обратной засыпки между стадиями > 5%.",
+      "family": "RELATIVE_DELTA",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-024-excavation_volume",
+          "version": "1",
+          "attribute": "EXCAVATION_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем грунта (выемка)",
+            "Объем выемки грунта",
+            "Объем выемки грунта (геометрический)"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "5",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "EARTHWORK_SCOPE",
+            "VOLUME_COMPONENT_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        },
+        {
+          "ruleId": "matrix-spzu-024-backfill_volume",
+          "version": "1",
+          "attribute": "BACKFILL_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем обратной засыпки",
+            "Объем грунта (обратная засыпка)"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "5",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "EARTHWORK_SCOPE",
+            "VOLUME_COMPONENT_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-025",
+      "matrixCode": "M-025",
+      "name": "Площадь асфальтобетонного покрытия",
+      "trigger": "Увеличение или уменьшение площади твердых покрытий > 5%.",
+      "family": "RELATIVE_DELTA",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-025-hard_surface_area",
+          "version": "1",
+          "attribute": "HARD_SURFACE_AREA",
+          "canonicalUnit": "m2",
+          "labels": [
+            "Площадь асфальтобетонного покрытия",
+            "Площадь твердых покрытий в.т.ч"
+          ],
+          "unitAliases": [
+            "м²",
+            "м2"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "5",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "SURFACE_TYPE_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-026",
+      "matrixCode": "M-026",
+      "name": "Площадь тротуарного плиточного покрытия",
+      "trigger": "Изменение объемов мощения без согласования заказчика.",
+      "family": "DIFFERENT",
+      "gap": "PARTIAL_SUBRULES_ONLY:SIDEWALK_TILE_AREA_ONLY;OTHER_PAVING_QUANTITIES_AND_FULL_SCOPE_UNSUPPORTED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-026-sidewalk_tile_area",
+          "version": "1",
+          "attribute": "SIDEWALK_TILE_AREA",
+          "canonicalUnit": "m2",
+          "labels": [
+            "Площадь тротуарного плиточного покрытия",
+            "Площадь тротуаров из бетонной плитки"
+          ],
+          "unitAliases": [
+            "м²",
+            "м2",
+            "m²",
+            "m2",
+            "кв.м",
+            "кв. м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DIFFERENT",
+          "threshold": null,
+          "expectedSections": [
+            "SPZU",
+            "GP"
+          ],
+          "actualSections": [
+            "PP",
+            "GP"
+          ],
+          "requiredContext": [
+            "APPROVED_CHANGE_STATUS",
+            "SURFACE_TYPE_IDENTITY",
+            "ZONE_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-spzu-026-sidewalk_tile_area"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "SIDEWALK_TILE_PAVING",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-027",
+      "matrixCode": "M-027",
+      "name": "Площадь озеленения и газонов",
+      "trigger": "Сокращение площади озеленения в РД/ИД ниже минимальных требований ГПЗУ.",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-028",
+      "matrixCode": "M-028",
+      "name": "Площадь детских и спортивных площадок",
+      "trigger": "Уменьшение нормативной площади площадок отдыха/спорта в РД.",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-029",
+      "matrixCode": "M-029",
+      "name": "Спецификация МАФ",
+      "trigger": "Сокращение позиций МАФ; подмена на аналоги низкого качества.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-030",
+      "matrixCode": "M-030",
+      "name": "Ширина внутриплощадочных дорог и проездов",
+      "trigger": "Ширина пожарного проезда в РД или в натуре (ИД) менее 4.2 м.",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-030-fire_access_road_width",
+          "version": "1",
+          "attribute": "FIRE_ACCESS_ROAD_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина пожарного проезда"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "4.2",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "FIRE_ACCESS_ROAD_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-031",
+      "matrixCode": "M-031",
+      "name": "Радиусы поворота дорог и пожарных проездов",
+      "trigger": "Уменьшение радиуса поворота пожарной техники < 10-12 м (норматив).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-032",
+      "matrixCode": "M-032",
+      "name": "Конструкция дорожной одежды",
+      "trigger": "Исключение слоев или уменьшение толщины асфальта/щебня в РД и ИД.",
+      "family": "DECREASE",
+      "gap": "PARTIAL_SUBRULES_ONLY:LAYER_OMISSION_REQUIRES_COMPLETE_LAYER_INVENTORY;OTHER_LAYERS_AND_LAYER_COMPOSITION_UNSUPPORTED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-032-asphalt_layer_thickness",
+          "version": "1",
+          "attribute": "ASPHALT_LAYER_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина асфальтобетонного слоя",
+            "Толщина слоя асфальта"
+          ],
+          "unitAliases": [
+            "мм",
+            "см",
+            "м",
+            "mm",
+            "cm",
+            "m"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-spzu-032-asphalt_layer_thickness"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "ASPHALT_LAYER",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-spzu-032-crushed_stone_layer_thickness",
+          "version": "1",
+          "attribute": "CRUSHED_STONE_LAYER_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина щебёночного слоя",
+            "Толщина щебеночного слоя",
+            "Толщина слоя щебня"
+          ],
+          "unitAliases": [
+            "мм",
+            "см",
+            "м",
+            "mm",
+            "cm",
+            "m"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-spzu-032-crushed_stone_layer_thickness"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "CRUSHED_STONE_LAYER",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-033",
+      "matrixCode": "M-033",
+      "name": "Уклоны дорог и проездов",
+      "trigger": "Нарушение уклонов, ведущее к застою воды или превышению крутизны.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-034",
+      "matrixCode": "M-034",
+      "name": "Точки и координаты подключения внешних сетей",
+      "trigger": "Смещение точки подключения наружной сети относительно ТУ и ПД > 0.5 м.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-035",
+      "matrixCode": "M-035",
+      "name": "Охранные зоны существующих коммуникаций",
+      "trigger": "Посадка временных зданий, кранов или сетей в охранную зону.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-036",
+      "matrixCode": "M-036",
+      "name": "Тип и высотные параметры ограждения территории",
+      "trigger": "Замена типа ограждения (например, шумозащита на сетку); занижение высоты.",
+      "family": null,
+      "gap": "PARTIAL_SUBRULES_ONLY:TERRITORY_FENCE_HEIGHT_DECREASE_ONLY;FENCE_TYPE_REPLACEMENT_GATE_DIMENSIONS_DRAWING_GEOMETRY_COMPLETE_INVENTORY_AND_ID_UNSUPPORTED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-036-territory_fence_height",
+          "version": "1",
+          "attribute": "TERRITORY_FENCE_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота ограждения территории"
+          ],
+          "unitAliases": [
+            "м",
+            "m",
+            "мм",
+            "mm",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "SPZU",
+            "GP"
+          ],
+          "actualSections": [
+            "AR",
+            "PP",
+            "GP"
+          ],
+          "requiredContext": [
+            "APPROVED_CHANGE_STATUS",
+            "FENCE_TYPE_IDENTITY",
+            "ZONE_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-spzu-036-territory_fence_height"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "TERRITORY_FENCE_SEGMENT",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-037",
+      "matrixCode": "M-037",
+      "name": "Количество и разметка парковочных мест на участке",
+      "trigger": "Сокращение количества наземных парковочных мест в РД.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-spzu-037-surface_parking_count",
+          "version": "1",
+          "attribute": "SURFACE_PARKING_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Количество наземных парковочных мест"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "SPZU"
+          ],
+          "actualSections": [
+            "PP"
+          ],
+          "requiredContext": [
+            "SURFACE_PARKING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SPZU-038",
+      "matrixCode": "M-038",
+      "name": "Количество парковочных мест для МГН на участке",
+      "trigger": "Отсутствие или уменьшение доли мест для МГН (< 10% от общего числа).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "SPZU-039",
+      "matrixCode": "M-039",
+      "name": "Мероприятия по инженерной подготовке (дренажи)",
+      "trigger": "Исключение из РД открытых лотков или закрытых систем пристенного дренажа.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-040",
+      "matrixCode": "M-040",
+      "name": "Ширина магистральных эвакуационных коридоров",
+      "trigger": "Снижение ширины коридора в РД/ИД менее 1.2 м (СП 1.13130).",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-040-evacuation_corridor_width",
+          "version": "1",
+          "attribute": "EVACUATION_CORRIDOR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационного коридора"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "1.2",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "CORRIDOR_IDENTITY",
+            "FLOOR_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-041",
+      "matrixCode": "M-041",
+      "name": "Ширина эвакуационных выходов (дверей)",
+      "trigger": "Ширина дверного полотна на путях эвакуации в РД/ИД < 0.9 м.",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-041-evacuation_door_clear_width",
+          "version": "1",
+          "attribute": "EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационной двери в свету"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "0.9",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "DOOR_IDENTITY",
+            "EVACUATION_ROUTE_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-042",
+      "matrixCode": "M-042",
+      "name": "Высота путей эвакуации и проемов",
+      "trigger": "Высота коридоров < 2.0 м или дверей < 1.9 м (СП 1.13130).",
+      "family": "LOWER_BOUND",
+      "gap": "SCOPED_LITERAL_HEIGHT_ONLY;DRAWING_GEOMETRY_COMPLETE_INVENTORY_NORM_EXCEPTIONS_AND_PD_BASELINE_REVIEW_REQUIRED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-042-evacuation_corridor_clear_height",
+          "version": "1",
+          "attribute": "EVACUATION_CORRIDOR_CLEAR_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота эвакуационного коридора в свету"
+          ],
+          "unitAliases": [
+            "м",
+            "m",
+            "мм",
+            "mm",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "2",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "NORM_APPLICABILITY_VERIFIED",
+            "EVACUATION_ROUTE_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-ar-042-evacuation_corridor_clear_height"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "EVACUATION_CORRIDOR_CLEARANCE",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-ar-042-evacuation_door_clear_height",
+          "version": "1",
+          "attribute": "EVACUATION_DOOR_CLEAR_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота эвакуационной двери в свету"
+          ],
+          "unitAliases": [
+            "м",
+            "m",
+            "мм",
+            "mm",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "1.9",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "NORM_APPLICABILITY_VERIFIED",
+            "EVACUATION_ROUTE_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-ar-042-evacuation_door_clear_height"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "EVACUATION_DOOR_CLEARANCE",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-043",
+      "matrixCode": "M-043",
+      "name": "Направление открывания эвакуационных дверей",
+      "trigger": "Дверь открывается внутрь помещения или блокирует смежный поток эвакуации.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-044",
+      "matrixCode": "M-044",
+      "name": "Послойный состав пирога кровли",
+      "trigger": "Замена кровельной мембраны на класс ниже; исключение пароизоляционного слоя.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-045",
+      "matrixCode": "M-045",
+      "name": "Уклоны кровли и система водостока",
+      "trigger": "Уменьшение уклона кровли ниже проектного; сокращение количества воронок.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-046",
+      "matrixCode": "M-046",
+      "name": "Общее количество и габариты оконных блоков",
+      "trigger": "Сокращение количества окон; уменьшение площади остекления (риск КЕО).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-047",
+      "matrixCode": "M-047",
+      "name": "Габариты и глубина тамбуров входных групп",
+      "trigger": "Глубина тамбура в РД/ИД менее 1.5-1.8 м (невозможность проезда коляски).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-048",
+      "matrixCode": "M-048",
+      "name": "Количество и параметры лестничных маршей и ступеней",
+      "trigger": "Изменение количества ступеней; высота подступенка > 150 мм или проступь < 300 мм.",
+      "family": null,
+      "gap": "SCOPED_LITERAL_STAIR_DIMENSIONS_ONLY;STEP_COUNT_DRAWING_GEOMETRY_COMPLETE_INVENTORY_NORM_EXCEPTIONS_PD_BASELINE_AND_ID_REQUIRED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-048-stair_tread_depth",
+          "version": "1",
+          "attribute": "STAIR_TREAD_DEPTH",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Глубина проступи лестницы в свету"
+          ],
+          "unitAliases": [
+            "мм",
+            "mm",
+            "м",
+            "m",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "300",
+            "unit": "mm",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "NORM_APPLICABILITY_VERIFIED",
+            "STAIR_FLIGHT_STEP_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-ar-048-stair_tread_depth"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "STAIR_TREAD",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-ar-048-stair_riser_height",
+          "version": "1",
+          "attribute": "STAIR_RISER_HEIGHT",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Высота подступенка лестницы после отделки"
+          ],
+          "unitAliases": [
+            "мм",
+            "mm",
+            "м",
+            "m",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "UPPER_BOUND",
+          "threshold": {
+            "value": "150",
+            "unit": "mm",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "NORM_APPLICABILITY_VERIFIED",
+            "STAIR_FLIGHT_STEP_IDENTITY",
+            "ATOMIC_SUBRULE_SCOPE:matrix-ar-048-stair_riser_height"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "STAIR_RISER",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-049",
+      "matrixCode": "M-049",
+      "name": "Высота и тип ограждений лестниц, балкона, кровли",
+      "trigger": "Снижение высоты ограждения < 1.2 м для кровли/балкона (СП 54.13330).",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-049-roof_balcony_guard_height",
+          "version": "1",
+          "attribute": "ROOF_BALCONY_GUARD_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота ограждения кровли",
+            "Высота ограждения балкона"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "1.2",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "GUARD_LOCATION_IDENTITY",
+            "GUARD_TYPE_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-050",
+      "matrixCode": "M-050",
+      "name": "Спецификация и типы внутренней отделки помещений",
+      "trigger": "Подмена негорючей отделки (КМ0/КМ1) на горючую (КМ3) на путях эвакуации.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ar-050-finish_fire_class",
+          "version": "1",
+          "attribute": "FINISH_FIRE_CLASS",
+          "canonicalUnit": "finish_fire_class",
+          "labels": [
+            "Спецификация и типы внутренней отделки помещений"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "КМ0",
+            "КМ1",
+            "КМ2",
+            "КМ3",
+            "КМ4",
+            "КМ5",
+            "KM0",
+            "KM1",
+            "KM2",
+            "KM3",
+            "KM4",
+            "KM5"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "EVACUATION_ROUTE_IDENTITY",
+            "FINISH_LOCATION_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "AR-051",
+      "matrixCode": "M-051",
+      "name": "Параметры естественного освещения (КЕО)",
+      "trigger": "Изменение конфигурации оконных переплетов в РД, снижающее светопропускание.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-052",
+      "matrixCode": "M-052",
+      "name": "Цветовое решение и материалы облицовки фасадов",
+      "trigger": "Изменение колористического решения фасада в РД без согласования.",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "AR-053",
+      "matrixCode": "M-053",
+      "name": "Конструктивные мероприятия по защите от шума",
+      "trigger": "Отсутствие в РД демпферных лент в местах сопряжения перегородок и перекрытий.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-054",
+      "matrixCode": "M-054",
+      "name": "Шаг и привязка координационных осей несущего каркаса",
+      "trigger": "Самовольное изменение шага колонн или сдвиг осей в РД/ИД.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-055",
+      "matrixCode": "M-055",
+      "name": "Класс прочности бетона монолитных конструкций",
+      "trigger": "Понижение класса бетона несущих элементов (например, B35 на B30) в РД/ИД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-055-concrete_class",
+          "version": "1",
+          "attribute": "CONCRETE_CLASS",
+          "canonicalUnit": "B_CLASS",
+          "labels": [
+            "Класс прочности бетона",
+            "Класс прочности бетона монолитных конструкций",
+            "Класс бетона"
+          ],
+          "unitAliases": [],
+          "allowedValues": [],
+          "valueKind": "CONCRETE_CLASS",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ",
+            "KR"
+          ],
+          "requiredContext": [
+            "ELEMENT_IDENTITY",
+            "MATERIAL_CLASS_BASIS"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-056",
+      "matrixCode": "M-056",
+      "name": "Марка стали и класс прочности металлопроката",
+      "trigger": "Подмена марки стали на менее прочную (например, С345 на С245).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-057",
+      "matrixCode": "M-057",
+      "name": "Марка и класс прочности рабочей арматуры",
+      "trigger": "Замена класса арматуры на менее пластичный (например, А500С на А400).",
+      "family": null,
+      "gap": "PARTIAL_SUBRULES_ONLY:CATALOG_A500C_TO_A400_EXAMPLE_ONLY;OTHER_GRADES_PLASTICITY_SCALE_NONWORKING_REINFORCEMENT_COMPLETE_INVENTORY_AND_ID_UNSUPPORTED",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-057-catalog_a500c_to_a400",
+          "version": "1",
+          "attribute": "WORKING_REINFORCEMENT_CLASS",
+          "canonicalUnit": "rebar_catalog_example",
+          "labels": [
+            "Класс рабочей арматуры"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "А500С",
+            "А400"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KR"
+          ],
+          "requiredContext": [
+            "APPROVED_CHANGE_STATUS",
+            "REINFORCEMENT_APPLICATION_SCOPE",
+            "ATOMIC_SUBRULE_SCOPE:matrix-kr-057-catalog_a500c_to_a400"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "WORKING_REINFORCEMENT_POSITION",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-058",
+      "matrixCode": "M-058",
+      "name": "Толщина монолитной фундаментной плиты / ростверка",
+      "trigger": "Уменьшение проектной толщины плиты в РД или по факту заливки (ИД).",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-058-foundation_thickness",
+          "version": "1",
+          "attribute": "FOUNDATION_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина монолитной фундаментной плиты",
+            "Толщина фундаментной плиты",
+            "Толщина ростверка"
+          ],
+          "unitAliases": [
+            "мм",
+            "mm",
+            "м",
+            "m",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ",
+            "KR"
+          ],
+          "requiredContext": [
+            "FOUNDATION_ZONE_IDENTITY",
+            "THICKNESS_MEASUREMENT_BASIS"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-059",
+      "matrixCode": "M-059",
+      "name": "Толщина монолитных плит перекрытий и покрытия",
+      "trigger": "Уменьшение конструктивной толщины диска перекрытия (риск деформаций).",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-059-slab_thickness",
+          "version": "1",
+          "attribute": "SLAB_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина монолитной плиты перекрытия",
+            "Толщина плиты перекрытия",
+            "Толщина плиты покрытия"
+          ],
+          "unitAliases": [
+            "мм",
+            "mm",
+            "м",
+            "m",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ",
+            "KR"
+          ],
+          "requiredContext": [
+            "SLAB_FLOOR_ZONE_IDENTITY",
+            "THICKNESS_MEASUREMENT_BASIS"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-060",
+      "matrixCode": "M-060",
+      "name": "Геометрические сечения несущих колонн и пилонов",
+      "trigger": "Уменьшение площади поперечного сечения несущей вертикальной конструкции.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-061",
+      "matrixCode": "M-061",
+      "name": "Толщина несущих монолитных стен (ядра жесткости)",
+      "trigger": "Уменьшение толщины стен лифтовых шахт или пилонов диафрагм жесткости.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-061-load_bearing_monolithic_wall_thickness",
+          "version": "1",
+          "attribute": "LOAD_BEARING_MONOLITHIC_WALL_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина несущей монолитной стены",
+            "Толщина стены ядра жесткости"
+          ],
+          "unitAliases": [
+            "мм"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ"
+          ],
+          "requiredContext": [
+            "FLOOR_IDENTITY",
+            "THICKNESS_MEASUREMENT_BASIS",
+            "WALL_IDENTITY",
+            "ZONE_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-062",
+      "matrixCode": "M-062",
+      "name": "Диаметр продольной (рабочей) арматуры в колоннах/пилонах",
+      "trigger": "Занижение диаметра продольных арматурных стержней в спецификациях РД.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-062-longitudinal_rebar_diameter",
+          "version": "1",
+          "attribute": "LONGITUDINAL_REBAR_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр продольной рабочей арматуры"
+          ],
+          "unitAliases": [
+            "мм"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ"
+          ],
+          "requiredContext": [
+            "COLUMN_OR_PYLON_IDENTITY",
+            "FLOOR_IDENTITY",
+            "REBAR_ROLE_IDENTITY",
+            "ZONE_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "KR-063",
+      "matrixCode": "M-063",
+      "name": "Наличие и конструктивное исполнение деформационных швов",
+      "trigger": "Отсутствие, исключение или конструктивное искажение узла шва в РД.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-064",
+      "matrixCode": "M-064",
+      "name": "Привязки и габариты лифтовых шахт",
+      "trigger": "Сужение шахты или смещение закладных элементов в РД (риск монтажа лифта).",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-065",
+      "matrixCode": "M-065",
+      "name": "Схемы расположения и площади технологических проемов",
+      "trigger": "Самовольная заделка крупных проемов в РД без обрамляющего армирования.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-066",
+      "matrixCode": "M-066",
+      "name": "Антикоррозионная и огнезащитная обработка конструкций",
+      "trigger": "Замена состава на менее огнестойкий (снижение предела REI).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "KR-067",
+      "matrixCode": "M-067",
+      "name": "Ведомости расхода материалов (бетон, сталь)",
+      "trigger": "Итоговое расхождение объемов материалов между ПД, РД и ИД > 2%.",
+      "family": "RELATIVE_DELTA",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-kr-067-concrete_volume",
+          "version": "1",
+          "attribute": "CONCRETE_VOLUME",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем бетона"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "2",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ",
+            "KM"
+          ],
+          "requiredContext": [
+            "MATERIAL_COMPONENT_IDENTITY",
+            "STRUCTURE_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        },
+        {
+          "ruleId": "matrix-kr-067-steel_mass",
+          "version": "1",
+          "attribute": "STEEL_MASS",
+          "canonicalUnit": "t",
+          "labels": [
+            "Масса стали"
+          ],
+          "unitAliases": [
+            "т"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "2",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "KR"
+          ],
+          "actualSections": [
+            "KJ",
+            "KM"
+          ],
+          "requiredContext": [
+            "MATERIAL_COMPONENT_IDENTITY",
+            "STRUCTURE_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS1-068",
+      "matrixCode": "M-068",
+      "name": "Номинальная аппаратная защита ВРУ/ГРЩ",
+      "trigger": "Занижение или завышение токов уставки в РД (риск пожара или ложных отключений).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS1-069",
+      "matrixCode": "M-069",
+      "name": "Сечение жил и маркировка распределительных кабелей",
+      "trigger": "Занижение сечения кабелей или подмена негорючих марок (например, FRLS на обычный LS).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS1-070",
+      "matrixCode": "M-070",
+      "name": "Параметры и контуры заземления и молниезащиты",
+      "trigger": "Уменьшение количества заземлителей или исключение элементов молниезащиты в РД.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS2-071",
+      "matrixCode": "M-071",
+      "name": "Диаметры стояков и разводящих трубопроводов В1/Т3",
+      "trigger": "Уменьшение диаметров стояков или магистралей ХВС/ГВС в РД/ИД.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ios2-071-water_pipe_diameter",
+          "version": "1",
+          "attribute": "WATER_PIPE_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр стояка В1",
+            "Диаметр стояка Т3",
+            "Диаметр магистрали В1",
+            "Диаметр магистрали Т3"
+          ],
+          "unitAliases": [
+            "мм"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS2"
+          ],
+          "actualSections": [
+            "VK"
+          ],
+          "requiredContext": [
+            "DIAMETER_BASIS",
+            "PIPE_RUN_IDENTITY",
+            "PIPE_SYSTEM_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID",
+            "RD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ],
+            [
+              "RD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS2-072",
+      "matrixCode": "M-072",
+      "name": "Материал и класс давления напорных труб В1/Т3",
+      "trigger": "Подмена оцинкованных/чугунных труб на полипропилен без перерасчета расширения.",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS2-073",
+      "matrixCode": "M-073",
+      "name": "Характеристики насосных станций хоз-питьевого водоснабжения",
+      "trigger": "Занижение рабочих параметров закупаемого насосного оборудования в РД.",
+      "family": "DECREASE",
+      "gap": "PARTIAL_SUBRULES_ONLY:PUMP_POWER_AND_COMPLETE_WORKING_CURVE_UNSUPPORTED;MATCHED_OPERATING_POINT_ONLY",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ios2-073-pump_flow_rate",
+          "version": "1",
+          "attribute": "PUMP_FLOW_RATE",
+          "canonicalUnit": "m3/h",
+          "labels": [
+            "Расход насоса",
+            "Расход насосной станции"
+          ],
+          "unitAliases": [
+            "м³/ч",
+            "м3/ч",
+            "m3/h"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS2"
+          ],
+          "actualSections": [
+            "VK"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ios2-073-pump_flow_rate"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "POTABLE_WATER_PUMP",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-ios2-073-pump_head",
+          "version": "1",
+          "attribute": "PUMP_HEAD",
+          "canonicalUnit": "m",
+          "labels": [
+            "Напор насоса",
+            "Напор насосной станции"
+          ],
+          "unitAliases": [
+            "м",
+            "мм",
+            "см",
+            "m",
+            "mm",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS2"
+          ],
+          "actualSections": [
+            "VK"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ios2-073-pump_head"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "POTABLE_WATER_PUMP",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS3-074",
+      "matrixCode": "M-074",
+      "name": "Диаметры выпусков и магистралей К1/К2",
+      "trigger": "Уменьшение диаметров выпусков канализации из здания в РД (риск засоров).",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ios3-074-sewer_pipe_diameter",
+          "version": "1",
+          "attribute": "SEWER_PIPE_DIAMETER",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Диаметр выпуска К1",
+            "Диаметр выпуска К2",
+            "Диаметр магистрали К1",
+            "Диаметр магистрали К2"
+          ],
+          "unitAliases": [
+            "мм"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS3"
+          ],
+          "actualSections": [
+            "VK"
+          ],
+          "requiredContext": [
+            "DIAMETER_BASIS",
+            "OUTLET_IDENTITY",
+            "SEWER_SYSTEM_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS3-075",
+      "matrixCode": "M-075",
+      "name": "Материал и тип канализационных труб и фасонных частей",
+      "trigger": "Самовольная замена малошумных или чугунных труб на тонкостенный ПВХ.",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS4-076",
+      "matrixCode": "M-076",
+      "name": "Диаметры магистралей и стояков отопления (Т1, Т2)",
+      "trigger": "Изменение диаметров Т1/Т2, нарушающее гидравлическую увязку системы.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS4-077",
+      "matrixCode": "M-077",
+      "name": "Технические параметры отопительных приборов (радиаторов)",
+      "trigger": "Сокращение количества секций или замена на модели с меньшей теплоотдачей.",
+      "family": "DECREASE",
+      "gap": "PARTIAL_SUBRULES_ONLY:RADIATOR_MODEL_SUBSTITUTION_AND_FULL_SPECIFICATION_UNSUPPORTED;MATCHED_THERMAL_TEST_CONDITIONS_ONLY",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ios4-077-radiator_section_count",
+          "version": "1",
+          "attribute": "RADIATOR_SECTION_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Число секций радиатора",
+            "Количество секций радиатора"
+          ],
+          "unitAliases": [
+            "шт.",
+            "шт"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS4"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ios4-077-radiator_section_count"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "RADIATOR",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-ios4-077-radiator_heat_output",
+          "version": "1",
+          "attribute": "RADIATOR_HEAT_OUTPUT",
+          "canonicalUnit": "kW",
+          "labels": [
+            "Теплоотдача радиатора"
+          ],
+          "unitAliases": [
+            "кВт",
+            "Вт",
+            "МВт",
+            "kW"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "IOS4"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ios4-077-radiator_heat_output"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "RADIATOR",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "IOS4-078",
+      "matrixCode": "M-078",
+      "name": "Сечения и геометрия воздуховодов общеобменной вентиляции",
+      "trigger": "Уменьшение площади сечения воздуховода в РД (падение объема воздуха, рост шума).",
+      "family": null,
+      "gap": "PUBLIC_MAPPING_CONFLICT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS4-079",
+      "matrixCode": "M-079",
+      "name": "Характеристики вентиляторов общеобменной вентиляции",
+      "trigger": "Подмена установок на аналоги с меньшей кратностью воздухообмена.",
+      "family": null,
+      "gap": "PUBLIC_MAPPING_CONFLICT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "IOS5-080",
+      "matrixCode": "M-080",
+      "name": "Состав и емкость систем пожарной сигнализации (АПС)",
+      "trigger": "Сокращение количества извещателей в РД или нарушение расстояний между ними.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-081",
+      "matrixCode": "M-081",
+      "name": "Границы опасных зон работы грузоподъемных кранов",
+      "trigger": "Выход опасной зоны работы стрелы крана за границы участка или на жилые здания.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-082",
+      "matrixCode": "M-082",
+      "name": "Продолжительность этапов строительства (Календарный график)",
+      "trigger": "Превышение продолжительности критического этапа в графике РД > 10%.",
+      "family": "RELATIVE_INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pos-082-critical_construction_stage_duration",
+          "version": "1",
+          "attribute": "CRITICAL_CONSTRUCTION_STAGE_DURATION",
+          "canonicalUnit": "day",
+          "labels": [
+            "Продолжительность критического этапа строительства"
+          ],
+          "unitAliases": [
+            "дни",
+            "день",
+            "дня"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_INCREASE",
+          "threshold": {
+            "value": "10",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "POS"
+          ],
+          "actualSections": [
+            "PPR"
+          ],
+          "requiredContext": [
+            "CRITICAL_STAGE_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-083",
+      "matrixCode": "M-083",
+      "name": "Посадка и габариты временных зданий и сооружений",
+      "trigger": "Размещение бытовок в охранных зонах сетей или с нарушением пожарных разрывов.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-084",
+      "matrixCode": "M-084",
+      "name": "Схемы движения и ширина временных автодорог",
+      "trigger": "Сужение временных дорог < 3.5-4.5 м (нарушение ПОС).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-085",
+      "matrixCode": "M-085",
+      "name": "Места размещения площадок складирования материалов",
+      "trigger": "Размещение тяжелых конструкций в зоне откосов котлована или на непредусмотренных перекрытиях.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-086",
+      "matrixCode": "M-086",
+      "name": "Потребность в кадрах (Максимальная численность)",
+      "trigger": "Превышение пиковой численности персонала в РД над вместимостью бытового городка.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pos-086-peak_personnel_count",
+          "version": "1",
+          "attribute": "PEAK_PERSONNEL_COUNT",
+          "canonicalUnit": "count",
+          "labels": [
+            "Максимальная численность рабочих",
+            "Пиковая численность персонала"
+          ],
+          "unitAliases": [
+            "чел.",
+            "чел"
+          ],
+          "allowedValues": [],
+          "valueKind": "INTEGER",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "POS"
+          ],
+          "actualSections": [
+            "PPR"
+          ],
+          "requiredContext": [
+            "SITE_CAMP_CAPACITY_BASIS",
+            "WORKFORCE_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-087",
+      "matrixCode": "M-087",
+      "name": "Технологическая последовательность возведения",
+      "trigger": "Самовольное изменение критических технологий (например, монолит на сборный ЖБ).",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POS-088",
+      "matrixCode": "M-088",
+      "name": "Точки подключения и мощности временных ресурсов",
+      "trigger": "Превышение запрашиваемой мощности для строймашин над лимитом ПОС.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pos-088-temporary_power_demand",
+          "version": "1",
+          "attribute": "TEMPORARY_POWER_DEMAND",
+          "canonicalUnit": "kW",
+          "labels": [
+            "Потребность во временном электроснабжении",
+            "Мощность временного электроснабжения"
+          ],
+          "unitAliases": [
+            "кВт"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "POS"
+          ],
+          "actualSections": [
+            "PPR"
+          ],
+          "requiredContext": [
+            "RESOURCE_TYPE_IDENTITY",
+            "TEMPORARY_NETWORK_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POS-089",
+      "matrixCode": "M-089",
+      "name": "Расположение пунктов мойки колес и выездов",
+      "trigger": "Отсутствие или перенос пункта мойки колес в зону без оборотного водоснабжения.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-090",
+      "matrixCode": "M-090",
+      "name": "Границы опасных зон развала и обрушения конструкций",
+      "trigger": "Выход зоны развала в ППР за границы участка или на пешеходные зоны.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-091",
+      "matrixCode": "M-091",
+      "name": "Методы и технологическая последовательность демонтажа",
+      "trigger": "Самовольное изменение метода (например, с плазменного на обрушение экскаватором).",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-092",
+      "matrixCode": "M-092",
+      "name": "Мероприятия по защите действующих коммуникаций",
+      "trigger": "Отсутствие в ППР защитных мероприятий для сетей в зоне работы техники.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-093",
+      "matrixCode": "M-093",
+      "name": "Общие объемы демонтируемых конструкций (по типам)",
+      "trigger": "Расхождение объемов лома между ПД и РД/ИД > 5%.",
+      "family": "RELATIVE_DELTA",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-pod-093-demolition_volume_by_type",
+          "version": "1",
+          "attribute": "DEMOLITION_VOLUME_BY_TYPE",
+          "canonicalUnit": "m3",
+          "labels": [
+            "Объем демонтируемых конструкций"
+          ],
+          "unitAliases": [
+            "м³",
+            "м3"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_DELTA",
+          "threshold": {
+            "value": "5",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "POD"
+          ],
+          "actualSections": [
+            "PPR"
+          ],
+          "requiredContext": [
+            "DEMOLITION_MATERIAL_TYPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "POD-094",
+      "matrixCode": "M-094",
+      "name": "Масса и класс опасности образующихся отходов",
+      "trigger": "Превышение объемов опасных отходов в ИД или занижение класса опасности.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-095",
+      "matrixCode": "M-095",
+      "name": "Мероприятия по пылеподавлению и снижению шума",
+      "trigger": "Отсутствие систем гидроорошения или защитных экранов в РД при демонтаже стен.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-096",
+      "matrixCode": "M-096",
+      "name": "Узлы временного расчленения сохраняемых конструкций",
+      "trigger": "Занижение сечений элементов расчленения в РД; отсутствие актов монтажа.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "POD-097",
+      "matrixCode": "M-097",
+      "name": "Места и габариты площадок временного складирования лома",
+      "trigger": "Складирование тяжелого мусора на бровке котлована или над действующими сетями.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "OOS-098",
+      "matrixCode": "M-098",
+      "name": "Регистрация лимитов в АИС \"ОСИГ\"",
+      "trigger": "Начало земляных/демонтажных работ без открытого разрешения на перемещение ОСС.",
+      "family": null,
+      "gap": "EXTERNAL_REGISTRY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "OOS-099",
+      "matrixCode": "M-099",
+      "name": "Верфикация транспортных средств (ГЛОНАСС)",
+      "trigger": "Рейс самосвала без ГЛОНАСС-трекера или не зарегистрированного в РНИС.",
+      "family": null,
+      "gap": "EXTERNAL_REGISTRY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "OOS-100",
+      "matrixCode": "M-100",
+      "name": "Фиксация рейсов через мобильный КПТС",
+      "trigger": "Выезд самосвала с отходами без генерации QR-кода в \"Мобильном КПТС\".",
+      "family": null,
+      "gap": "EXTERNAL_REGISTRY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "OOS-101",
+      "matrixCode": "M-101",
+      "name": "Сверка легитимности полной утилизации",
+      "trigger": "Выгрузка отходов на полигон, не входящий в ТРПО или без лицензии ГРОО.",
+      "family": null,
+      "gap": "EXTERNAL_REGISTRY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-102",
+      "matrixCode": "M-102",
+      "name": "Деление здания на пожарные отсеки",
+      "trigger": "Нарушение непрерывности противопожарных стен в РД/ИД; увеличение площади отсека.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-103",
+      "matrixCode": "M-103",
+      "name": "Пределы огнестойкости противопожарных дверей и ворот (EI)",
+      "trigger": "Снижение предела огнестойкости (например, EI-60 на EI-30) в РД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ppm-103-fire_door_rating",
+          "version": "1",
+          "attribute": "FIRE_DOOR_RATING",
+          "canonicalUnit": "fire_rating",
+          "labels": [
+            "Пределы огнестойкости противопожарных дверей и ворот (EI)"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "EI-15",
+            "EI-30",
+            "EI-45",
+            "EI-60",
+            "EI-90",
+            "EI-120",
+            "E-15",
+            "E-30",
+            "E-45",
+            "E-60",
+            "E-90",
+            "E-120",
+            "I-15",
+            "I-30",
+            "I-45",
+            "I-60",
+            "I-90",
+            "I-120"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "DOOR_IDENTITY",
+            "FIRE_RATING_NOTATION"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-104",
+      "matrixCode": "M-104",
+      "name": "Ширина и высота эвакуационных проходов",
+      "trigger": "Сужение коридоров < 1.2 м (СП 1.13130).",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ppm-104-evacuation_passage_width",
+          "version": "1",
+          "attribute": "EVACUATION_PASSAGE_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина эвакуационного прохода"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "1.2",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "EVACUATION_ROUTE_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED",
+            "PASSAGE_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-105",
+      "matrixCode": "M-105",
+      "name": "Ширина эвакуационных дверей наружных выходов",
+      "trigger": "Ширина дверного полотна в РД/ИД < 0.9 м.",
+      "family": "LOWER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ppm-105-external_evacuation_door_clear_width",
+          "version": "1",
+          "attribute": "EXTERNAL_EVACUATION_DOOR_CLEAR_WIDTH",
+          "canonicalUnit": "m",
+          "labels": [
+            "Ширина наружной эвакуационной двери в свету"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "LOWER_BOUND",
+          "threshold": {
+            "value": "0.9",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "EXTERNAL_DOOR_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-106",
+      "matrixCode": "M-106",
+      "name": "Направление открывания дверей на путях эвакуации",
+      "trigger": "Дверь открывается внутрь или блокирует смежный поток эвакуации.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-107",
+      "matrixCode": "M-107",
+      "name": "Класс пожарной опасности отделочных материалов",
+      "trigger": "Подмена КМ0/КМ1 на КМ3 на путях эвакуации в РД/ИД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ppm-107-finish_fire_class",
+          "version": "1",
+          "attribute": "FINISH_FIRE_CLASS",
+          "canonicalUnit": "finish_fire_class",
+          "labels": [
+            "Класс пожарной опасности отделочных материалов"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "КМ0",
+            "КМ1",
+            "КМ2",
+            "КМ3",
+            "КМ4",
+            "КМ5",
+            "KM0",
+            "KM1",
+            "KM2",
+            "KM3",
+            "KM4",
+            "KM5"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "EVACUATION_ROUTE_IDENTITY",
+            "FINISH_LOCATION_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-108",
+      "matrixCode": "M-108",
+      "name": "Количество и расстановка извещателей АПС",
+      "trigger": "Сокращение количества датчиков в РД или нарушение расстояний между ними.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-109",
+      "matrixCode": "M-109",
+      "name": "Пожарная маркировка кабелей систем ПЗ (СПЗ)",
+      "trigger": "Применение кабеля без индекса огнестойкости (например, замена FRLS на обычный LS).",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-110",
+      "matrixCode": "M-110",
+      "name": "Количество и расстановка оповещателей СОУЭ",
+      "trigger": "Сокращение количества динамиков; отсутствие табло \"Выход\" на путях эвакуации.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-111",
+      "matrixCode": "M-111",
+      "name": "Расположение и пределы огнестойкости клапанов (ОЗК)",
+      "trigger": "Отсутствие ОЗК в местах пересечения воздуховодами противопожарных преград в РД.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-112",
+      "matrixCode": "M-112",
+      "name": "Производительность вентиляторов ДУ и подпора воздуха",
+      "trigger": "Занижение производительности или давления вентиляторов ДУ в РД.",
+      "family": "DECREASE",
+      "gap": "PARTIAL_SUBRULES_ONLY:COMPLETE_FAN_CURVE_AND_OPERATING_RANGE_UNSUPPORTED;MATCHED_OPERATING_POINT_ONLY",
+      "atomicRules": [
+        {
+          "ruleId": "matrix-ppm-112-smoke_control_fan_flow_rate",
+          "version": "1",
+          "attribute": "SMOKE_CONTROL_FAN_FLOW_RATE",
+          "canonicalUnit": "m3/h",
+          "labels": [
+            "Производительность вентилятора ДУ",
+            "Производительность вентилятора подпора воздуха"
+          ],
+          "unitAliases": [
+            "м³/ч",
+            "м3/ч",
+            "m3/h"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ppm-112-smoke_control_fan_flow_rate"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "SMOKE_CONTROL_FAN",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        },
+        {
+          "ruleId": "matrix-ppm-112-smoke_control_fan_pressure",
+          "version": "1",
+          "attribute": "SMOKE_CONTROL_FAN_PRESSURE",
+          "canonicalUnit": "Pa",
+          "labels": [
+            "Давление вентилятора ДУ",
+            "Давление вентилятора подпора воздуха"
+          ],
+          "unitAliases": [
+            "Па",
+            "кПа",
+            "Pa",
+            "kPa"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "PPM"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "ATOMIC_SUBRULE_SCOPE:matrix-ppm-112-smoke_control_fan_pressure"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ],
+          "subruleContext": {
+            "schemaVersion": "matched-atomic-context-v1",
+            "componentRole": "SMOKE_CONTROL_FAN",
+            "identityFields": [
+              "componentKey",
+              "zoneKey",
+              "operatingModeKey",
+              "measurementBasisKey"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "parameterCode": "PPM-113",
+      "matrixCode": "M-113",
+      "name": "Расход воды и количество струй внутреннего пожаротушения (ВПВ)",
+      "trigger": "Уменьшение диаметра кольцевого трубопровода ВПВ; сокращение количества кранов.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "PPM-114",
+      "matrixCode": "M-114",
+      "name": "Расход воды на наружное пожаротушение (НПВ)",
+      "trigger": "Радиус действия ПГ на чертеже РД не покрывает наиболее удаленную точку здания.",
+      "family": null,
+      "gap": "GEOMETRY_OR_TOPOLOGY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-115",
+      "matrixCode": "M-115",
+      "name": "Технические параметры и наличие инвалидных подъемников",
+      "trigger": "Исключение подъемника из РД или замена на модель без автоматического управления.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-116",
+      "matrixCode": "M-116",
+      "name": "Ширина коридоров на путях движения МГН",
+      "trigger": "Сужение коридоров < 1.5-1.8 м (СП 59.13330).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-117",
+      "matrixCode": "M-117",
+      "name": "Ширина дверных проемов на путях движения МГН",
+      "trigger": "Ширина полотна двери в свету < 1.5 м (СП 59.13330).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-118",
+      "matrixCode": "M-118",
+      "name": "Высота порогов в дверных проемах на путях МГН",
+      "trigger": "Высота порога > 0.014 м (СП 59.13330).",
+      "family": "UPPER_BOUND",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-odi-118-accessible_door_threshold_height",
+          "version": "1",
+          "attribute": "ACCESSIBLE_DOOR_THRESHOLD_HEIGHT",
+          "canonicalUnit": "m",
+          "labels": [
+            "Высота порога на пути МГН"
+          ],
+          "unitAliases": [
+            "м"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "UPPER_BOUND",
+          "threshold": {
+            "value": "0.014",
+            "unit": "m",
+            "strict": true
+          },
+          "expectedSections": [
+            "ODI"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "ACCESSIBLE_DOOR_IDENTITY",
+            "NORM_APPLICABILITY_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ODI-119",
+      "matrixCode": "M-119",
+      "name": "Габариты и планировка санузлов для инвалидов (универсальные кабины)",
+      "trigger": "Внутренние размеры универсальной кабины в РД/ИД < 1.5 м (СП 59.13330).",
+      "family": null,
+      "gap": "NORMATIVE_OR_APPLICABILITY",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-120",
+      "matrixCode": "M-120",
+      "name": "Спецификация опорных стационарных и откидных поручней",
+      "trigger": "Отсутствие в РД откидных и стационарных поручней в санузлах для инвалидов.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-121",
+      "matrixCode": "M-121",
+      "name": "Количество и габариты парковочных мест для инвалидов",
+      "trigger": "Сокращение количества мест для инвалидов; уменьшение ширины места < 3.5 м.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-122",
+      "matrixCode": "M-122",
+      "name": "Наличие и расстановка тактильно-контрастных указателей",
+      "trigger": "Отсутствие в РД предупреждающих тактильных полос перед лестницами и дверями.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ODI-123",
+      "matrixCode": "M-123",
+      "name": "Состав систем двухсторонней связи и вызова помощника",
+      "trigger": "Отсутствие в РД кнопок вызова персонала в санузлах или на входе в здание.",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ZU-124",
+      "matrixCode": "M-124",
+      "name": "Класс энергетической эффективности здания",
+      "trigger": "Снижение проектного класса энергоэффективности в РД/ИД.",
+      "family": "CLASS_DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-zu-124-energy_efficiency_class",
+          "version": "1",
+          "attribute": "ENERGY_EFFICIENCY_CLASS",
+          "canonicalUnit": "energy_class",
+          "labels": [
+            "Класс энергетической эффективности здания"
+          ],
+          "unitAliases": [],
+          "allowedValues": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "А",
+            "В",
+            "С",
+            "Д",
+            "Е"
+          ],
+          "valueKind": "CATEGORY",
+          "family": "CLASS_DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "ZU"
+          ],
+          "actualSections": [
+            "AR",
+            "OV"
+          ],
+          "requiredContext": [
+            "BUILDING_SCOPE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-125",
+      "matrixCode": "M-125",
+      "name": "Толщина теплоизоляционного слоя наружных стен",
+      "trigger": "Уменьшение толщины утеплителя в РД, ведущее к падению сопротивления теплопередаче.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-zu-125-wall_insulation_thickness",
+          "version": "1",
+          "attribute": "WALL_INSULATION_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина теплоизоляционного слоя наружных стен",
+            "Толщина утеплителя наружных стен",
+            "Толщина утеплителя стен"
+          ],
+          "unitAliases": [
+            "мм",
+            "mm",
+            "м",
+            "m",
+            "см",
+            "cm"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "ZU",
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "INSULATION_MATERIAL_IDENTITY",
+            "WALL_ASSEMBLY_IDENTITY",
+            "THERMAL_RESISTANCE_REDUCTION_VERIFIED"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-126",
+      "matrixCode": "M-126",
+      "name": "Коэффициент теплопроводности (λ) утеплителя стен",
+      "trigger": "Замена утеплителя на аналог с более высоким коэффициентом теплопроводности.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-zu-126-wall_insulation_thermal_conductivity",
+          "version": "1",
+          "attribute": "WALL_INSULATION_THERMAL_CONDUCTIVITY",
+          "canonicalUnit": "W/(m*C)",
+          "labels": [
+            "Коэффициент теплопроводности утеплителя стен"
+          ],
+          "unitAliases": [
+            "Вт/(м·С)",
+            "Вт/(м·°С)"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "ZU"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "INSULATION_MATERIAL_IDENTITY",
+            "WALL_ASSEMBLY_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-127",
+      "matrixCode": "M-127",
+      "name": "Коэффициент сопротивления теплопередаче окон (Ro)",
+      "trigger": "Ухудшение теплозащитных свойств оконных блоков в РД/ИД.",
+      "family": null,
+      "gap": "COMPOSITE_TRIGGER",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ZU-128",
+      "matrixCode": "M-128",
+      "name": "Толщина утеплителя чердачных перекрытий / кровли",
+      "trigger": "Уменьшение проектного слоя кровельного утеплителя в РД.",
+      "family": "DECREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-zu-128-roof_insulation_thickness",
+          "version": "1",
+          "attribute": "ROOF_INSULATION_THICKNESS",
+          "canonicalUnit": "mm",
+          "labels": [
+            "Толщина утеплителя кровли",
+            "Толщина утеплителя чердачного перекрытия"
+          ],
+          "unitAliases": [
+            "мм"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "DECREASE",
+          "threshold": null,
+          "expectedSections": [
+            "ZU",
+            "AR"
+          ],
+          "actualSections": [
+            "AR"
+          ],
+          "requiredContext": [
+            "ROOF_ASSEMBLY_IDENTITY"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "ZU-129",
+      "matrixCode": "M-129",
+      "name": "Наличие приборов учета расхода энергоресурсов",
+      "trigger": "Отсутствие в РД общедомовых/поквартирных счетчиков (электричество, вода, тепло).",
+      "family": "PRESENCE_SET",
+      "gap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ZU-130",
+      "matrixCode": "M-130",
+      "name": "Установка энергосберегающего осветительного оборудования",
+      "trigger": "Замена светодиодных светильников (LED) на люминесцентные или лампы накаливания.",
+      "family": null,
+      "gap": "APPROVAL_OR_CONTEXT",
+      "atomicRules": []
+    },
+    {
+      "parameterCode": "ZU-131",
+      "matrixCode": "M-131",
+      "name": "Удельный годовой расход тепловой энергии на отопление",
+      "trigger": "Превышение удельного годового расхода энергии в РД над лимитом из ПД.",
+      "family": "INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-zu-131-annual_specific_heating_energy",
+          "version": "1",
+          "attribute": "ANNUAL_SPECIFIC_HEATING_ENERGY",
+          "canonicalUnit": "kWh/m2",
+          "labels": [
+            "Удельный годовой расход тепловой энергии на отопление"
+          ],
+          "unitAliases": [
+            "кВт·ч/м²",
+            "кВт·ч/м2"
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "INCREASE",
+          "threshold": null,
+          "expectedSections": [
+            "ZU"
+          ],
+          "actualSections": [
+            "OV"
+          ],
+          "requiredContext": [
+            "ANNUAL_PERIOD_BASIS",
+            "BUILDING_AREA_BASIS"
+          ],
+          "comparisonVariants": [
+            "PD_RD"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "parameterCode": "SM-132",
+      "matrixCode": "M-132",
+      "name": "Итоговая стоимость по Сводному сметному расчету (ССР)",
+      "trigger": "Превышение итоговой стоимости строительства в РД/ИД над утвержденной ПД > 5%.",
+      "family": "RELATIVE_INCREASE",
+      "gap": null,
+      "atomicRules": [
+        {
+          "ruleId": "matrix-sm-132-construction_total_cost",
+          "version": "1",
+          "attribute": "CONSTRUCTION_TOTAL_COST",
+          "canonicalUnit": "thousand_rub",
+          "labels": [
+            "Итоговая стоимость строительства",
+            "Итоговая стоимость по Сводному сметному расчету (ССР)"
+          ],
+          "unitAliases": [
+            "тыс. руб.",
+            "тыс руб."
+          ],
+          "allowedValues": [],
+          "valueKind": "DECIMAL",
+          "family": "RELATIVE_INCREASE",
+          "threshold": {
+            "value": "5",
+            "unit": "percent",
+            "strict": true
+          },
+          "expectedSections": [
+            "SM"
+          ],
+          "actualSections": [
+            "SM"
+          ],
+          "requiredContext": [
+            "COST_COMPONENT_SCOPE",
+            "ESTIMATE_SCOPE",
+            "PRICE_BASE_DATE"
+          ],
+          "comparisonVariants": [
+            "PD_RD",
+            "PD_ID"
+          ],
+          "enabled": true,
+          "scopePolicy": "EXPLICIT_REVIEWED_CONTEXT",
+          "comparisonPurpose": "CATALOG_TRIGGER",
+          "allowedStagePairs": [
+            [
+              "PD",
+              "RD"
+            ],
+            [
+              "PD",
+              "ID"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

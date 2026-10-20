@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "real-parameter-source-viewer-bindings-v1",
+  "objectId": "OBJ-TYUMENSKAYA-5-GOLD-SEED",
+  "bindingsSha256": "d2d63b9c161605c192a75c4119d91edbe23e4e9ca879511a1d09c2aed64d50b7",
+  "provenance": "SELECTED_EXACT_SOURCE_CITATIONS_NO_MACHINE_VERDICT_OR_TRAIN_ANSWERS",
+  "selections": [
+    {
+      "id": "school-declared-capacity",
+      "parameterCode": "PZ-013",
+      "declaredScope": "school_declared_seat_capacity",
+      "scopeStatus": "SOURCE_ONLY_CANDIDATE",
+      "completeConfiguration": false,
+      "quotes": [
+        {
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "sourceFileId": "F0171",
+          "role": "PD",
+          "physicalPage": 1,
+          "pageWidthMilliPoints": 595320,
+          "pageHeightMilliPoints": 841920,
+          "bboxMilliPoints": [
+            111680,
+            566960,
+            501435,
+            580940
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "«Школа на 600 мест, р-н Богородское, ул. Тюменская, влд.5»",
+          "displayValue": "600",
+          "unit": "мест",
+          "evidenceKind": "NATIVE",
+          "sourceArtifactSha256": "321eb75fd59b501ee4445ecf552a2fc9625175efb0aa49e3a761e1d776a5f4ea",
+          "sourceStage": "PD",
+          "pageStageStatus": "DECLARED_PD",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        },
+        {
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "sourceFileId": "F0201",
+          "role": "RD",
+          "physicalPage": 5,
+          "pageWidthMilliPoints": 595440,
+          "pageHeightMilliPoints": 842400,
+          "bboxMilliPoints": [
+            131500,
+            583400,
+            479500,
+            598900
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "«Школа на 600 мест, р-н Богородское, ул. Тюменская, влд.5»",
+          "displayValue": "600",
+          "unit": "мест",
+          "evidenceKind": "OCR",
+          "sourceArtifactSha256": "bba36ea5c02ccabaefa2dcfb9c1dd6a7785521b32bf494a956ae3ab53838d82f",
+          "sourceStage": "RD_ID_MIXED",
+          "pageStageStatus": "UNVERIFIED",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        },
+        {
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "sourceFileId": "F0201",
+          "role": "RD",
+          "physicalPage": 7,
+          "pageWidthMilliPoints": 595200,
+          "pageHeightMilliPoints": 841680,
+          "bboxMilliPoints": [
+            376500,
+            574680,
+            528000,
+            591680
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "Общественное (школа на 600 мест)",
+          "displayValue": "600",
+          "unit": "мест",
+          "evidenceKind": "OCR",
+          "sourceArtifactSha256": "bba36ea5c02ccabaefa2dcfb9c1dd6a7785521b32bf494a956ae3ab53838d82f",
+          "sourceStage": "RD_ID_MIXED",
+          "pageStageStatus": "UNVERIFIED",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        }
+      ]
+    },
+    {
+      "id": "selected-p17-flow-group",
+      "parameterCode": "IOS4-079",
+      "declaredScope": "selected_P17_declared_flow_group",
+      "scopeStatus": "SOURCE_ONLY_CANDIDATE",
+      "completeConfiguration": false,
+      "quotes": [
+        {
+          "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+          "sourceFileId": "F0171",
+          "role": "PD",
+          "physicalPage": 156,
+          "pageWidthMilliPoints": 595000,
+          "pageHeightMilliPoints": 842000,
+          "bboxMilliPoints": [
+            238859,
+            453254,
+            355420,
+            462256
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "П17 (L=9060 м3/ч, Pc=350 Па)",
+          "displayValue": "9060",
+          "unit": "м³/ч",
+          "evidenceKind": "NATIVE",
+          "sourceArtifactSha256": "321eb75fd59b501ee4445ecf552a2fc9625175efb0aa49e3a761e1d776a5f4ea",
+          "sourceStage": "PD",
+          "pageStageStatus": "DECLARED_PD",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        },
+        {
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "sourceFileId": "F0201",
+          "role": "RD",
+          "physicalPage": 272,
+          "pageWidthMilliPoints": 595000,
+          "pageHeightMilliPoints": 842000,
+          "bboxMilliPoints": [
+            42750,
+            719405,
+            222431,
+            729013
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "Проект: П17.1 (L=3340 м3/ч, Pc=540 Па)",
+          "displayValue": "3340",
+          "unit": "м³/ч",
+          "evidenceKind": "NATIVE",
+          "sourceArtifactSha256": "658fd77266e272695fcf84b8ec078b152a91b31df379bb53e7eaf289afe5e742",
+          "sourceStage": "RD_ID_MIXED",
+          "pageStageStatus": "UNVERIFIED",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        },
+        {
+          "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+          "sourceFileId": "F0201",
+          "role": "RD",
+          "physicalPage": 279,
+          "pageWidthMilliPoints": 595000,
+          "pageHeightMilliPoints": 842000,
+          "bboxMilliPoints": [
+            42750,
+            719405,
+            222431,
+            729013
+          ],
+          "coordinateSystem": "PDF_BOTTOM_LEFT_MILLI_POINTS",
+          "rawText": "Проект: П17.2 (L=5720 м3/ч, Pc=540 Па)",
+          "displayValue": "5720",
+          "unit": "м³/ч",
+          "evidenceKind": "NATIVE",
+          "sourceArtifactSha256": "658fd77266e272695fcf84b8ec078b152a91b31df379bb53e7eaf289afe5e742",
+          "sourceStage": "RD_ID_MIXED",
+          "pageStageStatus": "UNVERIFIED",
+          "revisionStatus": "UNVERIFIED",
+          "humanVerified": false,
+          "factEligible": false,
+          "p": null
+        }
+      ]
+    }
+  ],
+  "engineeringQualification": false,
+  "coverageDelta": 0,
+  "p": null
+}

@@ -1,0 +1,9 @@
+# Optional last overlay for explicit SOURCE_AUDIT_V4_FULL_SOURCE_V1 requests.
+# Does not change the engineering release, model routing or OCR selection.
+services:
+  api:
+    mem_limit: 2g
+    environment:
+      NODE_OPTIONS: --max-old-space-size=768
+  document-worker:
+    mem_limit: 3g

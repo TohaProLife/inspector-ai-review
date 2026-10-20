@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-call-inventory-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "ODI-123",
+      "matrixCode": "M-123",
+      "ruleId": "matrix-odi-123-declared_sanitary_room_personnel_call_button_omission",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "PRESENCE_SET",
+      "executionKind": "REVIEWED_NAMED_ROOM_CALL_INVENTORY",
+      "resultSchemaVersion": "matrix-odi123-call-inventory-comparison-v1",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_ACCESSIBLE_ROOM_PERSONNEL_CALL_BUTTON_MEMBERSHIP_ONLY;ENTRANCES_OTHER_ROOMS_GLOBAL_PHYSICAL_ABSENCE_FUNCTIONALITY_AND_SUBSTITUTION_UNSUPPORTED"
+    }
+  ]
+}

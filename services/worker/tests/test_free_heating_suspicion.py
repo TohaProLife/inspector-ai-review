@@ -108,6 +108,39 @@ class FreeHeatingSuspicionTests(unittest.TestCase):
         self.assertEqual(result["status"], "NO_DISCOVERY")
         self.assertEqual(result["reasonCode"], "NO_RD_CANDIDATE_SOURCE")
 
+    def test_explicit_pd_room_declaration_retains_literal_rooms_without_rd_absence(self) -> None:
+        self.bundle["textArtifacts"][0] = artifact("F-PD", "a" * 64, [page(1, [
+            "В помещениях раздевальных, санузлов и душевых для МГН (пом. 267, 270,\n"
+            "271, 272) предусмотрена система подогрева полов (теплые полы) совмещенная с\n"
+            "системой радиаторного отопления. Регулирование температуры пола осуществляется\n"
+            "регуляторами Multibox C/RTL.",
+        ])])
+        result = analyze_free_heating_suspicion(self.bundle)
+        reference = result["suspicions"][0]["pdReferences"][0]
+        self.assertEqual(reference["roomNumbers"], ["267", "270", "271", "272"])
+        self.assertEqual(result["roomLinkStatus"], "EXPLICIT_PD_TEXT_RD_LINK_UNVERIFIED")
+        self.assertEqual(result["findingCount"], 0)
+        self.assertEqual(result["suspicions"][0]["comparisonStatus"], "NOT_COMPARABLE")
+        self.assertEqual(result["sourceScan"][0]["textSearchState"],
+                         "NO_MATCH_IN_EXTRACTED_TEXT_ONLY")
+
+    def test_nearby_or_negative_or_ambiguous_room_labels_do_not_become_pd_room_links(self) -> None:
+        for declaration in [
+            "(пом. 267, 270) не предусмотрена система подогрева полов (теплые полы). Регулятор Multibox",
+            "(пом. 267, 267) предусмотрена система подогрева полов (теплые полы). Регулятор Multibox",
+            "(пом. 267) предусмотрена система подогрева полов (теплые полы). "
+            "(пом. 270) предусмотрена система подогрева полов (теплые полы). Регулятор Multibox",
+            "Сведения об отоплении. " * 60
+            + "(пом. 267) предусмотрена система подогрева полов (теплые полы). Регулятор Multibox",
+        ]:
+            with self.subTest(declaration=declaration):
+                self.bundle["textArtifacts"][0] = artifact("F-PD", "a" * 64,
+                    [page(1, [declaration])])
+                result = analyze_free_heating_suspicion(self.bundle)
+                self.assertEqual(result["roomLinkStatus"], "UNRESOLVED")
+                self.assertTrue(all("roomNumbers" not in reference
+                    for reference in result["suspicions"][0]["pdReferences"]))
+
 
 if __name__ == "__main__":
     unittest.main()

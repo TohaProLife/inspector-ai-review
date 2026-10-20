@@ -8,7 +8,7 @@ from threading import get_ident
 from unittest.mock import patch
 
 from inspector_worker.catalog import load_parameter_catalog
-from inspector_worker.main import LeaseHeartbeat, LeaseLostError, dispatch_delivery, execute_durable_job, validate_envelope
+from inspector_worker.main import LeaseHeartbeat, LeaseLostError, WorkerControlError, dispatch_delivery, execute_durable_job, validate_envelope
 from inspector_worker.models import DocumentRecord, ParameterRule
 from inspector_worker.pipeline import compare_values, evaluate_completeness
 from inspector_worker.stage_scaffold import (
@@ -20,6 +20,39 @@ from inspector_worker.text_layer import InputDownloadError, qualify_page_text
 
 
 class PipelineTests(unittest.TestCase):
+    def test_terminal_bad_input_delivery_is_acked_and_next_delivery_executes(self) -> None:
+        callbacks: Queue = Queue()
+
+        class Connection:
+            def add_callback_threadsafe(self, callback) -> None:
+                callbacks.put(callback)
+
+        class Channel:
+            is_open = True
+            settled: list[tuple[int, bool]] = []
+
+            def basic_ack(self, *, delivery_tag: int) -> None:
+                self.settled.append((delivery_tag, False))
+
+            def basic_nack(self, *, delivery_tag: int, requeue: bool) -> None:
+                self.settled.append((delivery_tag, requeue))
+
+        channel = Channel()
+        # The API durably failed the poisoned input before delivering a lease.
+        # Its terminal response must release RabbitMQ prefetch=1 for the PDF.
+        with patch("inspector_worker.main.execute_durable_job", side_effect=[
+            {"status": "ALREADY_TERMINAL", "state": "FAILED"},
+            {"status": "COMPLETED"},
+            WorkerControlError("temporary control plane outage"),
+        ]) as execute:
+            for tag in (1, 2, 3):
+                worker = dispatch_delivery(Connection(), channel, tag, b'{"job_id":"controlled"}')
+                worker.join(timeout=2)
+                self.assertFalse(worker.is_alive())
+                callbacks.get(timeout=1)()
+        self.assertEqual(execute.call_count, 3)
+        self.assertEqual(channel.settled, [(1, False), (2, False), (3, True)])
+
     def test_long_delivery_keeps_connection_thread_free_and_acks_on_it(self) -> None:
         callbacks: Queue = Queue()
         started = Event()

@@ -1,0 +1,2 @@
+DROP TABLE run_steel_applicability_snapshot_entries;
+DROP TABLE run_steel_applicability_snapshot_states;

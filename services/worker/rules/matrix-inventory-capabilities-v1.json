@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-inventory-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "AR-053",
+      "matrixCode": "M-053",
+      "ruleId": "matrix-ar-053-declared_joint_damping_tape_omission",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "PRESENCE_SET",
+      "executionKind": "REVIEWED_DECLARED_REGION_INVENTORY",
+      "resultSchemaVersion": "matrix-ar053-inventory-comparison-v1",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_DECLARED_JOINT_DAMPING_TAPE_MEMBERSHIP_ONLY;GLOBAL_OR_PHYSICAL_ABSENCE_AND_SUBSTITUTION_UNSUPPORTED"
+    }
+  ]
+}

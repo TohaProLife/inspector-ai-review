@@ -1,0 +1,443 @@
+{
+  "completeConfiguration": false,
+  "declaredScope": "selected_V2_series",
+  "entityBindingMethod": "MANUAL_DRAWING_SCOPE_PLUS_EXACT_NATIVE_ROOM_NUMBER_AND_FUNCTION",
+  "provenance": "MANUALLY_INSPECTED_ORIGINAL_PDF_CROPS_BEFORE_PROBE_CODE",
+  "records": [
+    {
+      "canonicalSha256": "321eb75fd59b501ee4445ecf552a2fc9625175efb0aa49e3a761e1d776a5f4ea",
+      "crop": {
+        "clipPt": [
+          780,
+          550,
+          1020,
+          830
+        ],
+        "path": "fixtures/real-public-room-pairs-v1/PD-room147.png",
+        "scale": 2,
+        "sha256": "8c046bc43b99d71bc41e8f43eedd5ab971e25b839f8d6a8d23f5fb8452e3f2de"
+      },
+      "fileId": "F0171",
+      "inputRole": "PD",
+      "pageHeightMilliPoints": 1191000,
+      "pageWidthMilliPoints": 2526000,
+      "physicalPage": 88,
+      "planRoomLabel": {
+        "bboxMilliPoints": [
+          812220,
+          388778,
+          908705,
+          399773
+        ],
+        "blockIndex": 88,
+        "lineIndex": 0,
+        "rawText": "147 Лаборантская тип АВ"
+      },
+      "revisionAlternatives": [],
+      "revisionStatus": "UNVERIFIED",
+      "roomId": "147",
+      "roomNameKind": "INLINE_ROOM_NAME",
+      "roomNameQuotes": [
+        {
+          "bboxMilliPoints": [
+            812220,
+            388778,
+            908705,
+            399773
+          ],
+          "blockIndex": 88,
+          "lineIndex": 0,
+          "rawText": "147 Лаборантская тип АВ"
+        }
+      ],
+      "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+      "stageEvidence": {
+        "bboxMilliPoints": [
+          2388420,
+          65198,
+          2393523,
+          76193
+        ],
+        "blockIndex": 121,
+        "kind": "NATIVE_TEXT_LAYER",
+        "lineIndex": 0,
+        "rawText": "П"
+      },
+      "systemQuotes": [
+        {
+          "bboxMilliPoints": [
+            804780,
+            447098,
+            823892,
+            458093
+          ],
+          "blockIndex": 69,
+          "kind": "NATIVE_TEXT_LAYER",
+          "lineIndex": 0,
+          "rawText": "В2.10"
+        }
+      ]
+    },
+    {
+      "canonicalSha256": "658fd77266e272695fcf84b8ec078b152a91b31df379bb53e7eaf289afe5e742",
+      "crop": {
+        "clipPt": [
+          1860,
+          810,
+          2290,
+          1100
+        ],
+        "path": "fixtures/real-public-room-pairs-v1/RD-room147.png",
+        "scale": 2,
+        "sha256": "263e107d1ac42828ed2528bd1d7700d3627150d878e59b6a6e24a4ba0bba33b2"
+      },
+      "fileId": "F0201",
+      "inputRole": "RD",
+      "pageHeightMilliPoints": 3370000,
+      "pageWidthMilliPoints": 2384000,
+      "physicalPage": 18,
+      "planRoomLabel": {
+        "bboxMilliPoints": [
+          2163180,
+          2376518,
+          2174515,
+          2387513
+        ],
+        "blockIndex": 90,
+        "lineIndex": 0,
+        "rawText": "147"
+      },
+      "revisionAlternatives": [],
+      "revisionStatus": "UNVERIFIED",
+      "roomId": "147",
+      "roomNameKind": "EXPLICIT_EXPLICATION_ROW",
+      "roomNameQuotes": [
+        {
+          "bboxMilliPoints": [
+            456180,
+            438588,
+            468422,
+            450463
+          ],
+          "blockIndex": 637,
+          "lineIndex": 0,
+          "rawText": "147"
+        },
+        {
+          "bboxMilliPoints": [
+            489240,
+            439728,
+            575561,
+            451603
+          ],
+          "blockIndex": 636,
+          "lineIndex": 0,
+          "rawText": "Лаборантская тип АВ"
+        }
+      ],
+      "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+      "stageEvidence": {
+        "bboxMilliPoints": [
+          2242666,
+          66667,
+          2256666,
+          77667
+        ],
+        "crop": {
+          "clipPt": [
+            2150,
+            3230,
+            2384,
+            3370
+          ],
+          "path": "fixtures/real-public-room-pairs-v1/RD-p018-stage.png",
+          "scale": 3,
+          "sha256": "5ca079542fc6eabc16b8026e115cbe211c97a1befc576b07af9cb216381f3ec2"
+        },
+        "cropPixelBox": [
+          278,
+          187,
+          320,
+          220
+        ],
+        "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+        "rawText": "РД"
+      },
+      "systemQuotes": [
+        {
+          "bboxMilliPoints": [
+            2010000,
+            2444500,
+            2031000,
+            2457500
+          ],
+          "cropPixelBox": [
+            300,
+            205,
+            342,
+            231
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.2"
+        },
+        {
+          "bboxMilliPoints": [
+            2010000,
+            2431500,
+            2031000,
+            2444500
+          ],
+          "cropPixelBox": [
+            300,
+            231,
+            342,
+            257
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.3"
+        },
+        {
+          "bboxMilliPoints": [
+            2010000,
+            2418500,
+            2031000,
+            2431500
+          ],
+          "cropPixelBox": [
+            300,
+            257,
+            342,
+            283
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.4"
+        }
+      ]
+    },
+    {
+      "canonicalSha256": "321eb75fd59b501ee4445ecf552a2fc9625175efb0aa49e3a761e1d776a5f4ea",
+      "crop": {
+        "clipPt": [
+          1740,
+          550,
+          1980,
+          830
+        ],
+        "path": "fixtures/real-public-room-pairs-v1/PD-room198.png",
+        "scale": 2,
+        "sha256": "a30a413bcbaffcdc8fa74de160c5909b36110a9b7f394def7bb02d432e717a3c"
+      },
+      "fileId": "F0171",
+      "inputRole": "PD",
+      "pageHeightMilliPoints": 1191000,
+      "pageWidthMilliPoints": 2526000,
+      "physicalPage": 88,
+      "planRoomLabel": {
+        "bboxMilliPoints": [
+          1790160,
+          388778,
+          1885985,
+          399773
+        ],
+        "blockIndex": 90,
+        "lineIndex": 0,
+        "rawText": "198 Лаборантская тип АВ"
+      },
+      "revisionAlternatives": [],
+      "revisionStatus": "UNVERIFIED",
+      "roomId": "198",
+      "roomNameKind": "INLINE_ROOM_NAME",
+      "roomNameQuotes": [
+        {
+          "bboxMilliPoints": [
+            1790160,
+            388778,
+            1885985,
+            399773
+          ],
+          "blockIndex": 90,
+          "lineIndex": 0,
+          "rawText": "198 Лаборантская тип АВ"
+        }
+      ],
+      "sourceSha256": "a9070055b75adeea0d47651cf9dca3ca818ca5f54ac7ce9ddcd86efc817db7dc",
+      "stageEvidence": {
+        "bboxMilliPoints": [
+          2388420,
+          65198,
+          2393523,
+          76193
+        ],
+        "blockIndex": 121,
+        "kind": "NATIVE_TEXT_LAYER",
+        "lineIndex": 0,
+        "rawText": "П"
+      },
+      "systemQuotes": [
+        {
+          "bboxMilliPoints": [
+            1775940,
+            458558,
+            1791868,
+            469553
+          ],
+          "blockIndex": 68,
+          "kind": "NATIVE_TEXT_LAYER",
+          "lineIndex": 0,
+          "rawText": "В2.2"
+        },
+        {
+          "bboxMilliPoints": [
+            1775940,
+            446558,
+            1791868,
+            457553
+          ],
+          "blockIndex": 68,
+          "kind": "NATIVE_TEXT_LAYER",
+          "lineIndex": 1,
+          "rawText": "В2.3"
+        }
+      ]
+    },
+    {
+      "canonicalSha256": "658fd77266e272695fcf84b8ec078b152a91b31df379bb53e7eaf289afe5e742",
+      "crop": {
+        "clipPt": [
+          1600,
+          370,
+          1900,
+          680
+        ],
+        "path": "fixtures/real-public-room-pairs-v1/RD-room198.png",
+        "scale": 2,
+        "sha256": "15675ba6787f2b3eb96aaf6cec71d1f98e5e496cf3c70c573717267c4e87f240"
+      },
+      "fileId": "F0201",
+      "inputRole": "RD",
+      "pageHeightMilliPoints": 3370000,
+      "pageWidthMilliPoints": 2384000,
+      "physicalPage": 18,
+      "planRoomLabel": {
+        "bboxMilliPoints": [
+          1681020,
+          2881718,
+          1691784,
+          2892713
+        ],
+        "blockIndex": 38,
+        "lineIndex": 0,
+        "rawText": "198"
+      },
+      "revisionAlternatives": [],
+      "revisionStatus": "UNVERIFIED",
+      "roomId": "198",
+      "roomNameKind": "EXPLICIT_EXPLICATION_ROW",
+      "roomNameQuotes": [
+        {
+          "bboxMilliPoints": [
+            456480,
+            95868,
+            468105,
+            107743
+          ],
+          "blockIndex": 790,
+          "lineIndex": 0,
+          "rawText": "198"
+        },
+        {
+          "bboxMilliPoints": [
+            489240,
+            97008,
+            575561,
+            108883
+          ],
+          "blockIndex": 789,
+          "lineIndex": 0,
+          "rawText": "Лаборантская тип АВ"
+        }
+      ],
+      "sourceSha256": "0c398d7bca356455568413a6fc3b14044b7e538a902251b80e2a5574d80184fd",
+      "stageEvidence": {
+        "bboxMilliPoints": [
+          2242666,
+          66667,
+          2256666,
+          77667
+        ],
+        "crop": {
+          "clipPt": [
+            2150,
+            3230,
+            2384,
+            3370
+          ],
+          "path": "fixtures/real-public-room-pairs-v1/RD-p018-stage.png",
+          "scale": 3,
+          "sha256": "5ca079542fc6eabc16b8026e115cbe211c97a1befc576b07af9cb216381f3ec2"
+        },
+        "cropPixelBox": [
+          278,
+          187,
+          320,
+          220
+        ],
+        "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+        "rawText": "РД"
+      },
+      "systemQuotes": [
+        {
+          "bboxMilliPoints": [
+            1786000,
+            2889000,
+            1807500,
+            2902500
+          ],
+          "cropPixelBox": [
+            372,
+            195,
+            415,
+            222
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.8"
+        },
+        {
+          "bboxMilliPoints": [
+            1821500,
+            2889000,
+            1843500,
+            2902500
+          ],
+          "cropPixelBox": [
+            443,
+            195,
+            487,
+            222
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.9"
+        },
+        {
+          "bboxMilliPoints": [
+            1821500,
+            2826000,
+            1848000,
+            2839500
+          ],
+          "cropPixelBox": [
+            443,
+            321,
+            496,
+            348
+          ],
+          "kind": "MANUAL_VISUAL_TRANSCRIPTION",
+          "rawText": "В2.10"
+        }
+      ]
+    }
+  ],
+  "reviewAuthority": "UNAUTHENTICATED_SOURCE_TRANSCRIPTION_ONLY",
+  "schemaVersion": "room-ventilation-source-bindings-v1",
+  "systemScope": "SELECTED_LOCAL_SYSTEM_TAGS_NO_WHOLE_RD_ABSENCE"
+}

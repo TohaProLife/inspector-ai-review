@@ -5,9 +5,11 @@ Provider failures become explicit per-proposal abstentions.
 """
 
 from __future__ import annotations
+from .visual_checkpoint import cached_observation, save_observation
 
 import base64
 import hashlib
+import http.client
 import json
 import math
 import socket
@@ -41,6 +43,8 @@ PROMPT = (
 PROMPT_SHA256 = hashlib.sha256(PROMPT.encode("utf-8")).hexdigest()
 METHOD_ID = "spread-two-saved-proposals-v1"
 SERVER_METHOD_ID = "spread-two-saved-proposals-server-nonnegative-v1"
+LEGACY_CROP_METHOD_ID = "normalized-derotated-square-v1"
+DISPLAY_CROP_METHOD_ID = "normalized-display-square-v2"
 MAX_OBSERVATIONS = 2
 CROP_MAX_EDGE_PX = 768
 MAX_CROP_BYTES = 2 * 1024 * 1024
@@ -72,16 +76,23 @@ def validate_local_url(value: str, profile_version: str = "v5") -> str:
     return value.rstrip("/")
 
 
-def selected_ordinals(count: int) -> list[int]:
+def selected_ordinals(count: int, mode: str = "SAMPLE") -> list[int]:
+    if mode not in {"SAMPLE", "FULL"}:
+        raise ValueError("invalid analysis mode")
     if count < 0:
         raise ValueError("proposal count cannot be negative")
+    if mode == "FULL":
+        return list(range(count))
     if count <= MAX_OBSERVATIONS:
         return list(range(count))
     return [((2 * index + 1) * count) // (2 * MAX_OBSERVATIONS)
             for index in range(MAX_OBSERVATIONS)]
 
 
-def render_crop(path: Path, page_number: int, bbox: list[float]) -> bytes:
+def render_crop(path: Path, page_number: int, bbox: list[float], max_edge: int = CROP_MAX_EDGE_PX,
+                *, crop_method_id: str = DISPLAY_CROP_METHOD_ID) -> bytes:
+    if crop_method_id not in {LEGACY_CROP_METHOD_ID, DISPLAY_CROP_METHOD_ID}:
+        raise ValueError("unsupported visual crop method")
     if (len(bbox) != 4 or any(not isinstance(value, (int, float)) or not math.isfinite(value)
                               for value in bbox)
             or not (0 <= bbox[0] < bbox[2] <= 1 and 0 <= bbox[1] < bbox[3] <= 1)):
@@ -106,14 +117,16 @@ def render_crop(path: Path, page_number: int, bbox: list[float]) -> bytes:
             bounds.x0 + (left + width) * bounds.width,
             bounds.y0 + (top + height) * bounds.height,
         )
-        scale = min(CROP_MAX_EDGE_PX / max(displayed.width, displayed.height), 600 / 72)
+        scale = min(max_edge / max(displayed.width, displayed.height), 600 / 72)
         if not 0 < scale < 100:
             raise ValueError("proposal crop scale is invalid")
-        clip = displayed * page.derotation_matrix
+        # get_pixmap clips its rotated display list in displayed, CropBox-relative
+        # coordinates. Preserve the old derotation only for pinned V1–V7 releases.
+        clip = displayed * page.derotation_matrix if crop_method_id == LEGACY_CROP_METHOD_ID else displayed
         pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=clip, alpha=False)
-        if (pixmap.width < 1 or pixmap.height < 1 or pixmap.width > CROP_MAX_EDGE_PX + 4
-                or pixmap.height > CROP_MAX_EDGE_PX + 4
-                or pixmap.width * pixmap.height > 600_000):
+        if (pixmap.width < 1 or pixmap.height < 1 or pixmap.width > max_edge + 4
+                or pixmap.height > max_edge + 4
+                or pixmap.width * pixmap.height > (max_edge + 4) ** 2):
             raise ValueError("proposal crop pixel count exceeds limit")
         png = pixmap.tobytes("png")
         if len(png) > MAX_CROP_BYTES or not png.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -163,10 +176,14 @@ def _post_vlm(base_url: str, png: bytes, *, model_id: str = MODEL_ID,
 
 
 def observe_proposals(path: Path, source: dict[str, Any], base_url: str | None,
-                      profile_version: str = "v5") -> dict[str, Any]:
+                      profile_version: str = "v5", *, mode: str = "SAMPLE", max_edge: int = CROP_MAX_EDGE_PX,
+                      progress=None, cache_namespace=None,
+                      crop_method_id: str = LEGACY_CROP_METHOD_ID) -> dict[str, Any]:
     if profile_version not in {"v5", "v6"}:
         raise ValueError("unsupported visual VLM profile")
-    ordinals = selected_ordinals(len(source["proposals"]))
+    if crop_method_id not in {LEGACY_CROP_METHOD_ID, DISPLAY_CROP_METHOD_ID}:
+        raise ValueError("unsupported visual crop method")
+    ordinals = selected_ordinals(len(source["proposals"]), mode)
     endpoint = None
     if base_url:
         endpoint = validate_local_url(base_url, profile_version)
@@ -192,12 +209,16 @@ def observe_proposals(path: Path, source: dict[str, Any], base_url: str | None,
             record["modelWeightsSha256"] = MODEL_WEIGHTS_SHA256
             record["modelProjectorSha256"] = MODEL_PROJECTOR_SHA256
         try:
-            png = render_crop(path, proposal["pageNumber"], proposal["bboxNormalized"])
+            png = render_crop(path, proposal["pageNumber"], proposal["bboxNormalized"], max_edge,
+                              crop_method_id=crop_method_id)
             record["cropSha256"] = hashlib.sha256(png).hexdigest()
         except (RuntimeError, ValueError, fitz.FileDataError):
             record["reasonCode"] = "CROP_RENDER_ERROR"
         else:
-            if endpoint is not None:
+            cached = cached_observation(cache_namespace, record) if cache_namespace else None
+            if cached is not None:
+                record = cached
+            elif endpoint is not None:
                 try:
                     if profile_version == "v6":
                         answer, response_hash = _post_vlm(
@@ -220,12 +241,16 @@ def observe_proposals(path: Path, source: dict[str, Any], base_url: str | None,
                     record["reasonCode"] = "MODEL_HTTP_ERROR"
                 except (TimeoutError, socket.timeout):
                     record["reasonCode"] = "MODEL_TIMEOUT"
-                except urllib.error.URLError:
+                except (urllib.error.URLError, ConnectionError, http.client.HTTPException):
                     record["reasonCode"] = "MODEL_UNAVAILABLE"
+        if cache_namespace:
+            save_observation(cache_namespace, record)
         observations.append(record)
+        if progress:
+            progress(len(observations), sum(row["responseSha256"] is None for row in observations))
     return {
         "schemaVersion": "visual-vlm-observations-v1",
-        "methodId": SERVER_METHOD_ID if profile_version == "v6" else METHOD_ID,
+        "methodId": "all-saved-proposals-v1" if mode == "FULL" else SERVER_METHOD_ID if profile_version == "v6" else METHOD_ID,
         "eligibleProposalCount": len(source["proposals"]),
         "selectedOrdinals": ordinals,
         "omittedProposalCount": len(source["proposals"]) - len(ordinals),

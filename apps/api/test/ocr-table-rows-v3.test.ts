@@ -6,7 +6,7 @@ import { canonicalJson, sha256 } from "../src/canonical-json.js";
 import { verifyOcrTableRows } from "../src/ocr-table-rows.js";
 
 const stagePath = fileURLToPath(new URL(
-  "../../../output/public-index-20260927/f0202-v5-ocr-stage-20260928.json", import.meta.url));
+  "../../../fixtures/portable-historical-tests-v1/f0202-v5-ocr-stage-20260928.json", import.meta.url));
 const pythonPath = fileURLToPath(new URL(
   "../../../services/worker/.venv/bin/python", import.meta.url));
 const stageSha256 = "abc417e23740320ba4004dc05ec84d951b3715abde02a91c563c7954dffb327a";

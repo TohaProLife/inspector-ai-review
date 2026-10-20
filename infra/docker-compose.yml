@@ -25,10 +25,11 @@ services:
       - "${HOST_BIND_ADDRESS:-127.0.0.1}:${RABBITMQ_PORT:-5672}:5672"
       - "${HOST_BIND_ADDRESS:-127.0.0.1}:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      test: ["CMD", "su-exec", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 15s
+      start_period: 20s
+      retries: 10
 
   redis:
     image: redis:8-alpine@sha256:de4d18872bf67ad0bd62224a712263975ca1d53b9b1d0d5d076082e7fa887890

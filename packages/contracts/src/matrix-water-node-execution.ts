@@ -1,0 +1,9 @@
+/** ZU129 water-node membership omission is a scoped candidate with no calibrated probability. */
+import type {MatrixWaterNodeIdentity} from './matrix-water-node-review.js';
+import type {MatrixInventoryComparisonReference,MatrixInventoryComparisonEvidence} from './matrix-inventory-execution.js';
+export type MatrixZu129WaterNodeComparison={schemaVersion:'matrix-zu129-water-node-comparison-v1';status:'ABSTAIN';reasonCode:string;calibratedProbability:null}|{
+ schemaVersion:'matrix-zu129-water-node-comparison-v1';status:'CANDIDATE';ruleId:'matrix-zu-129-declared_cold_water_inlet_meter_omission';ruleVersion:'1';parameterCode:'ZU-129';reasonCode:'WATER_METER_NOT_LISTED_IN_REVIEWED_RD_NODE_COMPONENTS';calibratedProbability:null;comparisonScope:'REVIEWED_NAMED_COMMON_BUILDING_COLD_WATER_INLET_NODE_COMPONENTS_ONLY';identity:MatrixWaterNodeIdentity;expected:MatrixInventoryComparisonReference;actual:MatrixInventoryComparisonReference;missingFeatureKeys:['WATER_METER']};
+type Common={schemaVersion:'matrix-water-node-execution-result-v1';id:string;ruleId:'matrix-zu-129-declared_cold_water_inlet_meter_omission';ruleVersion:'1';parameterCode:'ZU-129';comparisonVariant:'PD_RD'};
+export type MatrixWaterNodeExecutionResult=Common&({kind:'SCOPED_COMPARISON';identity:MatrixWaterNodeIdentity;comparison:MatrixZu129WaterNodeComparison}|{kind:'UNBOUND_ATOM_ABSTENTION';reasonCode:'REVIEWED_WATER_NODE_IDENTITY_MISSING';calibratedProbability:null});
+export interface MatrixWaterNodeComparisons {schemaVersion:'matrix-water-node-comparisons-v1';purpose:'MACHINE_COMPARISON';objectId:string;inputManifestHash:string;capabilityRegistryHash:string;results:MatrixWaterNodeExecutionResult[]}
+export type MatrixWaterNodeComparisonEvidence=Omit<MatrixInventoryComparisonEvidence,'fragmentRole'>&{fragmentRole:'HEADER'|'SCOPE'|'END'|'FEATURE'};

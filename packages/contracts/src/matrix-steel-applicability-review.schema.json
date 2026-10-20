@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "matrix-steel-applicability-review-v1.schema.json",
+  "title": "Authenticated KR056 applicability review journal boundary",
+  "$ref": "#/definitions/request",
+  "definitions": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "identity",
+        "expected",
+        "actual",
+        "basis",
+        "expectedReviewHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-applicability-review-v1"
+        },
+        "status": {
+          "enum": [
+            "UNKNOWN",
+            "APPROVED",
+            "WITHDRAWN"
+          ]
+        },
+        "identity": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/identity"
+        },
+        "expected": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/referencePair"
+        },
+        "actual": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/referencePair"
+        },
+        "basis": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/basis"
+        },
+        "expectedReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "matrix-steel-comparison.schema.json#/definitions/sha"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "objectId",
+        "actorId",
+        "previousReviewHash",
+        "contentHash",
+        "projection",
+        "createdAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "objectId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "actorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "previousReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "matrix-steel-comparison.schema.json#/definitions/sha"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contentHash": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/sha"
+        },
+        "projection": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/applicabilityDecision"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "x-semantic-contract": {
+    "status": "FROZEN_BEFORE_IMPLEMENTATION_AFTER_INDEPENDENT_REVIEW",
+    "purpose": "Authenticated human applicability of one exact KR056 PD/RD declaration pair, separate from source review and pure comparison",
+    "canonicalDependencies": {
+      "packages/contracts/src/matrix-steel-comparison.schema.json": "cb3a8f8041a3b808c7c7e4fb26f6d8d4b0c6cdd23b8515cfa065dbdd508e6f11",
+      "packages/contracts/src/matrix-steel-execution.schema.json": "8d9c58cf83e4cb3785ef0112ebc757fae804b53386b35073238a442f38953e1a"
+    },
+    "request": {
+      "schemaVersion": "matrix-kr056-steel-applicability-review-v1",
+      "status": "UNKNOWN|APPROVED|WITHDRAWN",
+      "identity": "frozen T69 identity",
+      "expected": "frozen T69 referencePair: UNKNOWN/APPROVED exact current source review and original PD; WITHDRAWN exact previous projection",
+      "actual": "frozen T69 referencePair: UNKNOWN/APPROVED exact current source review and original RD; WITHDRAWN exact previous projection",
+      "basis": "frozen T69 basis",
+      "expectedReviewHash": "required latest journal hash or null for first decision"
+    },
+    "decision": {
+      "id": "server UUID; equals pure projection.decisionId",
+      "objectId": "URL-scoped public object ID",
+      "actorId": "authenticated user UUID",
+      "previousReviewHash": "request expectedReviewHash, verified under object inspection lock",
+      "contentHash": "new authenticated journal hash, distinct from pure projection.contentHash",
+      "projection": "full frozen T69 applicabilityDecision; objectId internal immutable object UUID",
+      "createdAt": "server UTC millisecond timestamp, stored exactly"
+    },
+    "hashes": {
+      "projection": "existing matrix-kr056-steel-applicability-decision-json-v1 over projection minus contentHash",
+      "journal": "sha256 canonical {hashDomain:matrix-kr056-steel-applicability-review-journal-v1,decision:all decision fields except contentHash}",
+      "pairKey": "sha256 canonical {hashDomain:matrix-kr056-steel-applicability-pair-key-v1,objectId:internal,identity,expectedSourceFileId,actualSourceFileId}"
+    },
+    "transaction": [
+      "organization and object READ+REVIEW_DECIDE; OPEN inspection FOR UPDATE",
+      "fresh organization and object READ+REVIEW_DECIDE check before idempotency receipt replay; revoked access must not disclose prior body",
+      "idempotency receipt request body match; replay original saved body",
+      "UNKNOWN/APPROVED: both exact latest source-review IDs and full authenticated content hashes must match refs; WITHDRAWN: exact previous projection identity, refs and basis, no retargeting or current-claim requirement",
+      "bounded original PDF I/O outside long transaction, then reacquire inspection lock and repeat exact source refs + pairCAS + original fingerprint before writes; withdrawal verifies historical immutable origins",
+      "sources belong to object; original bytes SHA and sizes authenticated; different source ID and SHA",
+      "all retained source scopes reconstructed from sealed full-v2 original manifests/text stages and declaration producer",
+      "target/productScope/PD-RD orientation/identity/source mapping/basis fragments exact",
+      "latest same logical pair journal full hash and origin verified; expectedReviewHash exact or conflict",
+      "APPROVED requires current approved KR sources/common nonempty link, same reviewed physical member; UNKNOWN or WITHDRAWN may be operationally ineligible",
+      "server creates projection and journal; append-only insert, command receipt and audit atomically"
+    ],
+    "historicalSemantics": [
+      "No pair added to source review hash; no hash cycle",
+      "Pair key excludes source-review hashes and origin target so approval/withdrawal remain one chain",
+      "Latest selection uses generated monotonic DB sequence; timestamps are not ordering authority",
+      "Source-review change never retargets prior approval; current runtime receives only exact source refs",
+      "Stored journal original lineage authenticated independently even if source review is no longer latest",
+      "Run snapshot binds exact journal ID/hash and pure projection hash; sealed old run cannot follow latest journal",
+      "Latest journal selected by logical key and sequence BEFORE filtering status or current refs; never reveal previous APPROVED after UNKNOWN, WITHDRAWN or stale entry",
+      "previousReviewHash references immediate predecessor of same logical pair, never another pair",
+      "Terminal WITHDRAWN preserves previous refs/basis and works after source scope deletion; it does not create or reactivate an approval"
+    ],
+    "bounds": {
+      "requestBytes": 524288,
+      "materializedBytes": 8000000,
+      "nativeNodes": 200000,
+      "nativeDepth": 64,
+      "latestPairsPerObject": 16
+    },
+    "routes": {
+      "GET": "/api/objects/:id/steel-applicability-reviews",
+      "POST": "/api/objects/:id/steel-applicability-reviews"
+    },
+    "runtime": "No activation until protected loader, server reconstruction, durable worker, readback, withdrawal/restart and UI acceptance",
+    "confidence": "CANDIDATE with calibratedProbability null, no synthetic calibration or normative approval"
+  }
+}

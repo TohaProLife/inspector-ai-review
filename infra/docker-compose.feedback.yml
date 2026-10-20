@@ -1,0 +1,48 @@
+# Isolated normal-architecture acceptance overlay. Existing model service is reused;
+# every database, queue and storage volume belongs to this Compose project.
+services:
+  api:
+    environment:
+      INSPECTOR_ANALYSIS_PROFILE: MATRIX_V1
+      INSPECTOR_MATRIX_INVENTORY_COMPARISONS: "1"
+      INSPECTOR_MATRIX_CALL_INVENTORY_COMPARISONS: "1"
+      INSPECTOR_MATRIX_RAIL_INVENTORY_COMPARISONS: "1"
+      INSPECTOR_MATRIX_WATER_NODE_COMPARISONS: "1"
+      INSPECTOR_MATRIX_LIGHTING_TECHNOLOGY_COMPARISONS: "1"
+      INSPECTOR_MATRIX_VISUAL_PROPOSALS: "1"
+      INSPECTOR_MATRIX_OCR_LAYOUT: "1"
+      INSPECTOR_VISUAL_PROFILE: V8_SAMPLE
+      INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE: v3
+      INSPECTOR_OCR_HEAT_ROW_PROFILE: v1
+      INSPECTOR_FACT_FAMILY_PROFILE: v1
+      INSPECTOR_CANDIDATE_FAMILY_PREVIEW_PROFILE: v1
+      INSPECTOR_CANDIDATE_FAMILY_OBSERVATIONS_PROFILE: v1
+      GEOMETRY_TRUST_STORE: /geometry-trust
+    volumes:
+      - ./geometry-trust:/geometry-trust:ro
+    restart: unless-stopped
+  worker:
+    environment:
+      PZ002_MAX_OCR_PAGES: "0"
+      PZ002_MAX_TABLE_OCR_PAGES: "0"
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+    networks: [default, feedback-document-ai]
+  extract-worker:
+    environment:
+      INSPECTOR_VISUAL_CACHE_ROOT: /visual-observation-cache
+      VISUAL_VLM_BASE_URL: http://visual-vlm:8080/v1
+      DOCUMENT_PROVIDER_BASE_URL: http://document-ai:8080
+    networks: [default, feedback-vlm, feedback-document-ai]
+    volumes: [visual-observation-cache:/visual-observation-cache]
+  web:
+    restart: unless-stopped
+networks:
+  feedback-document-ai:
+    external: true
+    name: ${FEEDBACK_DOCUMENT_NETWORK:-inspector-feedback-20261017-document-ai}
+  feedback-vlm:
+    external: true
+    name: ${FEEDBACK_VLM_NETWORK:-inspector-ai-homeserver-smoke_visual-vlm-runtime}
+
+volumes:
+  visual-observation-cache:

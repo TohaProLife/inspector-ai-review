@@ -33,6 +33,7 @@ _CANDIDATE_NUMERIC_UNITS: dict[str, dict[str, Decimal]] = {
     "Gcal/h": {"Gcal/h": Decimal(1), "Гкал/ч": Decimal(1), "Гкал/час": Decimal(1)},
     "m3/day": {"m3/day": Decimal(1), "м³/сут": Decimal(1), "м3/сут": Decimal(1)},
     "m3/h": {"m3/h": Decimal(1), "м³/ч": Decimal(1), "м3/ч": Decimal(1)},
+    "Pa": {"Pa": Decimal(1), "Па": Decimal(1), "kPa": Decimal(1000), "кПа": Decimal(1000)},
     "t": {"t": Decimal(1), "т": Decimal(1), "т.": Decimal(1),
           "кг": Decimal("0.001"), "kg": Decimal("0.001")},
     "day": {"day": Decimal(1), "дни": Decimal(1), "день": Decimal(1),

@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:document-text-v3-audit",
+  "description": "Explicit source audit only. Full native source text can be hidden by Form clipping; geometry/integrity do not certify rendered visibility, completeness, engineering fact, calibrated confidence or release approval. Storage byte SHA and domain content hash are distinct.",
+  "definitions": {
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactSchemaVersion",
+        "purpose",
+        "extractorProfile",
+        "extractorProfileHash",
+        "processorVersion",
+        "processorSourceSha256",
+        "cachePolicyVersion",
+        "cacheSourceSha256"
+      ],
+      "properties": {
+        "artifactSchemaVersion": {
+          "const": "document-text-v3"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "extractorProfile": {
+          "allOf": [
+            {
+              "$ref": "document-text-v3.schema.json#/definitions/extractorProfile"
+            },
+            {
+              "type": "object",
+              "required": [
+                "traversalPolicyVersion"
+              ],
+              "properties": {
+                "traversalPolicyVersion": {
+                  "enum": [
+                    "pdfminer-analyzed-figures-whole-lines-v1",
+                    "pdfminer-analyzed-figures-boxes-flow-none-v1"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "extractorProfileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "processorVersion": {
+          "const": "durable-document-text-v3-v1"
+        },
+        "processorSourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "cachePolicyVersion": {
+          "const": "durable-text-layer-v3-cache-v1"
+        },
+        "cacheSourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "sourceRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "purpose",
+        "checkId",
+        "sourceFileId",
+        "sourceSha256",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactByteSha256",
+        "textArtifactContentHash",
+        "extractorProfileHash",
+        "stage",
+        "pageStages",
+        "latestReviewHash",
+        "authorityStatus",
+        "renderedVisibility",
+        "calibratedProbability",
+        "textArtifact"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-v3-source-read-v1"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "textStageContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "textArtifactByteSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "textArtifactContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "extractorProfileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD",
+            "UNRESOLVED"
+          ]
+        },
+        "pageStages": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "latestReviewHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorityStatus": {
+          "const": "SOURCE_DECLARED_UNVERIFIED"
+        },
+        "renderedVisibility": {
+          "const": "UNVERIFIED"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        },
+        "textArtifact": {
+          "$ref": "document-text-v3.schema.json#/definitions/artifact"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "purpose",
+        "sources",
+        "workerId"
+      ],
+      "properties": {
+        "disposition": {
+          "const": "DOCUMENT_TEXT_LAYER_COMPLETED"
+        },
+        "purpose": {
+          "const": "SOURCE_AUDIT_ONLY"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceFileId",
+                  "inputSha256",
+                  "status",
+                  "artifact"
+                ],
+                "properties": {
+                  "sourceFileId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "inputSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "status": {
+                    "const": "EXTRACTED"
+                  },
+                  "artifact": {
+                    "$ref": "document-text-v3.schema.json#/definitions/artifact"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceFileId",
+                  "inputSha256",
+                  "status",
+                  "reason"
+                ],
+                "properties": {
+                  "sourceFileId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "inputSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "status": {
+                    "const": "SKIPPED_UNSUPPORTED_FORMAT"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "workerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/sourceRead"
+}

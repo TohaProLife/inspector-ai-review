@@ -1,0 +1,1498 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matrix-column-pylon-section-v2.schema.json",
+  "title": "PROPOSED KR060 explicitly reviewed native/literal rectangular gross-section pair; candidate only",
+  "$ref": "#/$defs/comparisonInput",
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+    },
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u2028\\u2029\\ufffd]+(?![\\s\\S])"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000,
+      "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u2028\\u2029\\ufffd]+(?![\\s\\S])"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "utcMilliseconds": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z(?![\\s\\S])"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 512
+    },
+    "stage": {
+      "enum": [
+        "PD",
+        "RD",
+        "ID",
+        "UNRESOLVED"
+      ]
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "PD",
+          "RD",
+          "ID"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "pageStages": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[1-9][0-9]{0,2}(?![\\s\\S])"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/stage"
+      },
+      "maxProperties": 512
+    },
+    "range": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "area": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,17}(?![\\s\\S])"
+    },
+    "delta": {
+      "type": "string",
+      "pattern": "^(?:0|-?[1-9][0-9]{0,17})(?![\\s\\S])"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityKey",
+        "buildingKey",
+        "zoneKey",
+        "levelKey",
+        "memberKey",
+        "sectionKey",
+        "componentRole"
+      ],
+      "properties": {
+        "entityKey": {
+          "$ref": "#/$defs/key"
+        },
+        "buildingKey": {
+          "$ref": "#/$defs/key"
+        },
+        "zoneKey": {
+          "$ref": "#/$defs/key"
+        },
+        "levelKey": {
+          "$ref": "#/$defs/key"
+        },
+        "memberKey": {
+          "$ref": "#/$defs/key"
+        },
+        "sectionKey": {
+          "$ref": "#/$defs/key"
+        },
+        "componentRole": {
+          "const": "BEARING_VERTICAL_MEMBER_SECTION"
+        }
+      }
+    },
+    "originTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactByteSha256",
+        "textArtifactContentHash",
+        "extractorProfileHash",
+        "checkId",
+        "resourcePolicyVersion",
+        "sourceAuditProfileVersion"
+      ],
+      "properties": {
+        "inputManifestHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "textStageContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "textArtifactByteSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "textArtifactContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "extractorProfileHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "checkId": {
+          "$ref": "#/$defs/key"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v3-large-source-bounds-v1"
+        },
+        "sourceAuditProfileVersion": {
+          "const": "SOURCE_AUDIT_V3_LARGE_VERTICAL_V1"
+        }
+      }
+    },
+    "sourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "sourceReviewDecisionId",
+        "sourceReviewContentHash",
+        "origin",
+        "selection"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "sourceReviewDecisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "sourceReviewContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "origin": {
+          "$ref": "#/$defs/originTarget"
+        },
+        "selection": {
+          "$ref": "#/$defs/selectionReference"
+        }
+      }
+    },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalMember",
+        "shape",
+        "dimensionMeaning",
+        "unit"
+      ],
+      "properties": {
+        "physicalMember": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_REVIEWED_SAME_PHYSICAL_MEMBER_AND_SECTION"
+          ]
+        },
+        "shape": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_REVIEWED_RECTANGLE"
+          ]
+        },
+        "dimensionMeaning": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_REVIEWED_GROSS_EXTERNAL_SECTION"
+          ]
+        },
+        "unit": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_REVIEWED_EXPLICIT_MM"
+          ]
+        }
+      }
+    },
+    "basisRole": {
+      "enum": [
+        "PHYSICAL_MEMBER",
+        "SECTION_SHAPE",
+        "GROSS_SECTION",
+        "UNIT",
+        "UNIT_SCOPE"
+      ]
+    },
+    "basisSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "usedTextRangeCodePoints"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/basisRole"
+        },
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "usedTextRangeCodePoints": {
+          "$ref": "#/$defs/range"
+        }
+      }
+    },
+    "pageFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "widthMilliPoints",
+        "heightMilliPoints",
+        "nativeFrame"
+      ],
+      "properties": {
+        "widthMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "heightMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "nativeFrame": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeFrame"
+        }
+      }
+    },
+    "basisFragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "usedTextRangeCodePoints",
+        "nativeBoxPointStrings",
+        "bboxMilliPoints",
+        "pageFrame"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/basisRole"
+        },
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "usedTextRangeCodePoints": {
+          "$ref": "#/$defs/range"
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeBox"
+        },
+        "bboxMilliPoints": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "pageFrame": {
+          "$ref": "#/$defs/pageFrame"
+        }
+      }
+    },
+    "sideRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "sourceReviewDecisionId",
+        "sourceReviewContentHash",
+        "origin",
+        "assertions",
+        "unitScopeAssertion",
+        "reference",
+        "selection",
+        "basis"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "sourceReviewDecisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "sourceReviewContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "origin": {
+          "$ref": "#/$defs/originTarget"
+        },
+        "assertions": {
+          "$ref": "#/$defs/assertions"
+        },
+        "unitScopeAssertion": {
+          "$ref": "#/$defs/unitScopeAssertion"
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "selection": {
+          "$ref": "#/$defs/selection"
+        },
+        "basis": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/basisSelection"
+          }
+        }
+      }
+    },
+    "sideDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "sourceReviewDecisionId",
+        "sourceReviewContentHash",
+        "origin",
+        "assertions",
+        "unitScopeAssertion",
+        "reference",
+        "selection",
+        "basis"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "sourceReviewDecisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "sourceReviewContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "origin": {
+          "$ref": "#/$defs/originTarget"
+        },
+        "assertions": {
+          "$ref": "#/$defs/assertions"
+        },
+        "unitScopeAssertion": {
+          "$ref": "#/$defs/unitScopeAssertion"
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "selection": {
+          "$ref": "#/$defs/selectionSnapshot"
+        },
+        "basis": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/basisFragment"
+          }
+        }
+      }
+    },
+    "pairAssertion": {
+      "enum": [
+        "UNKNOWN",
+        "HUMAN_REVIEWED_SAME_MEMBER_SECTION_PD_RD"
+      ]
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "identity",
+        "expected",
+        "actual",
+        "pairAssertion",
+        "reference",
+        "expectedReviewHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-pair-review-input-v2"
+        },
+        "status": {
+          "enum": [
+            "UNKNOWN",
+            "APPROVED",
+            "WITHDRAWN"
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "expected": {
+          "$ref": "#/$defs/sideRequest"
+        },
+        "actual": {
+          "$ref": "#/$defs/sideRequest"
+        },
+        "pairAssertion": {
+          "$ref": "#/$defs/pairAssertion"
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "expectedReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "decisionId",
+        "objectId",
+        "status",
+        "identity",
+        "expected",
+        "actual",
+        "pairAssertion",
+        "reference",
+        "contentHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-pair-projection-v2"
+        },
+        "decisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "status": {
+          "enum": [
+            "UNKNOWN",
+            "APPROVED",
+            "WITHDRAWN"
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "expected": {
+          "$ref": "#/$defs/sideDecision"
+        },
+        "actual": {
+          "$ref": "#/$defs/sideDecision"
+        },
+        "pairAssertion": {
+          "$ref": "#/$defs/pairAssertion"
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "journal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "objectId",
+        "actorId",
+        "createdAt",
+        "previousDecisionId",
+        "previousReviewHash",
+        "projection",
+        "contentHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-pair-journal-v2"
+        },
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "actorId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/utcMilliseconds"
+        },
+        "previousDecisionId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previousReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "sourceReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decisionId",
+        "contentHash",
+        "revisionStatus",
+        "approvalStatus",
+        "sectionCode",
+        "linkGroupId",
+        "pageStages"
+      ],
+      "properties": {
+        "decisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "revisionStatus": {
+          "enum": [
+            "CURRENT",
+            "SUPERSEDED",
+            "UNKNOWN"
+          ]
+        },
+        "approvalStatus": {
+          "enum": [
+            "APPROVED",
+            "UNAPPROVED",
+            "UNKNOWN"
+          ]
+        },
+        "sectionCode": {
+          "anyOf": [
+            {
+              "enum": [
+                "PZ",
+                "SPZU",
+                "AR",
+                "KR",
+                "IOS1",
+                "IOS2",
+                "IOS3",
+                "IOS4",
+                "IOS5",
+                "POS",
+                "POD",
+                "OOS",
+                "PPM",
+                "ODI",
+                "ZU",
+                "SM",
+                "EOM",
+                "GP",
+                "GSV",
+                "KJ",
+                "KM",
+                "NVK",
+                "OV",
+                "PP",
+                "PPR",
+                "SS",
+                "VK"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "linkGroupId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/key"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageStages": {
+          "$ref": "#/$defs/pageStages"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "stages",
+        "review"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "stages": {
+          "$ref": "#/$defs/stages"
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sourceReview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId",
+        "sourceFileId",
+        "sourceSha256",
+        "target",
+        "stages",
+        "pageStages",
+        "textArtifact"
+      ],
+      "properties": {
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "target": {
+          "$ref": "#/$defs/originTarget"
+        },
+        "stages": {
+          "$ref": "#/$defs/stages"
+        },
+        "pageStages": {
+          "$ref": "#/$defs/pageStages"
+        },
+        "textArtifact": {
+          "$ref": "document-text-v3.schema.json#/definitions/artifact"
+        }
+      }
+    },
+    "comparisonInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "identity",
+        "sources",
+        "origins",
+        "review"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-comparison-input-v2"
+        },
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 0,
+          "maxItems": 2
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/origin"
+          },
+          "minItems": 0,
+          "maxItems": 2
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/journal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "expected",
+        "actual",
+        "expectedAreaMm2",
+        "actualAreaMm2",
+        "deltaAreaMm2",
+        "pairDecisionId",
+        "pairProjectionContentHash",
+        "pairJournalContentHash"
+      ],
+      "properties": {
+        "scope": {
+          "const": "ONE_HUMAN_REVIEWED_RECTANGULAR_GROSS_SECTION_PD_RD"
+        },
+        "expected": {
+          "$ref": "#/$defs/sourceReference"
+        },
+        "actual": {
+          "$ref": "#/$defs/sourceReference"
+        },
+        "expectedAreaMm2": {
+          "$ref": "#/$defs/area"
+        },
+        "actualAreaMm2": {
+          "$ref": "#/$defs/area"
+        },
+        "deltaAreaMm2": {
+          "$ref": "#/$defs/delta"
+        },
+        "pairDecisionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "pairProjectionContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "pairJournalContentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "abstainResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "reasonCode",
+        "identity",
+        "comparison",
+        "calibratedProbability"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-comparison-v2"
+        },
+        "status": {
+          "const": "ABSTAIN"
+        },
+        "reasonCode": {
+          "enum": [
+            "INVALID_INPUT",
+            "INPUT_LIMIT",
+            "SOURCE_PROVENANCE_UNVERIFIED",
+            "PAIR_REVIEW_UNVERIFIED",
+            "SELECTION_RECONSTRUCTION_UNVERIFIED",
+            "BASIS_RECONSTRUCTION_UNVERIFIED",
+            "PAIR_REVIEW_MISSING",
+            "PAIR_REVIEW_UNAPPROVED",
+            "STALE_SOURCE_REVIEW",
+            "SOURCE_REVIEW_UNVERIFIED",
+            "SOURCE_SECTION_UNVERIFIED",
+            "SOURCE_STAGE_UNVERIFIED",
+            "SOURCE_LINK_UNVERIFIED",
+            "PHYSICAL_MEMBER_UNVERIFIED",
+            "SECTION_SHAPE_UNVERIFIED",
+            "DIMENSION_MEANING_UNVERIFIED",
+            "UNIT_UNVERIFIED",
+            "PAIR_APPLICABILITY_UNVERIFIED"
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "comparison": {
+          "type": "null"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        }
+      }
+    },
+    "candidateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "reasonCode",
+        "identity",
+        "comparison",
+        "expertReviewRequired",
+        "calibratedProbability"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-comparison-v2"
+        },
+        "status": {
+          "const": "CANDIDATE"
+        },
+        "reasonCode": {
+          "const": "REVIEWED_RECTANGULAR_GROSS_SECTION_AREA_DECREASE"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "comparison": {
+          "$ref": "#/$defs/comparison"
+        },
+        "expertReviewRequired": {
+          "const": true
+        },
+        "calibratedProbability": {
+          "type": "null"
+        }
+      }
+    },
+    "noDecreaseResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "reasonCode",
+        "identity",
+        "comparison",
+        "calibratedProbability"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-comparison-v2"
+        },
+        "status": {
+          "const": "NO_DECREASE_IN_REVIEWED_PAIR"
+        },
+        "reasonCode": {
+          "const": "REVIEWED_PAIR_HAS_NO_AREA_DECREASE"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "comparison": {
+          "$ref": "#/$defs/comparison"
+        },
+        "calibratedProbability": {
+          "type": "null"
+        }
+      }
+    },
+    "result": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/abstainResult"
+        },
+        {
+          "$ref": "#/$defs/candidateResult"
+        },
+        {
+          "$ref": "#/$defs/noDecreaseResult"
+        }
+      ]
+    },
+    "materializationContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId",
+        "actorId",
+        "id",
+        "createdAt",
+        "mode",
+        "previous",
+        "sources",
+        "origins"
+      ],
+      "properties": {
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "actorId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/utcMilliseconds"
+        },
+        "mode": {
+          "enum": [
+            "CURRENT",
+            "HISTORICAL"
+          ]
+        },
+        "previous": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/journal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/origin"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "sourcePreview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "sourceFileId",
+        "sourceSha256",
+        "origin",
+        "stage",
+        "pageStages",
+        "latestReviewHash",
+        "extraction",
+        "nativeSelectionPolicyVersion"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr060-column-pylon-source-preview-v2"
+        },
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "origin": {
+          "$ref": "#/$defs/originTarget"
+        },
+        "stage": {
+          "$ref": "#/$defs/stage"
+        },
+        "pageStages": {
+          "$ref": "#/$defs/pageStages"
+        },
+        "latestReviewHash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraction": {
+          "$ref": "column-pylon-dimension-literals.schema.json"
+        },
+        "nativeSelectionPolicyVersion": {
+          "const": "column-pylon-native-section-selection-v1"
+        }
+      }
+    },
+    "reviewList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "canReview"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/journal"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        },
+        "canReview": {
+          "type": "boolean"
+        }
+      }
+    },
+    "comparisonPreviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewDecisionId"
+      ],
+      "properties": {
+        "reviewDecisionId": {
+          "$ref": "#/$defs/uuid"
+        }
+      }
+    },
+    "pairKeyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId",
+        "identity",
+        "expectedSourceFileId",
+        "actualSourceFileId"
+      ],
+      "properties": {
+        "objectId": {
+          "$ref": "#/$defs/key"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "expectedSourceFileId": {
+          "$ref": "#/$defs/key"
+        },
+        "actualSourceFileId": {
+          "$ref": "#/$defs/key"
+        }
+      }
+    },
+    "tokenSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "usedTextRangeCodePoints"
+      ],
+      "properties": {
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "usedTextRangeCodePoints": {
+          "$ref": "#/$defs/range"
+        }
+      }
+    },
+    "tokenSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "usedTextRangeCodePoints",
+        "nativeBoxPointStrings",
+        "bboxMilliPoints",
+        "pageFrame",
+        "value"
+      ],
+      "properties": {
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "usedTextRangeCodePoints": {
+          "$ref": "#/$defs/range"
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeBox"
+        },
+        "bboxMilliPoints": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "pageFrame": {
+          "$ref": "#/$defs/pageFrame"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 9
+        }
+      }
+    },
+    "literalSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "pageNumber",
+        "sourcePath",
+        "literalContentHash"
+      ],
+      "properties": {
+        "mode": {
+          "const": "LITERAL_T77_V1"
+        },
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "literalContentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "literalSelectionSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "pageNumber",
+        "sourcePath",
+        "literalContentHash",
+        "literalSnapshot"
+      ],
+      "properties": {
+        "mode": {
+          "const": "LITERAL_T77_V1"
+        },
+        "pageNumber": {
+          "$ref": "#/$defs/page"
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "literalContentHash": {
+          "$ref": "#/$defs/sha"
+        },
+        "literalSnapshot": {
+          "$ref": "column-pylon-dimension-literals.schema.json#/$defs/literal"
+        }
+      }
+    },
+    "nativeSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "first",
+        "second",
+        "unit"
+      ],
+      "properties": {
+        "mode": {
+          "const": "NATIVE_SECTION_SELECTION_V1"
+        },
+        "first": {
+          "$ref": "#/$defs/tokenSelection"
+        },
+        "second": {
+          "$ref": "#/$defs/tokenSelection"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tokenSelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "nativeSelectionSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "first",
+        "second",
+        "unit",
+        "selectionContentHash"
+      ],
+      "properties": {
+        "mode": {
+          "const": "NATIVE_SECTION_SELECTION_V1"
+        },
+        "first": {
+          "$ref": "#/$defs/tokenSnapshot"
+        },
+        "second": {
+          "$ref": "#/$defs/tokenSnapshot"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tokenSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectionContentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "selection": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/literalSelection"
+        },
+        {
+          "$ref": "#/$defs/nativeSelection"
+        }
+      ]
+    },
+    "selectionSnapshot": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/literalSelectionSnapshot"
+        },
+        {
+          "$ref": "#/$defs/nativeSelectionSnapshot"
+        }
+      ]
+    },
+    "nativeSelectionReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "first",
+        "second",
+        "unit",
+        "selectionContentHash"
+      ],
+      "properties": {
+        "mode": {
+          "const": "NATIVE_SECTION_SELECTION_V1"
+        },
+        "first": {
+          "$ref": "#/$defs/tokenSelection"
+        },
+        "second": {
+          "$ref": "#/$defs/tokenSelection"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tokenSelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectionContentHash": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "selectionReference": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/literalSelection"
+        },
+        {
+          "$ref": "#/$defs/nativeSelectionReference"
+        }
+      ]
+    },
+    "unitScopeAssertion": {
+      "enum": [
+        "UNKNOWN",
+        "HUMAN_REVIEWED_UNIT_APPLIES_TO_BOTH_SELECTED_DIMENSIONS"
+      ]
+    }
+  },
+  "x-status": "PROPOSED_CANONICAL_SOURCE_BEFORE_COMPARATOR_CODE",
+  "x-semantic-contract": {
+    "wire": "ONE v2 production workflow; no deployed v1 journal to migrate. Explicit per-side discriminated LITERAL_T77_V1 or NATIVE_SECTION_SELECTION_V1. Unknown mode/extra keys invalid, no fallback.",
+    "normativeFiles": [
+      "hash-domains-v2.json",
+      "semantics-v2.json",
+      "../resource-limits.json",
+      "../semantic-clarifications-v1.json",
+      "../eligibility-diagnostic-addendum-v1.json",
+      "../calendar-and-withdrawal-addendum-v1.json"
+    ],
+    "validationOrder": "Frozen v1 full native/shape -> retained origin -> pair journal -> selected immutable selection -> every supplied basis -> latest status -> current refs/source/section/stages/link -> member/shape/gross/unit/unit-scope/pair eligibility -> exact integer arithmetic. v2 replaces LITERAL_RECONSTRUCTION_UNVERIFIED with SELECTION_RECONSTRUCTION_UNVERIFIED.",
+    "authority": "Every supplied field is only data; scoped repository proves actors/full parent review bodies/original PDF bytes/release/job/current refs/latest sequence/CAS. Always candidate/null; no runtime or coverage change in this proposal."
+  }
+}

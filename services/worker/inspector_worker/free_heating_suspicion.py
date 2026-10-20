@@ -2,7 +2,9 @@
 
 This profile finds a specific PD warm-floor *reference* whose wording is not
 present in the extracted text of RD candidate sources. It does not infer room
-ownership, element absence, source approval, or PD/RD comparability.
+ownership from a drawing, element absence, source approval, or PD/RD comparability.
+An explicit room list in the same PD declaration may be retained as source text;
+it never establishes a matching RD room or a missing heating system.
 """
 
 from __future__ import annotations
@@ -22,6 +24,11 @@ from .text_layer import extract_pdf_text_artifact
 _SHA256 = re.compile(r"[a-f0-9]{64}\Z")
 _WARM_FLOOR = re.compile(r"т[её]пл\w*\s+пол\w*", re.IGNORECASE)
 _REGULATOR = re.compile(r"регулятор|multibox", re.IGNORECASE)
+_DECLARED_ROOMS = re.compile(
+    r"\(\s*пом\.\s*(?P<rooms>[1-9][0-9]{0,3}(?:\s*,\s*[1-9][0-9]{0,3}){0,15})\s*\)"
+    r"\s+предусмотрена\s+система\s+подогрева\s+полов\s+\(т[её]плые\s+полы\)",
+    re.IGNORECASE,
+)
 PROFILE_ID = "free-heating-text-reference-v1"
 MAX_SOURCES = 16
 MAX_PAGES = 2048
@@ -31,6 +38,15 @@ MAX_PD_REFERENCES = 64
 def _canonical_hash(value: object) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
                                      separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _explicit_pd_rooms(text: str) -> list[str]:
+    """Retain one literal positive declaration; never join nearby drawing labels."""
+    matches = list(_DECLARED_ROOMS.finditer(text))
+    if len(matches) != 1 or matches[0].end() > 1000:
+        return []
+    rooms = re.split(r"\s*,\s*", matches[0].group("rooms"))
+    return rooms if len(set(rooms)) == len(rooms) else []
 
 
 def _source_scope(source: dict[str, Any], artifact: dict[str, Any]) -> dict[str, Any]:
@@ -112,13 +128,18 @@ def analyze_free_heating_suspicion(bundle: dict[str, Any]) -> dict[str, Any]:
                 for block_index, block in enumerate(page["blocks"]):
                     if not (_WARM_FLOOR.search(block["text"]) and _REGULATOR.search(block["text"])):
                         continue
-                    pd_references.append({
+                    reference = {
                         "sourceFileId": source["sourceFileId"], "inputSha256": source["sha256"],
                         "textArtifactHash": artifact_hash, "sourcePage": page["pageNumber"],
                         "blockIndex": block_index, "bboxMilliPoints": block["bboxMilliPoints"],
                         "quote": block["text"][:1000], "quoteTruncated": len(block["text"]) > 1000,
                         "localizationLevel": "TEXT_BLOCK",
-                    })
+                    }
+                    rooms = _explicit_pd_rooms(block["text"])
+                    if rooms:
+                        reference.update(roomNumbers=rooms,
+                            roomLinkStatus="EXPLICIT_PD_TEXT_RD_LINK_UNVERIFIED")
+                    pd_references.append(reference)
                     if len(pd_references) > MAX_PD_REFERENCES:
                         raise ValueError("free-search PD reference count exceeds safe bound")
     suspicions: list[dict[str, Any]] = []
@@ -149,7 +170,9 @@ def analyze_free_heating_suspicion(bundle: dict[str, Any]) -> dict[str, Any]:
         "selectedFileIds": sorted(source_by_id), "matrixScope": "FREE",
         "parameterCode": "FREE-HEATING-001",
         "status": "SUSPICION" if suspicions else "NO_DISCOVERY", "reasonCode": reason,
-        "findingCount": 0, "roomLinkStatus": "UNRESOLVED",
+        "findingCount": 0, "roomLinkStatus": (
+            "EXPLICIT_PD_TEXT_RD_LINK_UNVERIFIED"
+            if any(reference.get("roomNumbers") for reference in pd_references) else "UNRESOLVED"),
         "sourceScan": rd_scopes,
         "suspicions": suspicions,
     }

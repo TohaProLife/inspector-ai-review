@@ -77,7 +77,7 @@ function sameValue(actual: unknown, expected: unknown): boolean {
   return actual === expected;
 }
 
-function replay(packet: Json): Json | null {
+export function computeGeometryRegistrationV1(packet: Json): Json | null {
   if (!exact(packet, ["schemaVersion", "source", "pageFrame", "targetFrame", "controlPoints",
     "trainingPointIds", "maxHoldoutResidualProjectUnits", "queryPoints"])
     || packet.schemaVersion !== "geometry-registration-v1") return null;
@@ -194,7 +194,7 @@ function replay(packet: Json): Json | null {
 /**
  * Pure numerical replay. `trusted` must be independently authenticated by its
  * caller; matching two copies of an untrusted packet proves no real-world point.
- * No runtime route may use this until that provider exists.
+ * Runtime callers must use the independent signed operator trust store.
  */
 export function verifyGeometryRegistrationV1(input: GeometryRegistrationV1VerificationInput): boolean {
   try {
@@ -227,7 +227,7 @@ export function verifyGeometryRegistrationV1(input: GeometryRegistrationV1Verifi
         || bytes.toString("ascii", 12, 16) !== "IHDR"
         || bytes.readUInt32BE(16) !== page.width || bytes.readUInt32BE(20) !== page.height) return false;
     } else if (input.renderBytes !== undefined || input.expectedRenderSha256 !== undefined) return false;
-    const expected = replay(packet);
+    const expected = computeGeometryRegistrationV1(packet);
     return expected !== null && sameValue(result, expected);
   } catch { return false; }
 }

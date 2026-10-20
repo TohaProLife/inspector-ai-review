@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
@@ -69,6 +70,26 @@ class VisualVlmTests(unittest.TestCase):
         with patch("inspector_worker.visual_vlm._post_vlm", side_effect=TimeoutError):
             failed = observe_proposals(self.pdf, self.source, "http://visual-vlm:8080/v1")
         self.assertTrue(all(item["reasonCode"] == "MODEL_TIMEOUT" for item in failed["observations"]))
+
+    def test_broken_provider_connections_abstain_per_crop_and_continue_full_scan(self) -> None:
+        before = json.loads(json.dumps(self.source))
+        progress = []
+        outcomes = [("RADIATOR", "a" * 64), http.client.RemoteDisconnected("provider closed response"),
+                    ("ABSTAIN", "b" * 64), ConnectionResetError("provider reset"),
+                    http.client.IncompleteRead(b"partial", 20)]
+        with patch("inspector_worker.visual_vlm._post_vlm", side_effect=outcomes) as provider:
+            observed = observe_proposals(self.pdf, self.source, "http://visual-vlm:8080/v1",
+                                         mode="FULL", progress=lambda done, failed: progress.append((done, failed)))
+        self.assertEqual(provider.call_count, 5)
+        self.assertEqual(observed["selectedOrdinals"], list(range(5)))
+        self.assertEqual(observed["omittedProposalCount"], 0)
+        self.assertEqual([row["reasonCode"] for row in observed["observations"]],
+                         ["MODEL_RESPONSE", "MODEL_UNAVAILABLE", "MODEL_ABSTAIN", "MODEL_UNAVAILABLE", "MODEL_UNAVAILABLE"])
+        for index in [1, 3, 4]:
+            self.assertEqual(observed["observations"][index]["decision"], "ABSTAIN")
+            self.assertIsNone(observed["observations"][index]["responseSha256"])
+        self.assertEqual(progress, [(1, 0), (2, 1), (3, 1), (4, 2), (5, 3)])
+        self.assertEqual(self.source, before)
 
     def test_v6_other_is_abstention_and_preserves_response_hash(self) -> None:
         with patch("inspector_worker.visual_vlm._post_vlm", return_value=("OTHER", "f" * 64)):

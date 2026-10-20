@@ -105,6 +105,43 @@ class PilotPz002RuleAdapter:
     provider_kind = "RULE_ENGINE"
 
     def execute(self, lease: dict[str, Any], attempt: dict[str, Any]) -> dict[str, Any]:
+        profile = lease.get("release", {}).get("providerSlot", {}).get("profileId")
+        if profile == "matrix-text-facts-concrete-walls-v13":
+            from .durable_concrete_wall_matrix_v13 import execute_durable_concrete_wall_matrix_v13
+            return execute_durable_concrete_wall_matrix_v13(lease, attempt)
+        if profile == "matrix-text-facts-column-pylon-section-v12":
+            from .durable_column_pylon_section_matrix_v12 import execute_durable_column_pylon_section_matrix_v12
+            return execute_durable_column_pylon_section_matrix_v12(lease, attempt)
+        if profile == "matrix-text-facts-steel-comparison-v11":
+            raise ValueError("historical matrix runtime unavailable")
+        if profile in {"matrix-text-facts-lighting-technology-v9", "matrix-text-facts-steel-comparison-v10"}:
+            from pathlib import Path
+            from . import document_text_v3
+            if hashlib.sha256(Path(document_text_v3.__file__).read_bytes()).hexdigest() != "9890c816bb1d8e424ed17424f9bae65b2393543b879640abfaab60606fb64314":
+                raise ValueError("historical matrix runtime unavailable in current worker")
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-steel-comparison-v10":
+            from .durable_steel_comparison_matrix import execute_durable_steel_comparison_matrix
+            return execute_durable_steel_comparison_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-lighting-technology-v9":
+            from .durable_lighting_technology_matrix import execute_durable_lighting_technology_matrix
+            return execute_durable_lighting_technology_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-water-node-v8":
+            from .durable_water_node_matrix import execute_durable_water_node_matrix
+            return execute_durable_water_node_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-rail-inventory-v7":
+            from .durable_rail_inventory_matrix import execute_durable_rail_inventory_matrix
+            return execute_durable_rail_inventory_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-call-inventory-v6":
+            from .durable_call_inventory_matrix import execute_durable_call_inventory_matrix
+            return execute_durable_call_inventory_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") == "matrix-text-facts-inventory-v5":
+            from .durable_inventory_matrix import execute_durable_inventory_matrix
+            return execute_durable_inventory_matrix(lease, attempt)
+        if lease.get("release", {}).get("providerSlot", {}).get("profileId") in {
+                "matrix-text-facts-v1", "matrix-text-facts-constraints-v2", "matrix-text-facts-evidence-v3",
+                "matrix-text-facts-evidence-v4"}:
+            from .durable_matrix import execute_durable_matrix
+            return execute_durable_matrix(lease, attempt)
         release = lease.get("release")
         if not isinstance(release, dict) or release.get("lifecycle") != "DRAFT":
             raise ValueError("PZ-002 adapter requires a DRAFT pilot release")

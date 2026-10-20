@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-rail-inventory-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "ODI-120",
+      "matrixCode": "M-120",
+      "ruleId": "matrix-odi-120-declared_accessible_room_wc_rails_omission",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "PRESENCE_SET",
+      "executionKind": "REVIEWED_NAMED_ROOM_RAIL_INVENTORY",
+      "resultSchemaVersion": "matrix-odi120-rail-inventory-comparison-v1",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_ACCESSIBLE_ROOM_BOTH_WC_RAIL_TYPES_MEMBERSHIP_OMISSION_ONLY;QUANTITIES_MOUNTING_LOAD_DIMENSIONS_OTHER_ROOMS_GLOBAL_PHYSICAL_ABSENCE_AND_SUBSTITUTION_UNSUPPORTED"
+    }
+  ]
+}

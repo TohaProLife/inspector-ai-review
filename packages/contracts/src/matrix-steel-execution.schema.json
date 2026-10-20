@@ -1,0 +1,412 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://inspector-ai.local/schemas/matrix-steel-execution-v1",
+  "$ref": "#/definitions/comparisons",
+  "title": "KR-056 scoped steel typed execution contract v1",
+  "definitions": {
+    "loaderPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "sources",
+        "origins",
+        "applicabilityDecisions",
+        "identities"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-loader-inputs-v1"
+        },
+        "objectId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "$ref": "matrix-steel-comparison.schema.json#/definitions/source"
+          }
+        },
+        "origins": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 128,
+          "items": {
+            "$ref": "matrix-steel-comparison.schema.json#/definitions/origin"
+          }
+        },
+        "applicabilityDecisions": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "matrix-steel-comparison.schema.json#/definitions/applicabilityDecision"
+          }
+        },
+        "identities": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 128,
+          "items": {
+            "$ref": "matrix-steel-comparison.schema.json#/definitions/identity"
+          }
+        }
+      }
+    },
+    "executionResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "id",
+            "ruleId",
+            "ruleVersion",
+            "parameterCode",
+            "comparisonVariant",
+            "kind",
+            "identity",
+            "comparison"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-steel-execution-result-v1"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "ruleId": {
+              "const": "matrix-kr-056-reviewed_steel_catalog_transition"
+            },
+            "ruleVersion": {
+              "const": "1"
+            },
+            "parameterCode": {
+              "const": "KR-056"
+            },
+            "comparisonVariant": {
+              "const": "PD_RD"
+            },
+            "kind": {
+              "const": "SCOPED_COMPARISON"
+            },
+            "identity": {
+              "$ref": "matrix-steel-comparison.schema.json#/definitions/identity"
+            },
+            "comparison": {
+              "$ref": "matrix-steel-comparison.schema.json#/definitions/result"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "id",
+            "ruleId",
+            "ruleVersion",
+            "parameterCode",
+            "comparisonVariant",
+            "kind",
+            "reasonCode",
+            "calibratedProbability"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-steel-execution-result-v1"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "ruleId": {
+              "const": "matrix-kr-056-reviewed_steel_catalog_transition"
+            },
+            "ruleVersion": {
+              "const": "1"
+            },
+            "parameterCode": {
+              "const": "KR-056"
+            },
+            "comparisonVariant": {
+              "const": "PD_RD"
+            },
+            "kind": {
+              "const": "UNBOUND_ATOM_ABSTENTION"
+            },
+            "reasonCode": {
+              "const": "REVIEWED_STEEL_DECLARATION_IDENTITY_MISSING"
+            },
+            "calibratedProbability": {
+              "const": null
+            }
+          }
+        }
+      ]
+    },
+    "comparisons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "purpose",
+        "objectId",
+        "inputManifestHash",
+        "capabilityRegistryHash",
+        "results"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-steel-comparisons-v1"
+        },
+        "purpose": {
+          "const": "MACHINE_COMPARISON"
+        },
+        "objectId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "capabilityRegistryHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "results": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/definitions/executionResult"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resultId",
+        "role",
+        "sourceFileId",
+        "sourceSha256",
+        "reviewDecisionId",
+        "reviewContentHash",
+        "target",
+        "applicabilityDecisionId",
+        "applicabilityDecisionContentHash",
+        "pageNumber",
+        "pageFrame",
+        "fragmentRole",
+        "fragment"
+      ],
+      "properties": {
+        "resultId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "role": {
+          "enum": [
+            "EXPECTED",
+            "ACTUAL"
+          ]
+        },
+        "sourceFileId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reviewDecisionId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "reviewContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "target": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/target"
+        },
+        "applicabilityDecisionId": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/key"
+        },
+        "applicabilityDecisionContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "pageFrame": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "widthMilliPoints",
+            "heightMilliPoints"
+          ],
+          "properties": {
+            "widthMilliPoints": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "heightMilliPoints": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "fragmentRole": {
+          "enum": [
+            "PRIMARY",
+            "DECLARATION_SCOPE",
+            "PHYSICAL_MEMBER_SCOPE",
+            "APPLICABILITY_BASIS"
+          ]
+        },
+        "fragment": {
+          "$ref": "matrix-steel-comparison.schema.json#/definitions/fragment"
+        }
+      }
+    },
+    "coverageRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterCode",
+        "implementedAtomicRules",
+        "enabledAtomicRules",
+        "evaluatedAtomicRules",
+        "successfulComparisons",
+        "abstentions",
+        "failures",
+        "executionStatus",
+        "reason"
+      ],
+      "properties": {
+        "parameterCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "implementedAtomicRules": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "enabledAtomicRules": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "evaluatedAtomicRules": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "successfulComparisons": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "abstentions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "failures": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "executionStatus": {
+          "enum": [
+            "UNSUPPORTED",
+            "PARTIAL",
+            "EVALUATED",
+            "TECHNICAL_FAILURE"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 2000000
+        }
+      }
+    }
+  },
+  "x-local-ref-allowlist": [
+    "matrix-steel-comparison.schema.json"
+  ],
+  "x-capability-registry": {
+    "schemaVersion": "matrix-steel-comparison-capabilities-v1",
+    "entries": [
+      {
+        "parameterCode": "KR-056",
+        "matrixCode": "M-056",
+        "ruleId": "matrix-kr-056-reviewed_steel_catalog_transition",
+        "ruleVersion": "1",
+        "enabled": true,
+        "comparisonVariant": "PD_RD",
+        "family": "ENUM_TRANSITION",
+        "executionKind": "REVIEWED_PHYSICAL_MEMBER_STEEL_CATALOG_TRANSITION",
+        "resultSchemaVersion": "matrix-kr056-steel-comparison-v1",
+        "partialGap": "PARTIAL_SUBRULES_ONLY:EXPLICIT_REVIEWED_SAME_DISTRIBUTION_BELT_I_BEAM_PD_C345_TO_RD_C245_WITH_PAIR_APPLICABILITY_ONLY;OTHER_GRADES_MEMBERS_PROFILES_STANDARDS_STRENGTH_RANK_COMPLETENESS_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+      }
+    ]
+  },
+  "x-semantic-contract": {
+    "authority": "Exact schema does not prove original bytes/journal/authenticated actor/professional applicability. Protected loader must bind frozen full source-review hashes and separate applicability journal with same-object access, sealed origins, current fence/CAS, original bytes and manifest.",
+    "native": "Whole root0 native cap8MUTF8 including keys/punctuation/escaping,200knodes inclkeys,64depth,32768container. No callback/proxy/getter/cycle/surrogate/float/unsafeint. Source64/origin128/claim per source16,total128/decision16/identity128.",
+    "loader": "Complete original/current classification separate per T69. Caller identities equals independently derived all retained identities canonical codepoint sorted unique; no status filters. Full retained original/claim/decision integrity and per-source duplicate declarations before any identity loop or empty unbound. No dummy identity.",
+    "integrity": "Throw deterministic ValueError/typed error for native/structural/budget/provenance/reconstruction/corrupt pair decision integrity/identity list mismatch/duplicate. No persisted operational row for integrity failures.",
+    "operational": "After full retained integrity, current stage/review/section/link/member mapping/ambiguity/missing or UNKNOWN or WITHDRAWN pair approval/equal/reverse yields unchanged T69 ABSTAIN with null probability. Corrupt pair decision and valid UNKNOWN share T69 diagnostic APPLICABILITY_DECISION_UNVERIFIED; prepass context distinguishes integrity vs operational.",
+    "derive": "Sources-only deep validation cannot authenticate missing full origins. Validate exact complete source/review/scope, source object consistency, unique sources, global per-source duplicate declaration IDs, snapshot local hash/target/source associations before identity derivation; no current eligibility filtering.",
+    "registry": "Private canonical exact registry. Exported mutable clone cannot affect private defaults. Canonical registry hash plain SHA256 portable Unicode-codepoint sorted JSON. Reject changed enabled/metadata/order/additional entries/scalar rule ID overlap.",
+    "resultId": "SHA256(portableCanonical({hashDomain:matrix-steel-execution-result-id-v1,objectId,inputManifestHash,capabilityRegistryHash,result:fullRowExcludingId})). All complete exact row fields included.",
+    "envelope": "One row per identity exact canonical identity order; empty identities exactly one UNBOUND_ATOM_ABSTENTION. Never mix kinds, duplicate row IDs/identities. Scoped outer identity must equal comparison.identity; no native/structural/provenance/reconstruction/duplicate integrity reasons permitted in stored comparisons. Candidate expectedPD/actualRD refs source IDs+SHA distinct; no equivalence/rank.",
+    "evidence": "First independent full package+complete envelope rebuild equality. Candidate only EXPECTED thenACTUAL; each PRIMARY,DECLARATION_SCOPE,PHYSICAL_MEMBER_SCOPE,APPLICABILITY_BASIS in exact authored fragment order. Page-frame from exact full origin selected by reference target. Coordinates PDF_BOTTOM_LEFT_MILLI_POINTS, no invented rotation. Preserve all roles even same raw line occurs across roles; no nearest bbox/scalar IDs. Detached evidence.",
+    "coverage": "Exact132 known catalog codes/order and existing MatrixCoverage DTO with safe nonnegative counters; no new relational constraints on other131. Only KR056 UNSUPPORTED/all six0 to one PARTIAL atom; candidate rows successful, other scoped/unbound rows abstentions, failures0. Other131 byte/value-identical incl previousfive overlays.",
+    "runtime": "No profile/release/default activation/old scalar or typed registry modification until future durable/API/stand/restart acceptance."
+  },
+  "x-integrity-abstentions": [
+    "INVALID_INPUT",
+    "INPUT_LIMIT",
+    "SOURCE_PROVENANCE_UNVERIFIED",
+    "DECLARATION_RECONSTRUCTION_UNVERIFIED",
+    "DUPLICATE_DECLARATION"
+  ]
+}

@@ -1,0 +1,27 @@
+Inspector AI: committed source handoff
+Commit: 6f2a71372f820fa7d6e9ca9a2fb5eae41339fdd3
+Tree: 149a2213d964f9820d738cf41ab15ff467f17998
+Git object format: sha1
+Packaging policy: final-source-handoff-v1
+Committed source files included: 2735
+Every included source file contains the exact committed blob bytes and executable mode.
+Working-tree/index changes, export-ignore and export-subst attributes are not applied.
+Generated handoff metadata: SOURCE_REVISION.txt and SHA256SUMS only.
+SHA256SUMS covers every archive member except SHA256SUMS itself.
+ZIP uses sorted source/metadata paths, then SHA256SUMS, fixed 1980-01-01 timestamps and uncompressed entries.
+No dataset/fixture/manifest content is filtered or rewritten.
+Filename exclusions are not a substitute for a secret or licensing review.
+This source snapshot does not include a full evidence/results handoff.
+
+Documented omissions (11):
+- docs/assets/mobbin/airwallex-review-bill.jpg: third-party reference material for internal design research
+- docs/assets/mobbin/aws-upload-status.jpg: third-party reference material for internal design research
+- docs/assets/mobbin/semrush-content-diff.jpg: third-party reference material for internal design research
+- docs/assets/mobbin/vanta-tests-dashboard.jpg: third-party reference material for internal design research
+- output/user-flow-slides/PROMPTS.md: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-01-upload.png: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-02-processing.png: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-03-results.png: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-04-evidence.png: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-05-missing-data.png: local runtime, dependency, generated output or temporary directory
+- output/user-flow-slides/slide-06-protocol.png: local runtime, dependency, generated output or temporary directory

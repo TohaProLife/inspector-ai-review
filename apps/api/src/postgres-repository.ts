@@ -1,5 +1,107 @@
+import { sourceOcrWorkspace, captureSourceOcrImport, captureSourceOcrReview } from "./postgres-source-ocr-import.js";
+import { SourceOcrImportError } from "./source-ocr-import.js";
+import { nativeAirflowWorkspace, captureNativeAirflow, NativeAirflowError } from "./postgres-native-airflow.js";
+import { buildDocumentTextV4FullAuditReleaseTextLayer, validateDocumentTextV4FullAuditRelease } from "./document-text-v4-full-audit-release.js";
+import { validateDocumentTextV4FullAuditResult } from "./document-text-v4-full-audit-admission.js";
+import { loadDocumentTextV4FullAuditSource } from "./postgres-document-text-v4-full-source.js";
+import { nativeCapacityWorkspace, captureNativeCapacity, NativeCapacityError } from "./postgres-native-capacity.js";
+import type { DocumentTextV4FullAuditRelease } from "@inspector-ai/contracts";
+import {captureSavedRead,captureFencedSourceReviewRead,type CapturedSavedRead} from './saved-read-transcript.js';
+import {augmentColumnPylonSectionPreparation} from './matrix-column-pylon-section-loader.js';
+import {loadColumnPylonSectionRunState} from './postgres-column-pylon-section-run-state.js';
+import {prepareColumnPylonSectionAdmission,persistColumnPylonSectionRunSnapshot} from './postgres-column-pylon-section-admission.js';
+import {ColumnPylonSectionInputError} from './postgres-column-pylon-section-v2-inputs.js';
+import {canonicalMatrixReviewedLoaderV7} from './matrix-reviewed-loader-v7-native.js';
+import {assertColumnPylonSectionStageNative} from './matrix-column-pylon-section-stage-native.js';
+import {validateMatrixReviewedLoaderV7} from './matrix-reviewed-loader-v7.js';
+import {buildColumnPylonSectionComparisons,mergeColumnPylonSectionCoverage,columnPylonSectionComparisonEvidence} from './matrix-column-pylon-section-execution.js';
+import {buildSteelApplicabilityRunSnapshot,validateSteelApplicabilityRunSnapshot,steelApplicabilityProjectionMatchesSources} from './matrix-steel-run-snapshot.js';
+import {ColumnPylonSectionV2Repository,COLUMN_PYLON_SECTION_OPERATION,COLUMN_PYLON_SECTION_TARGET} from './postgres-column-pylon-section-v2.js';
+import {augmentSteelComparisonPreparation} from './matrix-steel-comparison-loader.js';
+import {buildSteelComparisons,mergeSteelComparisonCoverage,steelComparisonEvidence} from './matrix-steel-execution.js';
+import type {SteelComparisonExecutionComparisons,ColumnPylonSectionExecutionComparisons} from '@inspector-ai/contracts';
+import {prepareSteelApplicabilityInputs,SteelApplicabilityInputIntegrityError} from "./postgres-steel-applicability-inputs.js";
+import {parseSteelApplicabilityReviewInput,validateSteelApplicabilityReviewDecision,steelApplicabilityPairKey,materializeSteelApplicabilityReview,SteelApplicabilityReviewValidationError} from "./matrix-steel-applicability-review.js";
+import {validateSteelComparisonLoaderPackage} from "./matrix-steel-execution.js";
+import {STEEL_APPLICABILITY_REVIEW_LIMITS,type SteelApplicabilityReviewInput,type SteelApplicabilityReviewDecision} from "@inspector-ai/contracts";
+import {assertSteelComparisonReviewNative,parseSteelComparisonScopeInput,parseSteelComparisonScopeDecision,steelComparisonScopeHashFields,SteelComparisonReviewValidationError} from "./matrix-steel-review.js";
+import {steelComparisonScopeDecisionToInput,type SteelComparisonScopeDecision} from "@inspector-ai/contracts";
+import {parseLightingTechnologyScopeInput,parseLightingTechnologyScopeDecision,lightingTechnologyScopeHashFields,LightingTechnologyReviewValidationError} from './matrix-lighting-technology-review.js';
+import {lightingTechnologyScopeDecisionToInput,type MatrixLightingTechnologyScopeDecision} from '@inspector-ai/contracts';
+import {assertWaterNodeReviewNative,assertWaterNodeMaterializedSourceReviewEnvelope,parseWaterNodeScopeInput,
+ parseWaterNodeScopeDecision,waterNodeScopeHashFields,WaterNodeReviewValidationError} from './matrix-water-node-review.js';
+import {reconstructZu129WaterNodeSource,waterNodeInventoryContentHash} from './matrix-water-node-source.js';
+import {waterNodeScopeDecisionToInput,type MatrixWaterNodeScopeDecision,type MatrixWaterNodeInventorySelection} from '@inspector-ai/contracts';
+import type {MatrixWaterNodePreviewRead} from './matrix-water-node-api.js';
+import {MATRIX_RAIL_INVENTORY_PROFILE} from './matrix-rail-inventory-profile.js';
+import {MATRIX_WATER_NODE_PROFILE} from './matrix-water-node-profile.js';
+import {MATRIX_LIGHTING_TECHNOLOGY_PROFILE} from './matrix-lighting-technology-profile.js';
+import {MATRIX_STEEL_COMPARISON_PROFILE,MATRIX_STEEL_COMPARISON_V11_PROFILE,MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE,MATRIX_CONCRETE_WALL_V13_PROFILE,MATRIX_STEEL_COMPARISON_READ_PROFILES,matrixFullPolicyForProfile,selectMatrixRuntimePolicy,isSteelComparisonProfile,isColumnPylonSectionProfile,isCurrentMatrixExecutionInstalled,isConcreteWallProfileV13,matrixConcreteWallInstalledIdentityV13} from './matrix-concrete-wall-profile-v13.js';
+import { assertConcreteWallLeaseNativeV13, sha256CanonicalConcreteWallLeaseNativeV13, sha256CanonicalMatrixReviewedLoaderV7V13, sha256PortableEvidenceNativeV13 } from "./matrix-concrete-wall-native-v13.js";
+import { validateConcreteWallWindowV13, isConcreteWallClaimV13 } from "./matrix-concrete-wall-window-v13.js";
+import { validateMatrixScalarStageForProfileV13 } from "./matrix-scalar-stage-dispatch-v13.js";
+import type { MatrixConcreteWallV13Input } from "./matrix-concrete-wall-observations-v13.js";
+import { loadImmutableSourceInputsV13, type LoadedImmutableSourceInputsV13 } from "./postgres-immutable-source-loader-v13.js";
+import { materializeImmutableSourceInputsV13 } from "./matrix-immutable-source-inputs-v13.js";
+import { pinFrozenSourceManifestV13, type FrozenSourceManifestV13 } from "./matrix-frozen-source-manifest-v13.js";
+import { assembleConcreteWallScalarInputV13 } from "./matrix-scalar-input-assembly-v13.js";
+import { captureMatrixScalarOriginV13, type MatrixScalarOriginV13Row } from "./postgres-matrix-scalar-origin-v13.js";
+import { createMatrixPreparationBudgetV13, type MatrixPreparationBudgetV13 } from "./postgres-matrix-preparation-budget-v13.js";
+import { reconstructConcreteWallSourceAddressV1, type ConcreteWallSourceAddressResultV1 } from "./matrix-concrete-wall-source-address-v1.js";
+import {augmentLightingTechnologyPreparation} from './matrix-lighting-technology-loader.js';
+import {buildLightingTechnologyComparisons,mergeLightingTechnologyCoverage,lightingTechnologyComparisonEvidence} from './matrix-lighting-technology-execution.js';
+import type {LightingTechnologyExecutionComparisons} from '@inspector-ai/contracts';
+import {matrixPresentationForProfile,matrixConfidencePolicyForProfile} from './matrix-confidence-profile.js';
+import {buildWaterNodeComparisons,mergeWaterNodeCoverage,type WaterNodeComparisons} from './matrix-water-node-execution.js';
+import {buildRailInventoryComparisons,mergeRailInventoryCoverage,type RailInventoryComparisons} from './matrix-rail-inventory-execution.js';
+import {assertRailInventoryReviewNative,assertRailMaterializedSourceReviewEnvelope,parseRailInventoryScopeInput,
+ parseRailInventoryScopeDecision,railInventoryScopeHashFields,RailInventoryReviewValidationError} from './matrix-rail-inventory-review.js';
+import {reconstructOdi120RailInventorySource,railInventoryContentHash} from './matrix-rail-inventory-source.js';
+import {railInventoryScopeDecisionToInput,type MatrixRailInventoryScopeDecision,type MatrixRailInventorySelection} from '@inspector-ai/contracts';
+import type {MatrixRailInventoryPreviewRead} from './matrix-rail-inventory-api.js';
+import {MATRIX_CALL_INVENTORY_PROFILE,matrixCallInventoryDefinitions,matrixCallInventoryConfigHash,matrixCompletePolicyForProfile,MATRIX_CALL_INVENTORY_READ_PROFILES} from './matrix-call-inventory-profile.js';
+import {buildCallInventoryComparisons,mergeCallInventoryCoverage,type CallInventoryComparisons} from './matrix-call-inventory-execution.js';
+import {assertCallInventoryReviewNative,assertCallMaterializedSourceReviewEnvelope,parseCallInventoryScopeInput,
+ parseCallInventoryScopeDecision,callInventoryScopeHashFields,CallInventoryReviewValidationError} from './matrix-call-inventory-review.js';
+import {reconstructOdi123CallInventorySource,callInventoryContentHash} from './matrix-call-inventory-source.js';
+import {callInventoryScopeDecisionToInput,type MatrixCallInventoryScopeDecision,type MatrixCallInventorySelection} from '@inspector-ai/contracts';
+import type {MatrixCallInventoryPreviewRead} from './matrix-call-inventory-api.js';
+import { MATRIX_INVENTORY_PROFILE, MATRIX_INVENTORY_ADAPTER_VERSION, matrixInventoryDefinitions, matrixInventoryConfigHash,
+  matrixAnyPolicyForProfile, MATRIX_INVENTORY_READ_PROFILES } from "./matrix-inventory-profile.js";
+import { buildInventoryComparisons, mergeInventoryCoverage, type InventoryComparisons } from "./matrix-inventory-execution.js";
+import { loadAuthenticatedInventoryPreparation, assertInventoryPreparationUnchanged, inventoryComparisonEvidence, callInventoryComparisonEvidence, railInventoryComparisonEvidence, waterNodeComparisonEvidence, InventoryLoaderIntegrityError,
+  type AuthenticatedInventoryPreparation, type InventoryBaseInputs } from "./matrix-inventory-loader.js";
+import { verifyOriginalPdfSet, withPdfIoBudget, withColumnPylonSectionIoBudget, PdfIoError, type OriginalPdfReference } from "./verified-pdf-io.js";
+import { parseInventoryScopeInput, parseInventoryScopeDecision, assertMaterializedSourceReviewEnvelope, inventoryScopeHashFields, InventoryReviewValidationError } from "./matrix-inventory-review.js";
+import { assertSourceTextNative } from "./source-text-native.js";
+import { buildDocumentTextV3AuditReleaseTextLayer, validateDocumentTextV3AuditRelease } from "./document-text-v3-audit-release.js";
+import { validateDocumentTextV3AuditResult } from "./document-text-v3-audit-admission.js";
+import { loadDocumentTextV3AuditSource } from "./postgres-document-text-v3-source.js";
+import { buildDocumentTextV3LargeAuditReleaseTextLayer, validateDocumentTextV3LargeAuditRelease } from "./document-text-v3-large-audit-release.js";
+import { validateDocumentTextV3LargeAuditResult } from "./document-text-v3-large-audit-admission.js";
+import { loadDocumentTextV3LargeAuditSource } from "./postgres-document-text-v3-large-source.js";
+import {reconstructLightingTechnologySourceV3,lightingTechnologyV3DeclarationContentHash} from './matrix-lighting-technology-source-v3.js';
+import type { DocumentTextV3AuditRelease, DocumentTextV3LargeAuditRelease } from "@inspector-ai/contracts";
+import { reconstructAr053InventorySource, inventoryContentHash } from "./matrix-inventory-source.js";
+import { extractSourceDeclarations, canonicalSourceDeclarationJson } from "./matrix-source-declarations.js";
+import { inventoryScopeDecisionToInput, type MatrixInventoryScopeDecision, type MatrixInventorySourcePagesRead, type MatrixInventoryPreviewRead, type MatrixInventorySelection } from "@inspector-ai/contracts";
+import { propagateTerminalJobFailure } from "./job-terminal-failure.js";
+import { terminalClaimInputError } from "./claim-input-failure.js";
+import { matrixStoredReadPolicyForReleaseV13 } from "./matrix-concrete-wall-profile-v13.js";
+import { isDetachedSourceAuditJob } from "./worker-run-scope.js";
+import { resolveMatrixSubmissionIdentity } from "./matrix-submission-identity.js";
+import { prepareMatrixFactArtifact, deriveMatrixFactTarget, portableEvidenceHash, type MatrixFactTargetEvidence } from "./matrix-fact-scope.js";
+import { bindMatrixSourceScope, matrixFactScopeSchema, type MatrixSourceScope } from "@inspector-ai/contracts";
+import { extractMatrixOcrCandidates } from "./matrix-ocr-candidates.js";
+import { MATRIX_PROFILE, MATRIX_ADAPTER_VERSION, MATRIX_READ_PROFILES, matrixRegistry, matrixDefinitions, matrixConfigHash, matrixPolicyForProfile, validateMatrixExecution, matrixPresentation, buildMatrixSubmission } from "./matrix-execution.js";
+import { validateProjectConstraints } from "./matrix-project-constraints.js";
+import { validateSourceDeclarations } from "./matrix-source-declarations.js";
+import { validateSourceDeclarationsV2 } from "./matrix-source-declarations-v2.js";
+import type { MatrixExecutionRead } from "@inspector-ai/contracts";
+import { validateInspectorReview } from "./inspector-review.js";
 import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
+import { SourceReviewCommandAdmission } from "./source-review-command-admission.js";
 import type {
   BinaryUploadRecord,
   CheckRun,
@@ -65,6 +167,8 @@ import type {
   OcrTypedFactV2Read,
   PilotResultsScopedRead,
   ProtocolCanonicalArtifactContent,
+  ProtocolRenderedArtifactKey,
+  ProtocolRenderedArtifactContent,
   RegisteredIngestedDocumentFile,
   ReviewDecisionCommand,
   ReviewDecisionCommandResult,
@@ -157,11 +261,19 @@ import {
   v3VisualProposalProfileId,
   v5VisualProposalConfigHash,
   v5VisualProposalProfileId,
+  v9FullVisualProposalConfigHash, v9FullVisualProposalProfileId,
+  v9SampleVisualProposalConfigHash, v9SampleVisualProposalProfileId,
+  visualProfileForAnalysisMode, type VisualProfile,
+  v8FullVisualProposalConfigHash, v8FullVisualProposalProfileId,
+  v8SampleVisualProposalConfigHash, v8SampleVisualProposalProfileId,
+  v7FullVisualProposalConfigHash, v7FullVisualProposalProfileId,
+  v7SampleVisualProposalConfigHash, v7SampleVisualProposalProfileId,
   v6VisualProposalConfigHash,
   v6VisualProposalProfileId,
   visualProposalConfigHash,
   visualProposalProfileId,
 } from "./visual-proposal.js";
+
 
 interface ObjectRow extends QueryResultRow {
   id: string;
@@ -175,10 +287,15 @@ interface ObjectRow extends QueryResultRow {
   created_at: Date | string;
   updated_at: Date | string;
   active_check_id: string | null;
+  inspection_lifecycle: "OPEN" | "FINALIZED";
   stages: StageSummary[];
 }
 
 interface CheckRow extends QueryResultRow {
+  source_audit_only?: boolean;
+  source_audit_text_layer?: unknown;
+  failure: CheckRun["failure"] | null;
+  visual_progress: CheckRun["visualProgress"] | null;
   api_id: string;
   object_api_id: string;
   display_status: ObjectStatus;
@@ -288,8 +405,8 @@ interface PostgresRepositoryOptions {
   organizationSlug?: string;
   organizationName?: string;
   onPoolError?: (error: Error) => void;
-  analysisProfile?: "SCAFFOLD" | "PILOT_PZ002" | "PILOT_PZ002_PZ017";
-  visualProfile?: "V4" | "V5" | "V6";
+  analysisProfile?: "SCAFFOLD" | "PILOT_PZ002" | "PILOT_PZ002_PZ017" | "MATRIX_V1" | "SOURCE_AUDIT_V3";
+  visualProfile?: VisualProfile;
   /** Shared API-owned storage; required only for the isolated ZU-127 v3 result. */
   storage?: ObjectStorage;
 }
@@ -300,10 +417,12 @@ const objectSelect = `
     o.api_id,
     o.name,
     o.address,
-    o.display_status,
+    CASE WHEN inspection.lifecycle = 'FINALIZED' THEN 'FINALIZED'
+         ELSE COALESCE(active_run.display_status, o.display_status) END AS display_status,
+    inspection.lifecycle AS inspection_lifecycle,
     o.file_count,
     GREATEST(o.page_count, COALESCE(page_totals.total, 0)) AS page_count,
-    o.stats,
+    COALESCE(active_run.stats, o.stats) AS stats,
     o.created_at,
     o.updated_at,
     active_run.api_id AS active_check_id,
@@ -351,6 +470,11 @@ const objectSelect = `
 const checkSelect = `
   SELECT
     run.api_id,
+    EXISTS (SELECT 1 FROM analysis_releases release WHERE release.release_id=run.release_id
+      AND release.content_json->>'purpose'='SOURCE_AUDIT_ONLY'
+      AND release.content_json->'textLayer'->>'artifactSchemaVersion' IN ('document-text-v3','document-text-v4')) AS source_audit_only,
+    (SELECT release.content_json->'textLayer' FROM analysis_releases release
+      WHERE release.release_id=run.release_id) AS source_audit_text_layer,
     object.api_id AS object_api_id,
     run.display_status,
     run.progress,
@@ -363,6 +487,11 @@ const checkSelect = `
     run.stats,
     inspection.lifecycle AS inspection_lifecycle,
     inspection.row_version AS inspection_row_version,
+    (SELECT jsonb_build_object('jobType', job.job_type, 'code', job.last_error_code, 'message', left(job.last_error_message, 2000))
+      FROM analysis_jobs job WHERE job.run_id = run.id AND job.state IN ('FAILED','DEAD')
+        AND job.last_error_code IS NOT NULL AND job.last_error_message IS NOT NULL
+      ORDER BY job.completed_at DESC NULLS LAST, job.id DESC LIMIT 1) AS failure,
+    (SELECT job.visual_progress FROM analysis_jobs job WHERE job.run_id = run.id AND job.job_type = 'ENTITY_EXTRACTION') AS visual_progress,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -405,6 +534,10 @@ const checkSelect = `
         LIMIT 1
       ) decision ON true
       WHERE item.run_id = run.id
+    ), '[]'::jsonb) || COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('candidateId', decision.candidate_id,
+        'decisionHash', decision.decision_hash) ORDER BY decision.created_at, decision.id)
+      FROM review_candidate_decisions decision WHERE decision.run_id = run.id
     ), '[]'::jsonb) AS decision_set
   FROM analysis_runs run
   JOIN inspections inspection ON inspection.id = run.inspection_id
@@ -752,14 +885,16 @@ interface AnalysisReleaseManifest {
   releaseId: string;
   lifecycle: "SCAFFOLD" | "DRAFT";
   externalNetworkAllowed: false;
+  purpose?: "SOURCE_AUDIT_ONLY";
   textLayer: {
     artifactSchemaVersion: "document-text-v2";
     qualityPolicyVersion: TextQualityPolicyVersion;
-  };
+  } | DocumentTextV3AuditRelease | DocumentTextV3LargeAuditRelease | DocumentTextV4FullAuditRelease;
   rules: {
     catalogVersion: "matrix-132-v1";
     parameterCount: number;
     executionStatus: "UNCONFIGURED" | "PILOT";
+    matrixDefinitions?: typeof matrixDefinitions;
     definitions?: typeof pilotPz002Rules | typeof pilotPz002Pz017Rules
       | typeof pilotPz002Pz017OcrHeatRules | typeof pilotPz002Pz017OcrHeatFactFamilyRules
       | typeof pilotPz002Pz017OcrHeatFactFamilyCandidatePreviewRules
@@ -876,7 +1011,37 @@ function buildScaffoldReleaseManifest(parameterCount: number): {
   };
 }
 
-function buildPilotPz002ReleaseManifest(parameterCount: number, visualProfile: "V4" | "V5" | "V6" = "V4"): ReturnType<typeof buildScaffoldReleaseManifest> {
+function buildDocumentTextV3AuditReleaseManifest(parameterCount: number): ReturnType<typeof buildScaffoldReleaseManifest> {
+  const { releaseId: _previousId, ...base } = buildScaffoldReleaseManifest(parameterCount).manifest;
+  const identity = { ...base, lifecycle: "DRAFT" as const, purpose: "SOURCE_AUDIT_ONLY" as const,
+    textLayer: buildDocumentTextV3AuditReleaseTextLayer() };
+  const manifest: AnalysisReleaseManifest = { ...identity,
+    releaseId: `release:source-audit-v3:${sha256(canonicalJson(identity)).slice(0, 24)}` };
+  const canonical = canonicalJson(manifest);
+  return { manifest, canonical, contentHash: sha256(canonical), byteSize: Buffer.byteLength(canonical, "utf8") };
+}
+
+function buildDocumentTextV3LargeAuditReleaseManifest(parameterCount: number): ReturnType<typeof buildScaffoldReleaseManifest> {
+  const { releaseId: _previousId, ...base } = buildScaffoldReleaseManifest(parameterCount).manifest;
+  const identity = { ...base, lifecycle: "DRAFT" as const, purpose: "SOURCE_AUDIT_ONLY" as const,
+    textLayer: buildDocumentTextV3LargeAuditReleaseTextLayer() };
+  const manifest: AnalysisReleaseManifest = { ...identity,
+    releaseId: `release:source-audit-v3-large-vertical-v1:${sha256(canonicalJson(identity)).slice(0, 24)}` };
+  const canonical = canonicalJson(manifest);
+  return { manifest, canonical, contentHash: sha256(canonical), byteSize: Buffer.byteLength(canonical, "utf8") };
+}
+
+function buildDocumentTextV4FullAuditReleaseManifest(parameterCount: number): ReturnType<typeof buildScaffoldReleaseManifest> {
+  const { releaseId: _previousId, ...base } = buildScaffoldReleaseManifest(parameterCount).manifest;
+  const identity = { ...base, lifecycle: "DRAFT" as const, purpose: "SOURCE_AUDIT_ONLY" as const,
+    textLayer: buildDocumentTextV4FullAuditReleaseTextLayer() };
+  const manifest: AnalysisReleaseManifest = { ...identity,
+    releaseId: `release:source-audit-v4-full-source-v1:${sha256(canonicalJson(identity)).slice(0, 24)}` };
+  const canonical = canonicalJson(manifest);
+  return { manifest, canonical, contentHash: sha256(canonical), byteSize: Buffer.byteLength(canonical, "utf8") };
+}
+
+function buildPilotPz002ReleaseManifest(parameterCount: number, visualProfile: VisualProfile = "V4"): ReturnType<typeof buildScaffoldReleaseManifest> {
   const scaffold = buildScaffoldReleaseManifest(parameterCount).manifest;
   const configHash = sha256(canonicalJson(pilotPz002Rules));
   const identity = {
@@ -894,10 +1059,20 @@ function buildPilotPz002ReleaseManifest(parameterCount: number, visualProfile: "
       ? {
           ...slot,
           status: "CONFIGURED" as const,
-          profileId: visualProfile === "V6" ? v6VisualProposalProfileId
+          profileId: visualProfile === "V9_FULL" ? v9FullVisualProposalProfileId
+            : visualProfile === "V9_SAMPLE" ? v9SampleVisualProposalProfileId
+            : visualProfile === "V8_FULL" ? v8FullVisualProposalProfileId
+            : visualProfile === "V8_SAMPLE" ? v8SampleVisualProposalProfileId
+            : visualProfile === "V7_FULL" ? v7FullVisualProposalProfileId
+            : visualProfile === "V7_SAMPLE" ? v7SampleVisualProposalProfileId : visualProfile === "V6" ? v6VisualProposalProfileId
             : visualProfile === "V5" ? v5VisualProposalProfileId : visualProposalProfileId,
-          adapterVersion: visualProfile === "V6" ? "6" : visualProfile === "V5" ? "5" : "4",
-          configHash: visualProfile === "V6" ? v6VisualProposalConfigHash
+          adapterVersion: visualProfile.startsWith("V9_") ? "9" : visualProfile.startsWith("V8_") ? "8" : visualProfile.startsWith("V7_") ? "7" : visualProfile === "V6" ? "6" : visualProfile === "V5" ? "5" : "4",
+          configHash: visualProfile === "V9_FULL" ? v9FullVisualProposalConfigHash
+            : visualProfile === "V9_SAMPLE" ? v9SampleVisualProposalConfigHash
+            : visualProfile === "V8_FULL" ? v8FullVisualProposalConfigHash
+            : visualProfile === "V8_SAMPLE" ? v8SampleVisualProposalConfigHash
+            : visualProfile === "V7_FULL" ? v7FullVisualProposalConfigHash
+            : visualProfile === "V7_SAMPLE" ? v7SampleVisualProposalConfigHash : visualProfile === "V6" ? v6VisualProposalConfigHash
             : visualProfile === "V5" ? v5VisualProposalConfigHash : visualProposalConfigHash,
           resourceProfile: "CPU",
         }
@@ -955,8 +1130,8 @@ export function buildZu127GenericV3ReleaseManifest(
 }
 
 export function buildPilotPz002Pz017ReleaseManifest(
-  parameterCount: number, visualProfile: "V4" | "V5" | "V6" = "V4",
-  ocrProfile: "V1" | "V2" | "V3" | "V4" | "V5" | "V6" = "V1",
+  parameterCount: number, visualProfile: VisualProfile = "V4",
+  ocrProfile: "V1" | "V2" | "V3" | "V4" | "V5" | "V6" | "V7_SAMPLE" | "V7_FULL" = "V1",
   ocrHeatRows = false,
   factFamily = false,
   candidatePreview = false,
@@ -1318,7 +1493,7 @@ function qualifyPageText(blocks: Array<{ text: string }>,
 function validateDocumentTextArtifact(
   value: unknown,
   source: ExpectedTextSource,
-  releaseTextLayer: AnalysisReleaseManifest["textLayer"],
+  releaseTextLayer: Extract<AnalysisReleaseManifest["textLayer"], { artifactSchemaVersion: "document-text-v2" }>,
 ): { artifact: DocumentTextArtifact; canonical: string; contentHash: string; byteSize: number } | undefined {
   if (!isRecord(value)) return undefined;
   const isV2 = value.schemaVersion === "document-text-v2";
@@ -1429,7 +1604,7 @@ function validateDocumentTextArtifact(
 function validateDocumentTextResult(
   result: Record<string, unknown>,
   expectedSources: ExpectedTextSource[],
-  releaseTextLayer: AnalysisReleaseManifest["textLayer"],
+  releaseTextLayer: Extract<AnalysisReleaseManifest["textLayer"], { artifactSchemaVersion: "document-text-v2" }>,
 ): {
   artifacts: ValidatedTextArtifact[];
   storedResult: Record<string, unknown>;
@@ -1845,6 +2020,7 @@ function countOcrRequiredPages(artifacts: ValidatedTextArtifact[]): number {
 
 function mapObject(row: ObjectRow): InspectionObject {
   return {
+    inspectionLifecycle: row.inspection_lifecycle,
     id: row.api_id,
     name: row.name,
     address: row.address,
@@ -1865,9 +2041,16 @@ function mapCheck(row: CheckRow): CheckRun {
   return {
     id: row.api_id,
     objectId: row.object_api_id,
-    status: row.inspection_lifecycle === "FINALIZED" ? "FINALIZED" : row.display_status,
+    ...(row.source_audit_only ? {purpose:"SOURCE_AUDIT_ONLY" as const} : {}),
+    ...(row.source_audit_only && validateDocumentTextV4FullAuditRelease(row.source_audit_text_layer)
+      ? {sourceAuditProfileVersion:"SOURCE_AUDIT_V4_FULL_SOURCE_V1" as const} : {}),
+    ...(row.source_audit_only && validateDocumentTextV3LargeAuditRelease(row.source_audit_text_layer)
+      ? {sourceAuditProfileVersion:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" as const} : {}),
+    status: row.inspection_lifecycle === "FINALIZED" && !row.source_audit_only ? "FINALIZED" : row.display_status,
     progress: row.progress,
     currentStage: row.current_stage,
+    ...(row.failure ? { failure: row.failure } : {}),
+    ...(row.visual_progress ? { visualProgress: row.visual_progress } : {}),
     startedAt: asIso(row.started_at),
     completedAt: row.completed_at ? asIso(row.completed_at) : null,
     mode: row.mode,
@@ -2114,14 +2297,100 @@ type OcrTranscriptionContext = {
   sources: Map<string, { id: string; sha256: string }>;
 };
 
+interface SteelApplicabilityJournalRow {
+ id:string;sequence_no:string;object_id:string;pair_key:string;expected_source_file_id:string;actual_source_file_id:string;
+ expected_review_decision_id:string;actual_review_decision_id:string;previous_decision_id:string|null;previous_review_hash:string|null;
+ projection_json:SteelApplicabilityReviewDecision['projection'];actor_id:string;content_hash:string;created_at:Date|string;
+}
+
+/** Internal protected preparation; never an HTTP/worker authority DTO.
+ * Exact v13 producer below is guarded by genuine installed-base availability.
+ * Source proposal only; target/review routing remains separately pending. */
+type MatrixRunPreparation = AuthenticatedInventoryPreparation & {
+  readonly concreteWallV13?: {
+    readonly base: LoadedImmutableSourceInputsV13;
+    readonly scalarInput: MatrixConcreteWallV13Input;
+    readonly installedIdentity: string;
+  };
+};
+/** Invocation-local A receipt. It cannot authorize a write without full fresh C. */
+type MatrixCompletionPdfAnchorV13 = Readonly<{
+  completionPreparation: "CONCRETE_WALL_V13_PDF_ANCHOR";
+  fingerprint: string;
+  references: readonly OriginalPdfReference[];
+}>;
+
+/** Original source addresses only; no prior engineering result is approved here. */
+interface MatrixScalarOriginalV13 {
+  readonly stage: MatrixScalarOriginV13Row;
+  readonly base: LoadedImmutableSourceInputsV13;
+  readonly observations: import("@inspector-ai/contracts").MatrixObservation[];
+  readonly fingerprint: string;
+}
+interface MatrixScalarAddressV13 {
+  readonly fact: import("@inspector-ai/contracts").MatrixObservation;
+  readonly target: MatrixFactTargetEvidence;
+  readonly role: ConcreteWallSourceAddressResultV1["role"] | null;
+}
+interface MatrixSourceReviewResourcesV13 {
+  readonly budget:MatrixPreparationBudgetV13;
+  readonly operation:MatrixOriginOperationV13;
+  readonly references:Map<string,OriginalPdfReference>;
+  readonly collectedChecks:Set<string>;
+  readonly originals:Map<string,MatrixScalarOriginalV13>;
+}
+
+/** Private invocation-local resource and recursion state, never caller authority. */
+interface MatrixOriginOperationV13 {
+  readonly client:PoolClient;
+  readonly objectId:string;
+  readonly installedIdentity:string;
+  readonly budget:MatrixPreparationBudgetV13;
+  readonly activeRuns:Set<string>;
+  readonly completedOrigins:Map<string,MatrixFactOriginV13>;
+}
+interface MatrixFactOriginV13 {
+  readonly execution:import("@inspector-ai/contracts").MatrixExecution;
+  readonly contentHash:string;
+  readonly artifacts:Map<string,NonNullable<ReturnType<typeof prepareMatrixFactArtifact>>>;
+  readonly references?:OriginalPdfReference[];
+  readonly fingerprint?:string;
+}
+interface MatrixStoredReadScope {
+  readonly id:string;readonly object_id:string;readonly object_api_id:string;readonly output_hash:string;
+}
+interface MatrixStoredReadValue {
+  readonly prepared:MatrixRunPreparation;readonly read:MatrixExecutionRead;
+  readonly submission:import("./repository.js").SubmissionExport;
+  readonly boundaryScope:{runId:string;objectId:string;objectApiId:string};
+  readonly coverage:ParameterCoverageItem[];readonly fingerprint:string;
+}
+
+interface InventoryOriginalProjectionV13 {
+  source:InventoryBaseInputs["sourceFiles"][number];inputManifestHash:string;
+  textStageContentHash:string;textArtifactHash:string;textArtifact:Record<string,unknown>;
+  stage:"PD"|"RD"|"UNRESOLVED";originalPageStages:Record<string,string>;
+}
+
+function selectedMatrixRuntimePolicyFromEnvironment(){
+  return selectMatrixRuntimePolicy({concreteWallV13:process.env.INSPECTOR_MATRIX_CONCRETE_WALLS_V13==="1",columnPylonSectionV12:process.env.INSPECTOR_MATRIX_COLUMN_PYLON_SECTION_V12==="1",steelV11:process.env.INSPECTOR_MATRIX_STEEL_COMPARISONS_V11==="1",
+    steel:process.env.INSPECTOR_MATRIX_STEEL_COMPARISONS==="1",lighting:process.env.INSPECTOR_MATRIX_LIGHTING_TECHNOLOGY_COMPARISONS==="1",
+    water:process.env.INSPECTOR_MATRIX_WATER_NODE_COMPARISONS==="1",inventory:process.env.INSPECTOR_MATRIX_INVENTORY_COMPARISONS==="1",
+    call:process.env.INSPECTOR_MATRIX_CALL_INVENTORY_COMPARISONS==="1",rail:process.env.INSPECTOR_MATRIX_RAIL_INVENTORY_COMPARISONS==="1"});
+}
+
 export class PostgresInspectionRepository implements InspectionRepository {
+  private inventoryVerificationPool?: Pool;
+  private sourceReviewAdmission?: SourceReviewCommandAdmission;
+
   private constructor(
     private readonly pool: Pool,
     private readonly organizationId: string,
     private readonly parameters: ParameterCatalogItem[],
-    private readonly analysisProfile: "SCAFFOLD" | "PILOT_PZ002" | "PILOT_PZ002_PZ017",
-    private readonly visualProfile: "V4" | "V5" | "V6",
+    private readonly analysisProfile: "SCAFFOLD" | "PILOT_PZ002" | "PILOT_PZ002_PZ017" | "MATRIX_V1" | "SOURCE_AUDIT_V3",
+    private readonly visualProfile: VisualProfile,
     private readonly storage?: ObjectStorage,
+    private readonly inventoryConnectionString?: string,
   ) {}
 
   static async create(options: PostgresRepositoryOptions): Promise<PostgresInspectionRepository> {
@@ -2149,7 +2418,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       return new PostgresInspectionRepository(
         pool, organization.rows[0].id, options.parameters, options.analysisProfile ?? "SCAFFOLD",
         options.visualProfile ?? "V4",
-        options.storage,
+        options.storage, options.connectionString,
       );
     } catch (error) {
       await pool.end();
@@ -2158,8 +2427,299 @@ export class PostgresInspectionRepository implements InspectionRepository {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    await Promise.all([this.pool.end(), this.inventoryVerificationPool?.end(), this.sourceReviewAdmission?.close()]);
   }
+
+  /** Dedicated bounded v5 pool. No legacy acquisition or transaction behavior changes. */
+  private async inventoryTransaction<T>(readOnly: boolean, signal: AbortSignal | undefined,
+    operation: (client: PoolClient) => Promise<T>, repeatableReadWrite=false): Promise<T> {
+    if (!this.inventoryConnectionString) throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    if(!this.inventoryVerificationPool){
+      this.inventoryVerificationPool = new Pool({connectionString:this.inventoryConnectionString,
+        max:2,connectionTimeoutMillis:1500,statement_timeout:5000,lock_timeout:1500});
+      // Idle connection failures are observed; each active query still rejects normally.
+      this.inventoryVerificationPool.on("error",()=>{});
+    }
+    signal?.throwIfAborted();
+    const client=await this.inventoryVerificationPool.connect();
+    try {
+      signal?.throwIfAborted();
+      await client.query(readOnly ? "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY"
+        : repeatableReadWrite ? "BEGIN ISOLATION LEVEL REPEATABLE READ" : "BEGIN");
+      await client.query("SET LOCAL statement_timeout='5000ms'");
+      await client.query("SET LOCAL lock_timeout='1500ms'");
+      const checked=new Proxy(client,{get(target,key){
+        if(key!=="query")return Reflect.get(target,key,target);
+        return async(...args:unknown[])=>{signal?.throwIfAborted();
+          const value=await (target.query as (...args:unknown[])=>Promise<unknown>).apply(target,args);
+          signal?.throwIfAborted();return value;};
+      }});
+      const value=await operation(checked);signal?.throwIfAborted();
+      await client.query("COMMIT");return value;
+    }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+  }
+
+  /** Authenticate saved scalar/source identity without replaying engineering rows. */
+  private async loadMatrixScalarOriginalV13(client:PoolClient,objectId:string,checkId:string,
+    budget:MatrixPreparationBudgetV13):Promise<MatrixScalarOriginalV13|null> {
+    await budget.runByCheck(checkId);
+    const captured=await captureMatrixScalarOriginV13(client,objectId,checkId);if(!captured)return null;
+    assertConcreteWallLeaseNativeV13(captured);
+    const row=captured.stage,result=row.content_json,release=row.release_json;
+    const policy=matrixStoredReadPolicyForReleaseV13(release),slot=providerSlotForJob(release,"RULE_EVALUATION");
+    if(!policy||!isRecord(result)||!isRecord(release))return null;
+    const canonical=canonicalJson(result),releaseCanonical=canonicalJson(release);
+    if(!/^[a-f0-9]{64}(?![\s\S])/u.test(row.content_hash)
+      ||sha256(canonical)!==row.content_hash||Buffer.byteLength(canonical)!==Number(row.byte_size)
+      ||Number(row.byte_size)>8_388_608||sha256(releaseCanonical)!==row.release_hash
+      ||Buffer.byteLength(releaseCanonical)!==Number(row.release_byte_size)||Number(row.release_byte_size)>8_388_608
+      ||release.releaseId!==row.release_id||row.provider_profile_id!==policy.profileId
+      ||slot?.status!=="CONFIGURED"||slot.providerKind!=="RULE_ENGINE"
+      ||slot.profileId!==policy.profileId||slot.adapterVersion!==policy.adapterVersion||slot.configHash!==policy.configHash
+      ||row.provider_config_hash!==policy.configHash
+      ||canonicalJson((release.rules as Record<string,unknown>)?.matrixDefinitions)!==canonicalJson(policy.definitions)
+      ||row.schema_version!=="analysis-stage-result-v2"||row.provider_kind!=="RULE_ENGINE"||row.disposition!=="RULES_EVALUATED"
+      ||result.schemaVersion!==row.schema_version||result.jobType!=="RULE_EVALUATION"
+      ||result.providerKind!==row.provider_kind||result.providerProfileId!==row.provider_profile_id
+      ||result.providerConfigHash!==row.provider_config_hash||result.disposition!==row.disposition
+      ||result.inputManifestHash!==row.input_manifest_hash)return null;
+    const materialized=materializeImmutableSourceInputsV13(captured.inputs,{runId:row.id,objectId,releaseId:row.release_id});
+    const base:LoadedImmutableSourceInputsV13={...materialized,inputManifestHash:materialized.metadata.inputManifestHash};
+    if(base.inputManifestHash!==row.input_manifest_hash)return null;
+    const execution=result.execution;
+    if(!isRecord(execution)||execution.schemaVersion!=="matrix-execution-v1"||execution.objectId!==objectId
+      ||execution.inputManifestHash!==base.inputManifestHash||!Array.isArray(execution.observations))return null;
+    const seen=new Set<string>();
+    for(const fact of execution.observations){
+      if(!isRecord(fact)||typeof fact.id!=="string"||!/^[a-f0-9]{64}(?![\s\S])/u.test(fact.id)||seen.has(fact.id))return null;
+      seen.add(fact.id);
+      const source=base.sourceFiles.find(source=>source.sourceFileId===fact.sourceFileId);
+      if(!source||fact.sourceSha256!==source.sha256)return null;
+    }
+    // Actual terminal seal/submission bytes remain part of the persisted proof.
+    // The shared preflight charged these before any whole JSON/byte read.
+    const proofs=(await client.query<{output_hash:string;seal_id:string;seal_result:Record<string,unknown>;
+      execution_hash:string;submission_hash:string;submission_bytes:Buffer}>(`SELECT run.output_hash,seal.id AS seal_id,
+        seal.result_json AS seal_result,snapshot.execution_hash,snapshot.submission_hash,snapshot.submission_bytes
+      FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+      JOIN analysis_jobs seal ON seal.run_id=run.id AND seal.object_id=run.object_id
+        AND seal.job_type='ANALYSIS_SEAL_UNSUPPORTED' AND seal.state='SUCCEEDED'
+        AND seal.release_id=run.release_id AND seal.input_manifest_hash=$3
+      JOIN machine_prediction_snapshots snapshot ON snapshot.run_id=run.id
+      WHERE run.id=$1 AND run.object_id=$2 AND object.organization_id=$4 AND run.api_id=$5
+        AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED')`,
+      [row.id,objectId,base.inputManifestHash,this.organizationId,checkId])).rows;
+    if(proofs.length!==1)return null;const proof=proofs[0]!;
+    assertConcreteWallLeaseNativeV13(proof.seal_result);
+    if(proof.seal_result.disposition!=="UNSUPPORTED_COVERAGE_SEALED"||proof.execution_hash!==row.content_hash
+      ||!Buffer.isBuffer(proof.submission_bytes)||sha256(proof.submission_bytes)!==proof.submission_hash
+      ||proof.output_hash!==sha256(canonicalJson({executionHash:row.content_hash,submissionHash:proof.submission_hash})))return null;
+    return {stage:row,base,observations:execution.observations as unknown as import("@inspector-ai/contracts").MatrixObservation[],
+      fingerprint:sha256CanonicalConcreteWallLeaseNativeV13({stage:row,inputs:captured.inputs,
+        sealId:proof.seal_id,sealResult:proof.seal_result,submissionHash:proof.submission_hash,outputHash:proof.output_hash})};
+  }
+
+  /** Selected original source address; cannot approve a previous comparison. */
+  private matrixScalarAddressV13(original:MatrixScalarOriginalV13,objectId:string,sourceFileId:string,
+    fact:import("@inspector-ai/contracts").MatrixObservation,wall:boolean,
+    submitted?:Pick<import("@inspector-ai/contracts").MatrixFactScopeTarget,"observationId"|"evidenceHash"|"textArtifactHash">):MatrixScalarAddressV13|null {
+    const source=original.base.metadata.sources.find(source=>source.sourceFileId===sourceFileId);
+    const artifact=original.base.textArtifacts.find(item=>item.sourceFileId===sourceFileId)?.artifact;
+    if(!source||!artifact||fact.sourceFileId!==sourceFileId||fact.sourceSha256!==source.sha256)return null;
+    if(!wall){const target=prepareMatrixFactArtifact(artifact)?.deriveTarget(fact);return target?{fact,target,role:null}:null;}
+    // A submitted target is still authenticated by the complete source-address
+    // reconstruction below. Avoid constructing an unused full-artifact selector.
+    const target=submitted?{observationId:submitted.observationId,evidenceHash:submitted.evidenceHash,textArtifactHash:submitted.textArtifactHash}
+      :(()=>{
+      const selector={schemaVersion:"matrix-fact-selector-v1",sourceFileId:fact.sourceFileId,sourceSha256:fact.sourceSha256,
+        stage:fact.stage,pageNumber:fact.pageNumber,blockId:fact.blockId,attribute:fact.attribute,value:fact.value,unit:fact.unit,
+        rawValue:fact.rawValue,rawUnit:fact.rawUnit,rawText:fact.rawText,method:fact.method,extractorVersion:fact.extractorVersion,
+        bbox:fact.bbox,evidenceFragments:fact.evidenceFragments,contextFragments:fact.contextFragments,
+        textArtifactHash:sha256PortableEvidenceNativeV13(artifact)};
+      return {observationId:fact.id,evidenceHash:portableEvidenceHash(selector),textArtifactHash:selector.textArtifactHash};
+    })();
+    const address=reconstructConcreteWallSourceAddressV1({schemaVersion:"matrix-concrete-wall-source-address-input-v1",
+      source:{objectId,sourceFileId,sourceSha256:source.sha256},origin:{target,objectId,inputManifestHash:original.base.inputManifestHash,
+        originalStages:source.originalStages,originalPageStages:source.sourceReview?.body.pageStages??{},artifact},fact});
+    if(address.fact.id!==fact.id||portableEvidenceHash(address.selector)!==target.evidenceHash)return null;
+    return {fact:{...address.fact},target:{...target,...(address.selector.contextFragments?{fragmentsHash:portableEvidenceHash(address.selector.contextFragments)}:{})},role:address.role};
+  }
+
+  private matrixOriginOperationV13(client:PoolClient,objectId:string,budget?:MatrixPreparationBudgetV13):MatrixOriginOperationV13 {
+    const installedIdentity=matrixConcreteWallInstalledIdentityV13();
+    if(installedIdentity===null)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    return {client,objectId,installedIdentity,budget:budget??createMatrixPreparationBudgetV13(client,objectId),
+      activeRuns:new Set(),completedOrigins:new Map()};
+  }
+
+  private assertMatrixOriginOperationV13(client:PoolClient,objectId:string,operation:MatrixOriginOperationV13):void {
+    if(operation.client!==client||operation.objectId!==objectId
+      ||matrixConcreteWallInstalledIdentityV13()!==operation.installedIdentity)
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+  }
+
+  private async inventoryPreparation(client:PoolClient,runId:string,objectId:string,requireSealed=false,
+    operation?:MatrixOriginOperationV13):Promise<MatrixRunPreparation> {
+    // Small scoped identity only. No manifest/release/text JSON crosses this
+    // boundary before the v13 operation-local precharge has admitted the run.
+    const profiles=(await client.query<{profile_id:string}>(`SELECT slot->>'profileId' AS profile_id
+      FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+      JOIN analysis_releases release ON release.release_id=run.release_id
+      CROSS JOIN LATERAL jsonb_array_elements(release.content_json->'providerSlots') slot
+      WHERE run.id=$1 AND run.object_id=$2 AND object.organization_id=$3
+        AND slot->>'stageJobType'='RULE_EVALUATION' LIMIT 2`,[runId,objectId,this.organizationId])).rows;
+    if(profiles.length!==1)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    if(isConcreteWallProfileV13(profiles[0]!.profile_id))
+      return this.prepareConcreteWallRunV13(client,runId,objectId,requireSealed,operation);
+    const base=await loadAuthenticatedInventoryPreparation(client,{runId,objectId,organizationId:this.organizationId,requireSealed},
+      (db,id,object)=>this.loadAuthenticatedZu127GenericInputs(db,id,object));
+    const policy=matrixFullPolicyForProfile(providerSlotForJob(base.release,"RULE_EVALUATION")?.profileId);
+    const lighting=policy?.lightingTechnologyComparisons?await augmentLightingTechnologyPreparation(client,base,buildScaffoldReleaseManifest(this.parameters.length).manifest):base;
+    const steel=policy?.steelComparisons?await augmentSteelComparisonPreparation(client,lighting,this.loadInventoryOrigin.bind(this),this.loadSteelApplicabilityRunState.bind(this)):lighting;
+    return policy?.columnPylonSectionComparisons?augmentColumnPylonSectionPreparation(client,steel,(db,input)=>loadColumnPylonSectionRunState(db,input,buildScaffoldReleaseManifest(this.parameters.length).manifest)):steel;
+  }
+
+  /** Same checked client, immutable parents, one shared resource budget. */
+  private async prepareConcreteWallRunV13(client:PoolClient,runId:string,objectId:string,requireSealed:boolean,
+    shared?:MatrixOriginOperationV13):Promise<MatrixRunPreparation> {
+    const invalid=():never=>{throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");};
+    const identity=matrixConcreteWallInstalledIdentityV13(),currentPolicy=matrixFullPolicyForProfile(MATRIX_CONCRETE_WALL_V13_PROFILE);
+    if(identity===null||!currentPolicy)return invalid();
+    const operation=shared??this.matrixOriginOperationV13(client,objectId);
+    this.assertMatrixOriginOperationV13(client,objectId,operation);
+    const budget=operation.budget;
+    const bases=new Map<string,LoadedImmutableSourceInputsV13>();
+    const authenticateBase=async(db:PoolClient,id:string,object:string):Promise<LoadedImmutableSourceInputsV13|null>=>{
+      if(db!==client||object!==objectId)return invalid();
+      await budget.runById(id);
+      const cached=bases.get(id);if(cached)return cached;
+      const loaded=await loadImmutableSourceInputsV13(db,id,object);if(loaded)bases.set(id,loaded);return loaded;
+    };
+    // loadAuthenticatedInventoryPreparation reads its identity before invoking
+    // authenticateBase, so charge the current run before entering that loader.
+    await budget.runById(runId);
+    const inherited=await loadAuthenticatedInventoryPreparation(client,{runId,objectId,organizationId:this.organizationId,requireSealed},authenticateBase,budget);
+    const base=bases.get(runId);if(!base)return invalid();
+    const policy=requireSealed?matrixStoredReadPolicyForReleaseV13(inherited.release):currentPolicy;
+    if(!policy)return invalid();
+    const slot=providerSlotForJob(inherited.release,"RULE_EVALUATION");
+    if(slot?.profileId!==policy.profileId||slot.status!=="CONFIGURED"||slot.providerKind!=="RULE_ENGINE"
+      ||slot.adapterVersion!==policy.adapterVersion||slot.configHash!==policy.configHash
+      ||canonicalJson((inherited.release.rules as Record<string,unknown>)?.matrixDefinitions)!==canonicalJson(policy.definitions))return invalid();
+    const scaffold=buildScaffoldReleaseManifest(this.parameters.length).manifest;
+    const lighting=await augmentLightingTechnologyPreparation(client,inherited,scaffold,budget);
+    const steel=await augmentSteelComparisonPreparation(client,lighting,
+      (db,object,check,source)=>this.loadInventoryOrigin(db,object,check,source,budget),
+      (db,input)=>this.loadSteelApplicabilityRunState(db,input,budget));
+    const seven=await augmentColumnPylonSectionPreparation(client,steel,
+      (db,input)=>loadColumnPylonSectionRunState(db,input,scaffold,budget),budget);
+    if(!seven.lightingPackage||!seven.steelPackage||!seven.steelApplicabilitySnapshot
+      ||!seven.columnPylonSectionPackage||!seven.columnPylonSectionSnapshot)return invalid();
+    const scalar=await this.prepareConcreteWallScalarV13(client,runId,objectId,seven.run.releaseId,base,budget,operation);
+    const references=new Map<string,OriginalPdfReference>();let bytes=0;
+    for(const reference of [...seven.references,...scalar.references]){
+      const key=canonicalJson(reference);if(references.has(key))continue;
+      bytes+=reference.expectedByteSize;
+      if(references.size>=64||bytes>134_217_728)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+      references.set(key,reference);
+    }
+    const union=[...references.values()];
+    return Object.freeze({...seven,references:union,concreteWallV13:{base,scalarInput:scalar.scalarInput,installedIdentity:identity},
+      fingerprint:sha256(canonicalMatrixReviewedLoaderV7({base:seven.fingerprint,immutableMetadata:base.metadata,
+        scalar:scalar.fingerprint,references:union,installedIdentity:identity}))});
+  }
+
+  /** Claim uses this scalar source projection without rebuilding seven domains. */
+  private async prepareConcreteWallScalarV13(client:PoolClient,runId:string,objectId:string,releaseId:string,
+    base:LoadedImmutableSourceInputsV13,budget:MatrixPreparationBudgetV13,shared?:MatrixOriginOperationV13):Promise<{
+      scalarInput:MatrixConcreteWallV13Input;references:OriginalPdfReference[];fingerprint:string;
+    }> {
+    const invalid=():never=>{throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");};
+    const operation=shared??this.matrixOriginOperationV13(client,objectId,budget);
+    this.assertMatrixOriginOperationV13(client,objectId,operation);
+    if(operation.budget!==budget||operation.activeRuns.has(runId))return invalid();
+    operation.activeRuns.add(runId);
+    try {
+    const references=new Map<string,OriginalPdfReference>();let pdfBytes=0;
+    const addReference=(ref:OriginalPdfReference):void=>{
+      const key=canonicalJson(ref);if(references.has(key))return;
+      if(ref.expectedMediaType!=="application/pdf"||!ref.storageKey
+        ||!/^[a-f0-9]{64}(?![\s\S])/u.test(ref.expectedSha256)
+        ||!Number.isSafeInteger(ref.expectedByteSize)||ref.expectedByteSize<5)return invalid();
+      if(ref.expectedByteSize>67_108_864||references.size>=64||pdfBytes+ref.expectedByteSize>134_217_728)
+        throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+      pdfBytes+=ref.expectedByteSize;references.set(key,{...ref});
+    };
+    for(const ref of Object.values(base.pdfStorageRefs))addReference({storageKey:ref.storageKey,expectedSha256:ref.sha256,
+      expectedByteSize:ref.byteSize,expectedMediaType:"application/pdf"});
+    const bindings:Array<{source:LoadedImmutableSourceInputsV13["metadata"]["sources"][number];
+      binding:import("@inspector-ai/contracts").MatrixFactScopeBinding}>=[];
+    for(const source of base.metadata.sources){
+      const scope=source.sourceReview?.body.matrixScope;
+      if(!isRecord(scope)||!Object.hasOwn(scope,"schemaVersion"))continue;
+      const parsed=matrixFactScopeSchema.safeParse(scope);
+      if(!parsed.success||canonicalJson(parsed.data)!==canonicalJson(scope))return invalid();
+      for(const binding of parsed.data.bindings){
+        if(bindings.length>=128)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+        bindings.push({source,binding});
+      }
+    }
+    const captures=new Map<string,MatrixScalarOriginalV13>(),records:Record<string,unknown>[]=[],proofs:unknown[]=[];
+    for(const {source,binding} of bindings){
+        let original=captures.get(binding.target.checkId);
+        if(!original){original=await this.loadMatrixScalarOriginalV13(client,objectId,binding.target.checkId,budget)??undefined;
+          if(!original||original.stage.id===runId)return invalid();captures.set(binding.target.checkId,original);}
+        const fact=original.observations.find(item=>item.id===binding.target.observationId&&item.sourceFileId===source.sourceFileId);
+        if(!fact||fact.sourceSha256!==source.sha256||original.stage.content_hash!==binding.target.executionContentHash)return invalid();
+        const wall=isConcreteWallClaimV13(binding as unknown as Record<string,unknown>,fact as unknown as Record<string,unknown>);
+        let engineeringFingerprint:string|null=null;
+        if(!wall){
+          // Keep the existing full engineering-origin contract for generic facts.
+          // A source address never substitutes for that authority, including v13.
+          await budget.runByCheck(binding.target.checkId);
+          const legacy=await this.loadMatrixFactOrigin(client,objectId,binding.target.checkId,source.sourceFileId,operation);
+          const selected=legacy?.execution.observations.find(item=>item.id===fact.id&&item.sourceFileId===source.sourceFileId);
+          const target=selected?legacy?.artifacts.get(source.sourceFileId)?.deriveTarget(selected):null;
+          if(!legacy||legacy.contentHash!==binding.target.executionContentHash||!target
+            ||target.evidenceHash!==binding.target.evidenceHash||target.textArtifactHash!==binding.target.textArtifactHash)return invalid();
+          for(const ref of legacy.references??[])addReference(ref);
+          engineeringFingerprint=legacy.fingerprint??null;
+        }else{
+          const address=this.matrixScalarAddressV13(original,objectId,source.sourceFileId,fact,true,binding.target);
+          if(!address||address.role===null)return invalid();
+          const frozen=original.base.metadata.sources.find(item=>item.sourceFileId===source.sourceFileId);
+          if(!frozen||records.some(item=>item.sourceFileId===source.sourceFileId)||records.length>=2)return invalid();
+          records.push({sourceFileId:source.sourceFileId,sourceSha256:source.sha256,target:binding.target,
+            objectId,inputManifestHash:original.base.inputManifestHash,originalStages:frozen.originalStages,
+            originalPageStages:frozen.sourceReview?.body.pageStages??{}});
+        }
+        for(const ref of Object.values(original.base.pdfStorageRefs))addReference({storageKey:ref.storageKey,
+          expectedSha256:ref.sha256,expectedByteSize:ref.byteSize,expectedMediaType:"application/pdf"});
+        proofs.push({sourceFileId:source.sourceFileId,target:binding.target,wall,origin:original.fingerprint,engineeringFingerprint});
+    }
+    // Window requires deterministic PD then RD order and one original manifest.
+    records.sort((a,b)=>{
+      const stage=(row:Record<string,unknown>)=>{
+        const target=row.target as Record<string,unknown>,capture=captures.get(target.checkId as string);
+        return capture?.observations.find(fact=>fact.id===target.observationId)?.stage;
+      };return stage(a)===stage(b)?0:stage(a)==="PD"?-1:1;
+    });
+    // Sorting was the last origin read; release full historical graphs before current input assembly.
+    captures.clear();
+    const jobs=(await client.query<{id:string}>(`SELECT id FROM analysis_jobs WHERE run_id=$1 AND object_id=$2
+      AND job_type='RULE_EVALUATION' AND release_id=$3 AND input_manifest_hash=$4`,
+      [runId,objectId,releaseId,base.inputManifestHash])).rows;
+    if(jobs.length!==1)return invalid();
+    const downloadPaths=Object.fromEntries(base.sourceFiles.map(source=>[source.sourceFileId,
+      `/api/internal/v1/jobs/${jobs[0]!.id}/inputs/${source.sourceFileId}`]));
+    const scalarInput=assembleConcreteWallScalarInputV13(base,{objectId,runId,releaseId:releaseId,inputManifestHash:base.inputManifestHash},
+      {schemaVersion:"matrix-concrete-wall-origin-contexts-v1",records},downloadPaths);
+    const union=[...references.values()];
+    return {scalarInput,references:union,fingerprint:sha256CanonicalMatrixReviewedLoaderV7V13({
+      metadata:base.metadata,scalarInput,proofs,references:union})};
+    } finally {operation.activeRuns.delete(runId);}
+  }
+
 
   async listObjects(actor?: AuthenticatedActor): Promise<InspectionObject[]> {
     if (!this.hasReadScope(actor)) return [];
@@ -2336,6 +2896,288 @@ export class PostgresInspectionRepository implements InspectionRepository {
     });
   }
 
+  private async verifySteelJournalPin(client:PoolClient,pin:{objectId:string;objectApiId:string;pairKey:string;decisionId:string;sequenceNo:string},budget?:MatrixPreparationBudgetV13) {
+    const sizes=await client.query<{bytes:string}>(`SELECT octet_length(projection_json::text)::text AS bytes
+      FROM matrix_steel_applicability_decisions WHERE id=$1 AND object_id=$2 AND pair_key=$3 AND sequence_no=$4::bigint`,
+      [pin.decisionId,pin.objectId,pin.pairKey,pin.sequenceNo]);
+    if(sizes.rows.length!==1||!Number.isSafeInteger(Number(sizes.rows[0]!.bytes))||Number(sizes.rows[0]!.bytes)>8000000)
+      throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const row=(await client.query<SteelApplicabilityJournalRow>(`SELECT * FROM matrix_steel_applicability_decisions
+      WHERE id=$1 AND object_id=$2 AND pair_key=$3 AND sequence_no=$4::bigint`,[pin.decisionId,pin.objectId,pin.pairKey,pin.sequenceNo])).rows[0];
+    if(!row||row.id!==pin.decisionId||row.object_id!==pin.objectId||row.pair_key.trim()!==pin.pairKey||row.sequence_no!==pin.sequenceNo)
+      throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const decision=await this.verifySteelApplicabilityJournal(client,row,pin.objectApiId);
+    const prepared=await this.prepareSteelApplicabilityJournal(client,pin.objectId,pin.objectApiId,decision,budget);
+    if(prepared.expectedSourceInternalId!==row.expected_source_file_id||prepared.actualSourceInternalId!==row.actual_source_file_id)
+      throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    return {decision,expectedSourceInternalId:prepared.expectedSourceInternalId,actualSourceInternalId:prepared.actualSourceInternalId,
+      references:prepared.references,fingerprint:sha256(canonicalJson({pin,decision,prepared:prepared.fingerprint})),package:prepared.package};
+  }
+
+  private async steelAdmissionPreparation(client:PoolClient,objectApiId:string,actor?:AuthenticatedActor,prechargeV13=false) {
+    const objects=await client.query<{id:string}>(`SELECT object.id FROM objects object JOIN inspections inspection ON inspection.object_id=object.id
+      WHERE object.organization_id=$1 AND object.api_id=$2 AND inspection.lifecycle='OPEN'
+      AND ($3::uuid IS NULL OR EXISTS(SELECT 1 FROM object_memberships access WHERE access.object_id=object.id AND access.user_id=$3
+        AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['RUN']::text[]))`,[this.organizationId,objectApiId,actor?.userId??null]);
+    if(objects.rows.length!==1)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const objectId=objects.rows[0]!.id;
+    const budget=prechargeV13?createMatrixPreparationBudgetV13(client,objectId):undefined;
+    if(budget)await budget.steelAdmission();
+    const sources=(await client.query<{id:string;source_file_id:string;sha256:string;stages:string[];review_id:string|null;review_hash:string|null}>(
+      `SELECT source.id,source.api_id AS source_file_id,blob.sha256,
+        ARRAY(SELECT stage.stage FROM source_file_stages stage WHERE stage.source_file_id=source.id ORDER BY stage.stage) AS stages,
+        review.id AS review_id,review.content_hash AS review_hash FROM source_files source JOIN blobs blob ON blob.id=source.blob_id
+        LEFT JOIN LATERAL(SELECT id,content_hash FROM source_review_decisions WHERE source_file_id=source.id
+          ORDER BY created_at DESC,id DESC LIMIT 1)review ON true WHERE source.object_id=$1 ORDER BY source.api_id`,[objectId])).rows;
+    const rows=(await client.query<{id:string;pair_key:string;sequence_no:string}>(`SELECT id,pair_key,sequence_no FROM
+      (SELECT DISTINCT ON(pair_key) id,pair_key,sequence_no FROM matrix_steel_applicability_decisions WHERE object_id=$1
+        ORDER BY pair_key,sequence_no DESC)latest ORDER BY pair_key LIMIT 17`,[objectId])).rows;
+    if(rows.length>16)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_LIMIT');
+    const entries:import('@inspector-ai/contracts').SteelApplicabilityRunSnapshotEntry[]=[],references:OriginalPdfReference[]=[],proofs:string[]=[];let bytes=0;
+    for(const row of rows){
+      const verified=await this.verifySteelJournalPin(client,{objectId,objectApiId,pairKey:row.pair_key.trim(),decisionId:row.id,sequenceNo:row.sequence_no},budget);
+      bytes+=Buffer.byteLength(canonicalJson({decision:verified.decision,package:verified.package}));
+      if(bytes>64*1024*1024)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_LIMIT');
+      const projection=verified.decision.projection;
+      const refsCurrent=[projection.expected,projection.actual].every(ref=>sources.some(source=>source.source_file_id===ref.sourceFileId
+        &&source.sha256.trim()===ref.sourceSha256&&source.review_id===ref.reviewDecisionId&&source.review_hash?.trim()===ref.reviewContentHash));
+      const included=refsCurrent&&steelApplicabilityProjectionMatchesSources(projection,verified.package.sources);
+      entries.push({pairKey:row.pair_key.trim(),decisionId:row.id,sequenceNo:row.sequence_no,
+        journalContentHash:verified.decision.contentHash,projectionContentHash:projection.contentHash,included});
+      references.push(...verified.references);proofs.push(verified.fingerprint);
+    }
+    return {objectId,entries,references,fingerprint:sha256(canonicalJson({objectId,sources,entries,proofs}))};
+  }
+
+  private async persistSteelApplicabilityRunSnapshot(client:PoolClient,input:{runId:string;objectId:string;objectApiId:string;inputManifestHash:string;
+    before:Awaited<ReturnType<PostgresInspectionRepository['steelAdmissionPreparation']>>;actor?:AuthenticatedActor;prechargeV13?:boolean}) {
+    const fresh=await this.steelAdmissionPreparation(client,input.objectApiId,input.actor,input.prechargeV13);
+    if(fresh.objectId!==input.objectId||fresh.fingerprint!==input.before.fingerprint)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_CHANGED');
+    const snapshot=buildSteelApplicabilityRunSnapshot({objectId:input.objectId,inputManifestHash:input.inputManifestHash,entries:fresh.entries});
+    await client.query(`INSERT INTO run_steel_applicability_snapshot_states(run_id,object_id,input_manifest_hash,content_hash,snapshot_json)
+      VALUES($1,$2,$3,$4,$5::jsonb)`,[input.runId,input.objectId,input.inputManifestHash,snapshot.contentHash,canonicalJson(snapshot)]);
+    for(const entry of snapshot.entries)await client.query(`INSERT INTO run_steel_applicability_snapshot_entries
+      (run_id,pair_key,decision_id,sequence_no,journal_content_hash,projection_content_hash,included) VALUES($1,$2,$3,$4::bigint,$5,$6,$7)`,
+      [input.runId,entry.pairKey,entry.decisionId,entry.sequenceNo,entry.journalContentHash,entry.projectionContentHash,entry.included]);
+  }
+
+  private async loadSteelApplicabilityRunState(client:PoolClient,input:{runId:string;objectId:string;inputManifestHash:string},budget?:MatrixPreparationBudgetV13) {
+    if(budget)await budget.runById(input.runId);
+    const headers=(await client.query<{object_api_id:string;bytes:string;content_hash:string}>(`SELECT object.api_id AS object_api_id,
+      octet_length(state.snapshot_json::text)::text AS bytes,state.content_hash FROM run_steel_applicability_snapshot_states state
+      JOIN analysis_runs run ON run.id=state.run_id AND run.object_id=state.object_id JOIN objects object ON object.id=run.object_id
+      JOIN input_manifests manifest ON manifest.id=run.manifest_id WHERE state.run_id=$1 AND state.object_id=$2
+        AND state.input_manifest_hash=$3 AND manifest.sha256=$3 AND object.organization_id=$4`,[input.runId,input.objectId,input.inputManifestHash,this.organizationId])).rows;
+    if(headers.length!==1||!Number.isSafeInteger(Number(headers[0]!.bytes))||Number(headers[0]!.bytes)>524288)
+      throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const header=headers[0]!;
+    const value=(await client.query<{snapshot_json:unknown}>(`SELECT snapshot_json FROM run_steel_applicability_snapshot_states WHERE run_id=$1`,[input.runId])).rows;
+    if(value.length!==1)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const snapshot=validateSteelApplicabilityRunSnapshot(value[0]!.snapshot_json);
+    if(snapshot.objectId!==input.objectId||snapshot.inputManifestHash!==input.inputManifestHash||snapshot.contentHash!==header.content_hash.trim())
+      throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const rows=(await client.query<{pair_key:string;decision_id:string;sequence_no:string;journal_content_hash:string;projection_content_hash:string;included:boolean}>(
+      `SELECT pair_key,decision_id,sequence_no,journal_content_hash,projection_content_hash,included FROM run_steel_applicability_snapshot_entries WHERE run_id=$1 ORDER BY pair_key LIMIT 17`,[input.runId])).rows;
+    const entries=rows.map(row=>({pairKey:row.pair_key.trim(),decisionId:row.decision_id,sequenceNo:row.sequence_no,journalContentHash:row.journal_content_hash.trim(),projectionContentHash:row.projection_content_hash.trim(),included:row.included}));
+    if(canonicalJson(entries)!==canonicalJson(snapshot.entries))throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+    const journals:import('./matrix-steel-comparison-loader.js').VerifiedSteelJournalPin[]=[];let bytes=0;
+    for(const entry of entries){
+      const verified=await this.verifySteelJournalPin(client,{objectId:input.objectId,objectApiId:header.object_api_id,pairKey:entry.pairKey,decisionId:entry.decisionId,sequenceNo:entry.sequenceNo},budget);
+      if(verified.decision.contentHash!==entry.journalContentHash||verified.decision.projection.contentHash!==entry.projectionContentHash)
+        throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+      bytes+=Buffer.byteLength(canonicalJson({decision:verified.decision,package:verified.package}));
+      if(bytes>64*1024*1024)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_LIMIT');
+      const {package:_historicalPackage,...journal}=verified;journals.push(journal);
+    }
+    return {objectApiId:header.object_api_id,snapshot,journals};
+  }
+
+  private async steelApplicabilityAccess(client:PoolClient,objectApiId:string,actor:AuthenticatedActor,write:boolean) {
+    const rows=await client.query<{object_id:string;inspection_id:string|null;can_review:boolean}>(write?`
+      SELECT object.id AS object_id,inspection.id AS inspection_id,true AS can_review
+      FROM objects object JOIN inspections inspection ON inspection.object_id=object.id AND inspection.lifecycle='OPEN'
+      WHERE object.organization_id=$1 AND object.api_id=$2
+        AND EXISTS(SELECT 1 FROM object_memberships access WHERE access.object_id=object.id AND access.user_id=$3
+          AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['READ','REVIEW_DECIDE']::text[])
+      FOR UPDATE OF inspection`:`
+      SELECT object.id AS object_id,NULL::uuid AS inspection_id,
+        EXISTS(SELECT 1 FROM inspections inspection WHERE inspection.object_id=object.id AND inspection.lifecycle='OPEN')
+        AND EXISTS(SELECT 1 FROM object_memberships access WHERE access.object_id=object.id AND access.user_id=$3
+          AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['REVIEW_DECIDE']::text[]) AS can_review
+      FROM objects object WHERE object.organization_id=$1 AND object.api_id=$2
+        AND EXISTS(SELECT 1 FROM object_memberships access WHERE access.object_id=object.id AND access.user_id=$3
+          AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['READ']::text[])`,
+      [this.organizationId,objectApiId,actor.userId]);
+    return rows.rows.length===1?rows.rows[0]:null;
+  }
+
+  private decodeSteelApplicabilityJournal(row:SteelApplicabilityJournalRow,objectApiId:string):SteelApplicabilityReviewDecision {
+    const decision=validateSteelApplicabilityReviewDecision({id:row.id,objectId:objectApiId,actorId:row.actor_id,
+      previousReviewHash:row.previous_review_hash?.trim()??null,contentHash:row.content_hash.trim(),
+      projection:parseJson(row.projection_json),createdAt:asIso(row.created_at)});
+    const expectedPair=steelApplicabilityPairKey({objectId:row.object_id,identity:decision.projection.identity,
+      expectedSourceFileId:decision.projection.expected.sourceFileId,actualSourceFileId:decision.projection.actual.sourceFileId});
+    if(decision.projection.objectId!==row.object_id||expectedPair!==row.pair_key.trim()
+      ||decision.projection.expected.reviewDecisionId!==row.expected_review_decision_id
+      ||decision.projection.actual.reviewDecisionId!==row.actual_review_decision_id
+      ||row.expected_source_file_id===row.actual_source_file_id
+      ||(row.previous_decision_id===null)!==(decision.previousReviewHash===null))
+      throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+    return decision;
+  }
+
+  private async verifySteelApplicabilityJournal(client:PoolClient,row:SteelApplicabilityJournalRow,objectApiId:string) {
+    const value=this.decodeSteelApplicabilityJournal(row,objectApiId);
+    // Sequence, not timestamp or status, determines the immediate same-key predecessor.
+    const predecessor=(await client.query<SteelApplicabilityJournalRow>(`SELECT * FROM matrix_steel_applicability_decisions
+      WHERE object_id=$1 AND pair_key=$2 AND sequence_no<$3 ORDER BY sequence_no DESC LIMIT 1`,
+      [row.object_id,row.pair_key,row.sequence_no])).rows[0];
+    if(predecessor){
+      const prior=this.decodeSteelApplicabilityJournal(predecessor,objectApiId);
+      if(row.previous_decision_id!==prior.id||value.previousReviewHash!==prior.contentHash)
+        throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+    }else if(row.previous_decision_id!==null||value.previousReviewHash!==null)
+      throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+    return value;
+  }
+
+  private async prepareSteelApplicabilityJournal(client:PoolClient,objectId:string,objectApiId:string,
+    value:SteelApplicabilityReviewDecision,budget?:MatrixPreparationBudgetV13) {
+    const prepared=await prepareSteelApplicabilityInputs(client,{objectId,objectApiId,
+      expected:value.projection.expected,actual:value.projection.actual,mode:'HISTORICAL'},
+      budget?(db,object,check,source)=>this.loadInventoryOrigin(db,object,check,source,budget):this.loadInventoryOrigin.bind(this),budget);
+    validateSteelComparisonLoaderPackage({...prepared.package,applicabilityDecisions:[value.projection]});
+    return prepared;
+  }
+
+  private columnPylonSectionV2Repository() {
+    return new ColumnPylonSectionV2Repository({
+      organizationId:this.organizationId,unconfiguredScaffold:buildScaffoldReleaseManifest(this.parameters.length).manifest,
+      storage:this.storage,transact:(signal,operation)=>this.inventoryTransaction(false,signal,operation),
+      lockReceipt:(client,command,targetId)=>this.lockCommandReceipt(client,command,COLUMN_PYLON_SECTION_OPERATION,COLUMN_PYLON_SECTION_TARGET,targetId),
+      getReceipt:(client,command,targetId)=>this.getCommandReceipt<{value:import('@inspector-ai/contracts').ColumnPylonSectionV2Journal}>(client,command,COLUMN_PYLON_SECTION_OPERATION,COLUMN_PYLON_SECTION_TARGET,targetId),
+      insertReceipt:(client,command,targetId,requestHash,value)=>this.insertCommandReceipt(client,command,COLUMN_PYLON_SECTION_OPERATION,COLUMN_PYLON_SECTION_TARGET,targetId,requestHash,201,{value},true),
+      audit:(client,command,access,targetId,previous,value,reference)=>this.appendAuditEvent(client,{
+        command,objectId:access.object_id,inspectionId:access.inspection_id!,action:COLUMN_PYLON_SECTION_OPERATION,
+        targetType:COLUMN_PYLON_SECTION_TARGET,targetId,beforeRef:previous?{decisionId:previous.id,contentHash:previous.contentHash}:null,
+        afterRef:{decisionId:value.id,contentHash:value.contentHash,projectionContentHash:value.projection.contentHash},reason:reference,
+      }),
+    });
+  }
+  recordColumnPylonSectionV2ReviewCommand(objectId:string,input:import('@inspector-ai/contracts').ColumnPylonSectionV2Request,command:AuditedMutationCommand) {
+    return this.columnPylonSectionV2Repository().record(objectId,input,command);
+  }
+  getColumnPylonSectionV2Reviews(objectId:string,actor:AuthenticatedActor) {
+    return this.columnPylonSectionV2Repository().list(objectId,actor);
+  }
+  getColumnPylonSectionV2Source(checkId:string,sourceFileId:string,actor:AuthenticatedActor) {
+    return this.columnPylonSectionV2Repository().sourcePreview(checkId,sourceFileId,actor);
+  }
+  previewColumnPylonSectionV2Comparison(objectId:string,reviewDecisionId:string,actor:AuthenticatedActor) {
+    return this.columnPylonSectionV2Repository().comparison(objectId,reviewDecisionId,actor);
+  }
+
+  async recordSteelApplicabilityReviewCommand(objectApiId:string,raw:SteelApplicabilityReviewInput,
+    command:AuditedMutationCommand):Promise<AuditedMutationCommandResult<SteelApplicabilityReviewDecision>> {
+    if(!this.hasReadScope(command?.actor))return {kind:'forbidden'};
+    const input=parseSteelApplicabilityReviewInput(raw),operation='STEEL_APPLICABILITY_REVIEW';
+    const requestHash=sha256(canonicalJson({objectApiId,input}));
+    try{return await withPdfIoBudget(async signal=>{
+      const prepare=async(client:PoolClient)=>{
+        const access=await this.steelApplicabilityAccess(client,objectApiId,command.actor,true);
+        if(!access)return {kind:'not_found'} as const;
+        const pairKey=steelApplicabilityPairKey({objectId:access.object_id,identity:input.identity,
+          expectedSourceFileId:input.expected.sourceFileId,actualSourceFileId:input.actual.sourceFileId});
+        const targetId=`${objectApiId}:${pairKey}`;
+        await this.lockCommandReceipt(client,command,operation,'STEEL_APPLICABILITY',targetId);
+        const receipt=await this.getCommandReceipt<{value:SteelApplicabilityReviewDecision}>(client,command,operation,'STEEL_APPLICABILITY',targetId);
+        if(receipt){
+          if(receipt.requestHash!==requestHash)return {kind:'idempotency_conflict'} as const;
+          const value=validateSteelApplicabilityReviewDecision(receipt.response.value);
+          if(value.objectId!==objectApiId||value.actorId!==command.actor.userId)
+            throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+          return {kind:'success',value,replayed:true} as const;
+        }
+        const row=(await client.query<SteelApplicabilityJournalRow>(`SELECT * FROM matrix_steel_applicability_decisions
+          WHERE object_id=$1 AND pair_key=$2 ORDER BY sequence_no DESC LIMIT 1`,[access.object_id,pairKey])).rows[0];
+        const previous=row?await this.verifySteelApplicabilityJournal(client,row,objectApiId):null;
+        if(input.expectedReviewHash!==(previous?.contentHash??null))return {kind:'invalid_state',code:'STEEL_APPLICABILITY_STALE_REVIEW',message:'Решение применимости изменилось. Загрузите актуальный журнал.'} as const;
+        if(!previous){const count=(await client.query<{n:number}>(`SELECT count(DISTINCT pair_key)::int AS n FROM matrix_steel_applicability_decisions WHERE object_id=$1`,[access.object_id])).rows[0].n;
+          if(count>=STEEL_APPLICABILITY_REVIEW_LIMITS.latestPairs)throw new SteelApplicabilityReviewValidationError('INPUT_LIMIT','Превышено число пар применимости');}
+        const priorPrepared=previous?await this.prepareSteelApplicabilityJournal(client,access.object_id,objectApiId,previous):null;
+        if(row&&priorPrepared&&(priorPrepared.expectedSourceInternalId!==row.expected_source_file_id||priorPrepared.actualSourceInternalId!==row.actual_source_file_id))
+          throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+        const prepared=await prepareSteelApplicabilityInputs(client,{objectId:access.object_id,objectApiId,
+          expected:input.expected,actual:input.actual,mode:input.status==='WITHDRAWN'?'HISTORICAL':'CURRENT'},this.loadInventoryOrigin.bind(this));
+        const encoded=canonicalJson({previous,package:prepared.package,previousPackage:priorPrepared?.package??null});
+        if(Buffer.byteLength(encoded)>STEEL_APPLICABILITY_REVIEW_LIMITS.materializedBytes)throw new SteelApplicabilityReviewValidationError('INPUT_LIMIT','Превышен объём исходных привязок пары');
+        const references=[...prepared.references,...(priorPrepared?.references??[])];
+        return {kind:'prepared',access,pairKey,targetId,previous,prepared,references,
+          fingerprint:sha256(canonicalJson({current:prepared.fingerprint,previous:priorPrepared?.fingerprint??null,previousDecision:previous}))} as const;
+      };
+      const first=await this.inventoryTransaction(false,signal,prepare);
+      if(first.kind!=='prepared')return first;
+      if(!this.storage)throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+      await verifyOriginalPdfSet({storage:this.storage,references:first.references,signal});
+      return this.inventoryTransaction(false,signal,async client=>{
+        const fresh=await prepare(client);if(fresh.kind!=='prepared')return fresh;
+        if(first.fingerprint!==fresh.fingerprint)throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+        const id=randomUUID(),createdAt=new Date().toISOString();
+        const value=materializeSteelApplicabilityReview(input,{objectId:objectApiId,actorId:command.actor.userId,id,createdAt,
+          previous:fresh.previous,package:fresh.prepared.package});
+        await client.query(`INSERT INTO matrix_steel_applicability_decisions(id,object_id,pair_key,
+          expected_source_file_id,actual_source_file_id,expected_review_decision_id,actual_review_decision_id,
+          previous_decision_id,previous_review_hash,projection_json,actor_id,content_hash,created_at)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13::timestamptz)`,
+          [id,fresh.access.object_id,fresh.pairKey,fresh.prepared.expectedSourceInternalId,fresh.prepared.actualSourceInternalId,
+            value.projection.expected.reviewDecisionId,value.projection.actual.reviewDecisionId,fresh.previous?.id??null,
+            value.previousReviewHash,canonicalJson(value.projection),command.actor.userId,value.contentHash,createdAt]);
+        await this.insertCommandReceipt(client,command,operation,'STEEL_APPLICABILITY',fresh.targetId,requestHash,201,{value},true);
+        await this.appendAuditEvent(client,{command,objectId:fresh.access.object_id,inspectionId:fresh.access.inspection_id!,
+          action:operation,targetType:'STEEL_APPLICABILITY',targetId:fresh.targetId,
+          beforeRef:fresh.previous?{decisionId:fresh.previous.id,contentHash:fresh.previous.contentHash}:null,
+          afterRef:{decisionId:value.id,contentHash:value.contentHash,projectionContentHash:value.projection.contentHash},reason:input.basis.reference});
+        return {kind:'success',value,replayed:false} as const;
+      });
+    });}catch(error){
+      if(error instanceof SteelApplicabilityReviewValidationError||error instanceof SteelApplicabilityInputIntegrityError||error instanceof PdfIoError)
+        return {kind:'invalid_state',code:error.code.startsWith('STEEL_APPLICABILITY_')?error.code:`STEEL_APPLICABILITY_${error.code}`,message:'Исходники, решения или доступ изменены. Проверьте актуальные привязки пары.'};
+      throw error;
+    }
+  }
+
+  async getSteelApplicabilityReviews(objectApiId:string,actor:AuthenticatedActor):Promise<{items:SteelApplicabilityReviewDecision[];canReview:boolean}|undefined> {
+    if(!this.hasReadScope(actor))return undefined;
+    try{return await withPdfIoBudget(async signal=>{
+      const prepare=async(client:PoolClient)=>{
+        const access=await this.steelApplicabilityAccess(client,objectApiId,actor,false);if(!access)return null;
+        const rows=(await client.query<SteelApplicabilityJournalRow>(`SELECT * FROM
+          (SELECT DISTINCT ON(pair_key) * FROM matrix_steel_applicability_decisions WHERE object_id=$1
+            ORDER BY pair_key,sequence_no DESC) latest ORDER BY sequence_no DESC LIMIT 17`,[access.object_id])).rows;
+        if(rows.length>STEEL_APPLICABILITY_REVIEW_LIMITS.latestPairs)throw new SteelApplicabilityReviewValidationError('INPUT_LIMIT','Превышено число пар применимости');
+        const items:SteelApplicabilityReviewDecision[]=[],references:OriginalPdfReference[]=[],proofs:string[]=[];let bytes=0;
+        for(const row of rows){
+          const value=await this.verifySteelApplicabilityJournal(client,row,objectApiId);
+          const prepared=await this.prepareSteelApplicabilityJournal(client,access.object_id,objectApiId,value);
+          if(prepared.expectedSourceInternalId!==row.expected_source_file_id||prepared.actualSourceInternalId!==row.actual_source_file_id)
+            throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+          bytes+=Buffer.byteLength(canonicalJson({value,package:prepared.package}));
+          if(bytes>STEEL_APPLICABILITY_REVIEW_LIMITS.materializedBytes)throw new SteelApplicabilityReviewValidationError('INPUT_LIMIT','Превышен объём журнала применимости');
+          items.push(value);references.push(...prepared.references);proofs.push(prepared.fingerprint);
+        }
+        return {items,canReview:access.can_review,references,fingerprint:sha256(canonicalJson({items,proofs,canReview:access.can_review}))};
+      };
+      const first=await this.inventoryTransaction(true,signal,prepare);if(!first)return undefined;
+      if(first.references.length){if(!this.storage)throw new SteelApplicabilityInputIntegrityError('STEEL_APPLICABILITY_INPUT_INTEGRITY');
+        await verifyOriginalPdfSet({storage:this.storage,references:first.references,signal});}
+      const fresh=await this.inventoryTransaction(true,signal,prepare);if(!fresh||fresh.fingerprint!==first.fingerprint)return undefined;
+      return {items:fresh.items,canReview:fresh.canReview};
+    });}catch(error){
+      if(error instanceof SteelApplicabilityReviewValidationError||error instanceof SteelApplicabilityInputIntegrityError||error instanceof PdfIoError)return undefined;
+      throw error;
+    }
+  }
+
   async recordSourceReviewCommand(
     objectApiId: string,
     sourceFileApiId: string,
@@ -2343,17 +3185,51 @@ export class PostgresInspectionRepository implements InspectionRepository {
     command: AuditedMutationCommand,
   ): Promise<AuditedMutationCommandResult<SourceReviewDecision>> {
     if (command.actor.organizationId !== this.organizationId) return { kind: "forbidden" };
+    assertSteelComparisonReviewNative(input);
+    if(input.steelComparisonScope!==undefined)parseSteelComparisonScopeInput(input.steelComparisonScope);
+    assertWaterNodeReviewNative(input);
+    if(input.waterNodeScope!==undefined)parseWaterNodeScopeInput(input.waterNodeScope);
+    if(input.lightingTechnologyScope!==undefined)parseLightingTechnologyScopeInput(input.lightingTechnologyScope);
+    assertCallInventoryReviewNative(input);
+    assertRailInventoryReviewNative(input);
+    if(input.railInventoryScope!==undefined)parseRailInventoryScopeInput(input.railInventoryScope);
+    if(input.callInventoryScope!==undefined)parseCallInventoryScopeInput(input.callInventoryScope);
+    if(Object.keys(input.pageStages).some(k=>!(/^[1-9][0-9]{0,15}$/.test(k)&&Number.isSafeInteger(Number(k)))))return {kind:"invalid_state",code:"SOURCE_STAGE_MISMATCH",message:"Некорректный номер страницы"};
+    if(input.inventoryScope!==undefined)parseInventoryScopeInput(input.inventoryScope);
     const operation = "SOURCE_REVIEW";
-    const { sectionCode: requestedSectionCode, ...legacyInput } = input;
+    const { expectedReviewHash,...reviewInput }=input;
+    const { sectionCode: requestedSectionCode, ...legacyInput } = reviewInput;
     const hashInput = requestedSectionCode
       ? { ...legacyInput, sectionCode: requestedSectionCode } : legacyInput;
-    const requestHash = sha256(canonicalJson({ objectApiId, sourceFileApiId, input: hashInput }));
-    return this.transaction(async (client) => {
+    const requestHash = sha256(canonicalJson({ objectApiId, sourceFileApiId,
+      input: {...hashInput,...(expectedReviewHash!==undefined?{expectedReviewHash}:{})} }));
+    type Result=AuditedMutationCommandResult<SourceReviewDecision>;
+    type Guard={kind:"wall_review_guard";fingerprint:string};
+    type Routing={kind:"v13_review_required"};
+    type Prepared={kind:"wall_review_prepared";fingerprint:string;references:OriginalPdfReference[];
+      commit:(freshClient:PoolClient)=>Promise<Result>};
+    const requestedFactScope=reviewInput.matrixScope&&"schemaVersion" in reviewInput.matrixScope?reviewInput.matrixScope:null;
+    const wallRequested=Boolean(requestedFactScope?.bindings.some(binding=>
+      isConcreteWallClaimV13(binding as unknown as Record<string,unknown>)));
+    const execute=async(client:PoolClient,phase?:"A"|"C"):Promise<Result|Guard|Prepared|Routing>=>{
+      let guardFingerprint="";
+      let wallResources:MatrixSourceReviewResourcesV13|undefined;
+
       await this.lockCommandReceipt(client, command, operation, "SOURCE_FILE", sourceFileApiId);
       const receipt = await this.getCommandReceipt<{ value: SourceReviewDecision }>(
         client, command, operation, "SOURCE_FILE", sourceFileApiId,
       );
       if (receipt) {
+        // A saved command is not an authorization grant after object access changes.
+        const access=await client.query(`SELECT source.id FROM source_files source
+          JOIN objects object ON object.id=source.object_id
+          WHERE object.organization_id=$1 AND object.api_id=$2 AND source.api_id=$3
+            AND EXISTS (SELECT 1 FROM object_memberships membership
+              WHERE membership.object_id=object.id AND membership.user_id=$4
+                AND membership.revoked_at IS NULL
+                AND membership.permission_set @> ARRAY['READ','REVIEW_DECIDE']::text[])`,
+          [this.organizationId,objectApiId,sourceFileApiId,command.actor.userId]);
+        if(access.rows.length!==1)return {kind:"not_found"} as const;
         if (receipt.requestHash !== requestHash) return { kind: "idempotency_conflict" } as const;
         return { kind: "success", value: {
           ...receipt.response.value,
@@ -2382,6 +3258,103 @@ export class PostgresInspectionRepository implements InspectionRepository {
       );
       const selected = source.rows[0];
       if (!selected) return { kind: "not_found" } as const;
+      const locked=await client.query("SELECT id FROM inspections WHERE id=$1 AND lifecycle='OPEN' FOR UPDATE",[selected.inspection_id]);
+      if(!locked.rows.length)return {kind:"invalid_state",code:"INSPECTION_CLOSED",message:"Инспекция уже закрыта"} as const;
+      if(!phase){
+        if(requestedFactScope&&requestedFactScope.bindings.length>500)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+        const checks=[...new Set([
+          ...(requestedFactScope?.bindings.map(binding=>binding.target.checkId)??[]),
+          ...(input.inventoryScope?.claims.map(claim=>claim.target.checkId)??[]),
+          ...(input.callInventoryScope?.claims.map(claim=>claim.target.checkId)??[]),
+          ...(input.railInventoryScope?.claims.map(claim=>claim.target.checkId)??[]),
+          ...(input.waterNodeScope?.claims.map(claim=>claim.target.checkId)??[]),
+          ...(input.lightingTechnologyScope?.claims.map(claim=>claim.target.checkId)??[]),
+          ...(input.steelComparisonScope?.claims.map(claim=>claim.target.checkId)??[]),
+        ])];
+        // Routing metadata only: omitted siblings inherit; explicit empty claims override.
+        // Saved JSON stays inside SQL. A must still validate the complete prior parent.
+        const v13=(await client.query<{id:string}>(`WITH latest AS (
+          SELECT inventory_scope,call_inventory_scope,rail_inventory_scope,water_node_scope,
+            lighting_technology_scope,steel_comparison_scope
+          FROM source_review_decisions WHERE source_file_id=$5 AND object_id=$1
+          ORDER BY created_at DESC,id DESC LIMIT 1
+        ), effective_checks AS (
+          SELECT unnest($3::text[]) AS check_id
+          UNION
+          SELECT claim.value->'target'->>'checkId' AS check_id
+          FROM latest previous CROSS JOIN LATERAL (VALUES
+            ($6::boolean,previous.inventory_scope),
+            ($7::boolean,previous.call_inventory_scope),
+            ($8::boolean,previous.rail_inventory_scope),
+            ($9::boolean,previous.water_node_scope),
+            ($10::boolean,previous.lighting_technology_scope),
+            ($11::boolean,previous.steel_comparison_scope)
+          ) inherited(include_scope,scope)
+          CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN inherited.include_scope
+            THEN COALESCE(inherited.scope->'claims','[]'::jsonb) ELSE '[]'::jsonb END) claim(value)
+        ) SELECT run.id FROM analysis_runs run
+          JOIN objects object ON object.id=run.object_id
+          JOIN analysis_stage_artifacts stage ON stage.run_id=run.id AND stage.job_type='RULE_EVALUATION'
+          WHERE run.object_id=$1 AND object.organization_id=$2
+            AND run.api_id IN (SELECT check_id FROM effective_checks WHERE check_id IS NOT NULL)
+            AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED')
+            AND stage.provider_profile_id=$4 LIMIT 1`,
+          [selected.object_id,this.organizationId,checks,MATRIX_CONCRETE_WALL_V13_PROFILE,selected.id,
+            input.inventoryScope===undefined,input.callInventoryScope===undefined,
+            input.railInventoryScope===undefined,input.waterNodeScope===undefined,
+            input.lightingTechnologyScope===undefined,input.steelComparisonScope===undefined])).rows;
+        // No body, mutation, or authority leaves this discovery transaction.
+        // Restart under the same genuine A/B/C guards used by wall reviews.
+        if(v13.length!==0)return {kind:"v13_review_required"};
+      }
+      if(phase){
+        const access=await client.query(`SELECT source.id FROM source_files source JOIN objects object ON object.id=source.object_id
+          WHERE source.id=$1 AND source.object_id=$2 AND object.organization_id=$3 AND object.api_id=$4 AND source.api_id=$5
+            AND EXISTS(SELECT 1 FROM object_memberships membership WHERE membership.object_id=object.id
+              AND membership.user_id=$6 AND membership.revoked_at IS NULL
+              AND membership.permission_set @> ARRAY['READ','REVIEW_DECIDE']::text[])`,
+          [selected.id,selected.object_id,this.organizationId,objectApiId,sourceFileApiId,command.actor.userId]);
+        if(access.rows.length!==1)return {kind:"not_found"};
+        // Provisioning/revocation does not acquire inspection. Lock this actual
+        // membership row so a post-guard revocation cannot race the write.
+        const membership=await client.query(`SELECT object_id,user_id,permission_set,revoked_at FROM object_memberships
+          WHERE object_id=$1 AND user_id=$2 AND revoked_at IS NULL
+            AND permission_set @> ARRAY['READ','REVIEW_DECIDE']::text[] FOR SHARE`,
+          [selected.object_id,command.actor.userId]);
+        if(membership.rows.length!==1)return {kind:"not_found"};
+        const previousHeader=(await client.query<{id:string;content_hash:string}>(`SELECT id,content_hash
+          FROM source_review_decisions WHERE source_file_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1`,[selected.id])).rows[0]??null;
+        if(expectedReviewHash===undefined||expectedReviewHash!==(previousHeader?.content_hash.trim()??null))
+          return {kind:"invalid_state",code:"SOURCE_REVIEW_STALE",message:"Решение по источнику изменилось. Загрузите актуальное решение и повторите проверку."};
+        if(selected.sha256.trim()!==input.sourceSha256)return {kind:"invalid_state",code:"SOURCE_HASH_MISMATCH",message:"Исходный файл изменён или выбран неверный SHA-256"};
+        if((selected.stages.length===1&&Object.keys(input.pageStages).length>0)
+          ||Object.values(input.pageStages).some(stage=>stage!=="UNRESOLVED"&&!selected.stages.includes(stage)))
+          return {kind:"invalid_state",code:"SOURCE_STAGE_MISMATCH",message:"Стадия страницы не указана для исходного файла"};
+        guardFingerprint=sha256(canonicalJson({selected,previousHeader}));
+        if(phase==="C")return {kind:"wall_review_guard",fingerprint:guardFingerprint};
+        if(matrixConcreteWallInstalledIdentityV13()===null)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        if(requestedFactScope&&requestedFactScope.bindings.length>128)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+        const operation=this.matrixOriginOperationV13(client,selected.object_id);
+        wallResources={budget:operation.budget,operation,references:new Map(),collectedChecks:new Set(),originals:new Map()};
+        if(previousHeader)await wallResources.budget.sourceReview(selected.id,previousHeader.id);
+      }
+      const prior=await client.query<{content_hash:string;inventory_scope:MatrixInventoryScopeDecision|null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null; source_sha256:string; revision_status:string;approval_status:string;link_group_id:string|null;section_code:string|null;page_stages:SourceReviewInput["pageStages"];basis_reference:string;matrix_scope:MatrixSourceScope|null;actor_id:string}>(`SELECT * FROM source_review_decisions
+        WHERE source_file_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1`,[selected.id]);
+      const previous=prior.rows[0];
+      if(previous&&(previous.inventory_scope||input.inventoryScope||previous.call_inventory_scope||input.callInventoryScope||previous.rail_inventory_scope||input.railInventoryScope||previous.water_node_scope||input.waterNodeScope||previous.lighting_technology_scope||input.lightingTechnologyScope||previous.steel_comparison_scope||input.steelComparisonScope)){
+        try{if(previous.steel_comparison_scope)parseSteelComparisonScopeDecision(previous.steel_comparison_scope,{sourceFileId:sourceFileApiId,sourceSha256:previous.source_sha256.trim()});if(previous.inventory_scope)parseInventoryScopeDecision(previous.inventory_scope);if(previous.call_inventory_scope)parseCallInventoryScopeDecision(previous.call_inventory_scope,{sourceFileId:sourceFileApiId,sourceSha256:previous.source_sha256.trim()});if(previous.rail_inventory_scope)parseRailInventoryScopeDecision(previous.rail_inventory_scope,{sourceFileId:sourceFileApiId,sourceSha256:previous.source_sha256.trim()});if(previous.water_node_scope)parseWaterNodeScopeDecision(previous.water_node_scope,{sourceFileId:sourceFileApiId,sourceSha256:previous.source_sha256.trim()});if(previous.lighting_technology_scope)parseLightingTechnologyScopeDecision(previous.lighting_technology_scope,{sourceFileId:sourceFileApiId,sourceSha256:previous.source_sha256.trim()});}catch{return {kind:"invalid_state",code:"INVENTORY_SNAPSHOT_MISMATCH",message:"Сохранённый перечень повреждён. Требуется проверка целостности решения."} as const;}
+        const previousHash=sha256(canonicalJson({objectApiId,sourceFileApiId,sourceSha256:previous.source_sha256.trim(),
+          revisionStatus:previous.revision_status,approvalStatus:previous.approval_status,linkGroupId:previous.link_group_id,
+          ...(previous.section_code?{sectionCode:previous.section_code}:{}),pageStages:previous.page_stages,basis:{reference:previous.basis_reference},
+          ...(previous.matrix_scope?{matrixScope:previous.matrix_scope}:{}),...(previous.inventory_scope?{inventoryScope:previous.inventory_scope}:{}),...(previous.call_inventory_scope?{callInventoryScope:previous.call_inventory_scope}:{}),...(previous.rail_inventory_scope?{railInventoryScope:previous.rail_inventory_scope}:{}),...(previous.water_node_scope?{waterNodeScope:previous.water_node_scope}:{}),...(previous.lighting_technology_scope?{lightingTechnologyScope:previous.lighting_technology_scope}:{}),...(previous.steel_comparison_scope?{steelComparisonScope:previous.steel_comparison_scope}:{}),actorId:previous.actor_id}));
+        if(previousHash!==previous.content_hash.trim())return {kind:"invalid_state",code:"INVENTORY_SNAPSHOT_MISMATCH",message:"Хеш сохранённого решения не совпадает."} as const;
+      }
+      const factScope=reviewInput.matrixScope&&"schemaVersion" in reviewInput.matrixScope?reviewInput.matrixScope:null;
+      if(((factScope||input.inventoryScope||prior.rows[0]?.inventory_scope||input.callInventoryScope||prior.rows[0]?.call_inventory_scope||input.railInventoryScope||prior.rows[0]?.rail_inventory_scope||input.waterNodeScope||prior.rows[0]?.water_node_scope||input.lightingTechnologyScope||prior.rows[0]?.lighting_technology_scope||input.steelComparisonScope||prior.rows[0]?.steel_comparison_scope)&&expectedReviewHash===undefined)||(expectedReviewHash!==undefined&&expectedReviewHash!==(prior.rows[0]?.content_hash.trim()??null)))
+        return {kind:"invalid_state",code:"SOURCE_REVIEW_STALE",message:"Решение по источнику изменилось. Загрузите актуальное решение и повторите проверку."} as const;
       if (selected.sha256.trim() !== input.sourceSha256) {
         return { kind: "invalid_state", code: "SOURCE_HASH_MISMATCH",
           message: "Исходный файл изменён или выбран неверный SHA-256" } as const;
@@ -2389,28 +3362,220 @@ export class PostgresInspectionRepository implements InspectionRepository {
       if ((selected.stages.length === 1 && Object.keys(input.pageStages).length > 0)
         || Object.values(input.pageStages).some((stage) => stage !== "UNRESOLVED" && !selected.stages.includes(stage))) {
         return { kind: "invalid_state", code: "SOURCE_STAGE_MISMATCH",
-          message: "Стадия страницы не указана для исходного файла" } as const;
+          message: prior.rows[0]?.inventory_scope ? "Трактовка источника изменилась. Отзовите перечень явно или повторите предпросмотр с допустимой стадией." : "Стадия страницы не указана для исходного файла" } as const;
       }
-      const contentHash = sha256(canonicalJson({
-        objectApiId, sourceFileApiId, ...hashInput, actorId: command.actor.userId,
-      }));
+      const factOrigins=new Map<string,Awaited<ReturnType<PostgresInspectionRepository["loadMatrixFactOrigin"]>>>();
+      if(factScope)for(const binding of factScope.bindings){
+        const entry=matrixRegistry.entries.find(entry=>entry.parameterCode===binding.parameterCode);
+        const rule=entry?.atomicRules.find(rule=>rule.enabled&&rule.ruleId===binding.ruleId&&rule.version===binding.ruleVersion);
+        if(!rule||Object.keys(binding.contexts).some(key=>key!=="DRAWING_SECTION_VERIFIED"&&!rule.requiredContext.includes(key)
+          &&!(wallResources&&key==="CONCRETE_WALL_FLOOR_SCOPE_V1")))
+          return {kind:"invalid_state",code:"MATRIX_FACT_RULE_MISMATCH",message:"Правило или контекст привязки не соответствует установленному реестру"} as const;
+        let origin:{contentHash:string}|null|undefined;
+        let fact:import("@inspector-ai/contracts").MatrixObservation|undefined;
+        let target:MatrixFactTargetEvidence|null|undefined;
+        let role:ConcreteWallSourceAddressResultV1["role"]|null=null;
+        if(wallResources&&isConcreteWallClaimV13(binding as unknown as Record<string,unknown>)){
+          let original=wallResources.originals.get(binding.target.checkId);
+          if(!original){original=await this.loadMatrixScalarOriginalV13(client,selected.object_id,binding.target.checkId,wallResources.budget)??undefined;
+            if(original)wallResources.originals.set(binding.target.checkId,original);}
+          const selectedFact=original?.observations.find(item=>item.id===binding.target.observationId&&item.sourceFileId===sourceFileApiId);
+          // A genuine generic original cannot acquire the wall's source role from a FLOOR claim.
+          // Authenticate its complete public target before classifying the missing role.
+          if(Object.hasOwn(binding.contexts,"CONCRETE_WALL_FLOOR_SCOPE_V1")&&original&&selectedFact
+            &&original.stage.content_hash===binding.target.executionContentHash&&selectedFact.stage!=="UNRESOLVED"
+            &&selectedFact.sourceSha256===input.sourceSha256){
+            const source=original.base.metadata.sources.find(item=>item.sourceFileId===sourceFileApiId);
+            const pageStages=source?.sourceReview?.body.pageStages;
+            const pageStage=isRecord(pageStages)&&Object.hasOwn(pageStages,String(selectedFact.pageNumber))
+              ?pageStages[String(selectedFact.pageNumber)]:undefined;
+            const stage=source?.originalStages.length===1?source.originalStages[0]
+              :pageStage==="PD"||pageStage==="RD"||pageStage==="ID"?pageStage:"UNRESOLVED";
+            const evidenceFragments=selectedFact.evidenceFragments;
+            const reserved=isConcreteWallClaimV13({contexts:{}},selectedFact as unknown as Record<string,unknown>)
+              ||selectedFact.stage==="PD"&&selectedFact.attribute==="CONCRETE_CLASS"&&Array.isArray(evidenceFragments)
+                &&isRecord(evidenceFragments[0])&&evidenceFragments[0].rawText==="стены -3го по +1";
+            if(source?.sha256===input.sourceSha256&&selectedFact.stage===stage&&!reserved){
+              const artifact=original.base.textArtifacts.find(item=>item.sourceFileId===sourceFileApiId)?.artifact;
+              const generic=artifact?deriveMatrixFactTarget(selectedFact,artifact):null;
+              if(generic&&generic.observationId===binding.target.observationId
+                &&generic.evidenceHash===binding.target.evidenceHash&&generic.textArtifactHash===binding.target.textArtifactHash
+                &&(!binding.tableContextReview||binding.tableContextReview.fragmentsHash===generic.fragmentsHash))
+                return {kind:"invalid_state",code:"MATRIX_FACT_RULE_MISMATCH",message:"Контекст этажей допустим только для исходного факта стены"} as const;
+            }
+          }
+          const address=original&&selectedFact?this.matrixScalarAddressV13(original,selected.object_id,sourceFileApiId,selectedFact,true,binding.target):null;
+          if(original&&address&&address.role!==null){
+            origin={contentHash:original.stage.content_hash};fact=address.fact;target=address.target;role=address.role;
+            for(const ref of Object.values(original.base.pdfStorageRefs))this.retainSourceReviewPdfV13(wallResources,{
+              storageKey:ref.storageKey,expectedSha256:ref.sha256,expectedByteSize:ref.byteSize,expectedMediaType:"application/pdf"});
+          }
+        }else{
+          if(wallResources)await this.collectSourceReviewPdfsV13(client,selected.object_id,binding.target.checkId,wallResources);
+          if(!factOrigins.has(binding.target.checkId))factOrigins.set(binding.target.checkId,
+            await this.loadMatrixFactOrigin(client,selected.object_id,binding.target.checkId,sourceFileApiId,wallResources?.operation));
+          const full=factOrigins.get(binding.target.checkId);origin=full;
+          if(wallResources)for(const ref of full?.references??[])this.retainSourceReviewPdfV13(wallResources,ref);
+          fact=full?.execution.observations.find(fact=>fact.id===binding.target.observationId&&fact.sourceFileId===sourceFileApiId);
+          target=fact?full?.artifacts.get(sourceFileApiId)?.deriveTarget(fact):null;
+        }
+        if(Object.hasOwn(binding.contexts,"CONCRETE_WALL_FLOOR_SCOPE_V1")
+          &&(!wallResources||role===null||binding.ruleId!=="matrix-kr-055-concrete_class"||binding.ruleVersion!=="1"
+            ||binding.parameterCode!=="KR-055"||rule.attribute!=="CONCRETE_CLASS"||rule.canonicalUnit!=="B_CLASS"))
+          return {kind:"invalid_state",code:"MATRIX_FACT_RULE_MISMATCH",message:"Контекст этажа требует подтверждённого исходного указания стены"};
+        if(!origin||origin.contentHash!==binding.target.executionContentHash||!fact||fact.stage==="UNRESOLVED"
+          ||fact.sourceSha256!==input.sourceSha256||fact.attribute!==rule.attribute||fact.unit!==rule.canonicalUnit
+          ||!(fact.parameterCodes as string[]).includes(binding.parameterCode)||!target
+          ||target.evidenceHash!==binding.target.evidenceHash||target.textArtifactHash!==binding.target.textArtifactHash
+          ||(binding.tableContextReview&&binding.tableContextReview.fragmentsHash!==target.fragmentsHash))
+          return {kind:"invalid_state",code:"MATRIX_FACT_TARGET_MISMATCH",message:"Исходный факт или контекст изменён либо относится к другому запуску или файлу"} as const;
+        const authority=binding.contexts.PROJECT_ZERO_GEODETIC_AUTHORITY?.projectZeroAuthority;
+        if(authority){
+          const invalidAuthority=()=>({kind:"invalid_state",code:"MATRIX_PROJECT_ZERO_AUTHORITY_MISMATCH",
+            message:"Геодезическая основа ПД или связанное решение изменены. Проверьте исходный факт и актуальное решение ПД."} as const);
+          if(authority.kind!=="APPROVED_PD_GEODETIC_BASIS")return invalidAuthority();
+          if(fact.stage==="PD"){
+            if(authority.sourceFileId!==sourceFileApiId||authority.sourceSha256!==input.sourceSha256
+              ||authority.pageNumber!==fact.pageNumber||canonicalJson(authority.target)!==canonicalJson(binding.target)
+              ||authority.reviewContentHash!==undefined)return invalidAuthority();
+          }else if(fact.stage==="RD"){
+            if(!authority.reviewContentHash)return invalidAuthority();
+            if(wallResources){
+              const pdHeader=(await client.query<{source_id:string;decision_id:string}>(`SELECT source.id AS source_id,review.id AS decision_id
+                FROM source_files source JOIN LATERAL(SELECT id FROM source_review_decisions decision
+                  WHERE decision.source_file_id=source.id ORDER BY decision.created_at DESC,decision.id DESC LIMIT 1) review ON true
+                WHERE source.object_id=$1 AND source.api_id=$2`,[selected.object_id,authority.sourceFileId])).rows;
+              if(pdHeader.length!==1)return invalidAuthority();
+              await wallResources.budget.sourceReview(pdHeader[0]!.source_id,pdHeader[0]!.decision_id);
+            }
+            const current=await client.query<{source_sha256:string;review_source_sha256:string;revision_status:string;
+              approval_status:string;content_hash:string;matrix_scope:MatrixSourceScope|null}>(
+              `SELECT blob.sha256 AS source_sha256, review.source_sha256 AS review_source_sha256,
+                 review.revision_status,review.approval_status,review.content_hash,review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope
+               FROM source_files source JOIN blobs blob ON blob.id=source.blob_id
+               JOIN LATERAL (SELECT * FROM source_review_decisions decision WHERE decision.source_file_id=source.id
+                 ORDER BY decision.created_at DESC,decision.id DESC LIMIT 1) review ON true
+               WHERE source.object_id=$1 AND source.api_id=$2`,[selected.object_id,authority.sourceFileId]);
+            const pd=current.rows[0],scope=matrixFactScopeSchema.safeParse(pd?.matrix_scope);
+            if(!pd||pd.revision_status!=="CURRENT"||pd.approval_status!=="APPROVED"
+              ||pd.source_sha256.trim()!==authority.sourceSha256||pd.review_source_sha256.trim()!==authority.sourceSha256
+              ||pd.content_hash.trim()!==authority.reviewContentHash||!scope.success)return invalidAuthority();
+            const {reviewContentHash:_hash,...claim}=authority;
+            const pdBinding=scope.data.bindings.find(candidate=>candidate.ruleId===binding.ruleId
+              &&candidate.ruleVersion===binding.ruleVersion&&candidate.parameterCode===binding.parameterCode
+              &&canonicalJson(candidate.target)===canonicalJson(authority.target)
+              &&canonicalJson(candidate.contexts.PROJECT_ZERO_GEODETIC_AUTHORITY?.projectZeroAuthority??null)===canonicalJson(claim));
+            if(!pdBinding)return invalidAuthority();
+            if(wallResources)await this.collectSourceReviewPdfsV13(client,selected.object_id,authority.target.checkId,wallResources);
+            const pdOrigin=await this.loadMatrixFactOrigin(client,selected.object_id,authority.target.checkId,authority.sourceFileId,wallResources?.operation);
+            if(wallResources)for(const ref of pdOrigin?.references??[])this.retainSourceReviewPdfV13(wallResources,ref);
+            const pdFact=pdOrigin?.execution.observations.find(candidate=>candidate.id===authority.target.observationId
+              &&candidate.sourceFileId===authority.sourceFileId);
+            const pdTarget=pdFact?pdOrigin?.artifacts.get(authority.sourceFileId)?.deriveTarget(pdFact):null;
+            if(!pdOrigin||pdOrigin.contentHash!==authority.target.executionContentHash||!pdFact||pdFact.stage!=="PD"
+              ||pdFact.sourceSha256!==authority.sourceSha256||pdFact.pageNumber!==authority.pageNumber
+              ||pdFact.attribute!==rule.attribute||pdFact.unit!==rule.canonicalUnit
+              ||!(pdFact.parameterCodes as string[]).includes(binding.parameterCode)
+              ||!pdTarget||pdTarget.evidenceHash!==authority.target.evidenceHash
+              ||pdTarget.textArtifactHash!==authority.target.textArtifactHash)return invalidAuthority();
+          }else return invalidAuthority();
+        }
+      }
+      let materializedInventory: MatrixInventoryScopeDecision | undefined;
+      try {
+        const inventoryRequest = input.inventoryScope ?? (prior.rows[0]?.inventory_scope
+          ? inventoryScopeDecisionToInput(parseInventoryScopeDecision(prior.rows[0].inventory_scope)) : undefined);
+        if (inventoryRequest) materializedInventory = await this.materializeInventoryScope(client,
+          selected.object_id, sourceFileApiId, input.sourceSha256, input.pageStages, inventoryRequest,wallResources);
+      } catch (error) {
+        if (!(error instanceof InventoryReviewValidationError)) throw error;
+        return {kind:"invalid_state",code:(error.code.startsWith("INVENTORY_")?error.code:`INVENTORY_${error.code}`),message:error.message} as const;
+      }
+      let materializedCallInventory:MatrixCallInventoryScopeDecision|undefined;
+      try {
+        const previousCall=prior.rows[0]?.call_inventory_scope;
+        const callRequest=input.callInventoryScope??(previousCall?callInventoryScopeDecisionToInput(parseCallInventoryScopeDecision(previousCall,{sourceFileId:sourceFileApiId,sourceSha256:input.sourceSha256})):undefined);
+        if(callRequest)materializedCallInventory=await this.materializeCallInventoryScope(client,selected.object_id,sourceFileApiId,input.sourceSha256,input.pageStages,callRequest,wallResources);
+      } catch(error){
+        if(!(error instanceof CallInventoryReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`CALL_INVENTORY_${error.code}`,message:error.message} as const;
+      }
+      let materializedRailInventory:MatrixRailInventoryScopeDecision|undefined;
+      try {
+        const previousRail=prior.rows[0]?.rail_inventory_scope;
+        const railRequest=input.railInventoryScope??(previousRail?railInventoryScopeDecisionToInput(parseRailInventoryScopeDecision(previousRail,{sourceFileId:sourceFileApiId,sourceSha256:input.sourceSha256})):undefined);
+        if(railRequest)materializedRailInventory=await this.materializeRailInventoryScope(client,selected.object_id,sourceFileApiId,input.sourceSha256,input.pageStages,railRequest,wallResources);
+      } catch(error){
+        if(!(error instanceof RailInventoryReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`RAIL_INVENTORY_${error.code}`,message:error.message} as const;
+      }
+      let materializedWaterNode:MatrixWaterNodeScopeDecision|undefined;
+      try {
+        const previousWater=prior.rows[0]?.water_node_scope;
+        const waterRequest=input.waterNodeScope??(previousWater?waterNodeScopeDecisionToInput(parseWaterNodeScopeDecision(previousWater,{sourceFileId:sourceFileApiId,sourceSha256:input.sourceSha256})):undefined);
+        if(waterRequest)materializedWaterNode=await this.materializeWaterNodeScope(client,selected.object_id,sourceFileApiId,input.sourceSha256,input.pageStages,waterRequest,wallResources);
+      } catch(error){
+        if(!(error instanceof WaterNodeReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`WATER_NODE_${error.code}`,message:error.message} as const;
+      }
+      let materializedLightingTechnology:MatrixLightingTechnologyScopeDecision|undefined;
+      try {
+        const previousLighting=prior.rows[0]?.lighting_technology_scope;
+        const lightingRequest=input.lightingTechnologyScope??(previousLighting?lightingTechnologyScopeDecisionToInput(parseLightingTechnologyScopeDecision(previousLighting,{sourceFileId:sourceFileApiId,sourceSha256:input.sourceSha256})):undefined);
+        if(lightingRequest)materializedLightingTechnology=await this.materializeLightingTechnologyScope(client,selected.object_id,sourceFileApiId,input.sourceSha256,selected.stages,input.pageStages,lightingRequest,wallResources);
+      } catch(error){
+        if(!(error instanceof LightingTechnologyReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`LIGHTING_TECHNOLOGY_${error.code}`,message:error.message} as const;
+      }
+      let materializedSteelComparison:SteelComparisonScopeDecision|undefined;
+      try {
+        const previousSteel=prior.rows[0]?.steel_comparison_scope;
+        const steelRequest=input.steelComparisonScope??(previousSteel?steelComparisonScopeDecisionToInput(parseSteelComparisonScopeDecision(previousSteel,{sourceFileId:sourceFileApiId,sourceSha256:input.sourceSha256})):undefined);
+        if(steelRequest)materializedSteelComparison=await this.materializeSteelComparisonScope(client,selected.object_id,sourceFileApiId,input.sourceSha256,input.pageStages,steelRequest,wallResources);
+      } catch(error){
+        if(!(error instanceof SteelComparisonReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`STEEL_COMPARISON_${error.code}`,message:error.message} as const;
+      }
+      const {inventoryScope:_untrustedInput,callInventoryScope:_untrustedCall,railInventoryScope:_untrustedRail,waterNodeScope:_untrustedWater,lightingTechnologyScope:_untrustedLighting,steelComparisonScope:_untrustedSteel,...normalizedHashInput}=hashInput;
+      const normalizedBody = {objectApiId,sourceFileApiId,...normalizedHashInput,
+        ...inventoryScopeHashFields(materializedInventory),...callInventoryScopeHashFields(materializedCallInventory),...railInventoryScopeHashFields(materializedRailInventory),...waterNodeScopeHashFields(materializedWaterNode),...lightingTechnologyScopeHashFields(materializedLightingTechnology),...steelComparisonScopeHashFields(materializedSteelComparison),actorId:command.actor.userId};
+      if(materializedInventory||materializedCallInventory||materializedRailInventory||materializedWaterNode||materializedLightingTechnology)try{assertWaterNodeMaterializedSourceReviewEnvelope(normalizedBody);}catch(error){
+        if(!(error instanceof InventoryReviewValidationError)&&!(error instanceof CallInventoryReviewValidationError)&&!(error instanceof RailInventoryReviewValidationError)&&!(error instanceof WaterNodeReviewValidationError))throw error;
+        return {kind:"invalid_state",code:(error.code.startsWith("INVENTORY_")?error.code:`INVENTORY_${error.code}`),message:error.message} as const;
+      }
+      if(materializedSteelComparison)try{assertSteelComparisonReviewNative(normalizedBody,'MATERIALIZED');}catch(error){
+        if(!(error instanceof SteelComparisonReviewValidationError))throw error;
+        return {kind:"invalid_state",code:`STEEL_COMPARISON_${error.code}`,message:error.message} as const;
+      }
+      const contentHash = sha256(canonicalJson(normalizedBody));
+      let committed=false;
+      const commit=async(client:PoolClient):Promise<Result>=>{
+        if(committed)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+        committed=true;
       const inserted = await client.query<{ id: string; created_at: Date | string }>(
         `INSERT INTO source_review_decisions (
            object_id, source_file_id, source_sha256, revision_status, approval_status,
-           link_group_id, section_code, page_stages, basis_reference, actor_id, content_hash
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
+           link_group_id, section_code, page_stages, basis_reference, actor_id, content_hash, matrix_scope, inventory_scope, call_inventory_scope, rail_inventory_scope, water_node_scope, lighting_technology_scope, steel_comparison_scope
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12::jsonb, $13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb, $17::jsonb, $18::jsonb)
          RETURNING id, created_at`,
         [
           selected.object_id, selected.id, input.sourceSha256,
           input.revisionStatus, input.approvalStatus, input.linkGroupId,
           input.sectionCode ?? null, canonicalJson(input.pageStages), input.basis.reference,
-          command.actor.userId, contentHash,
+          command.actor.userId, contentHash, input.matrixScope ? canonicalJson(input.matrixScope) : null,
+          materializedInventory ? canonicalJson(materializedInventory) : null,
+          materializedCallInventory ? canonicalJson(materializedCallInventory) : null,
+          materializedRailInventory ? canonicalJson(materializedRailInventory) : null,
+          materializedWaterNode ? canonicalJson(materializedWaterNode) : null,
+          materializedLightingTechnology ? canonicalJson(materializedLightingTechnology) : null,
+          materializedSteelComparison ? canonicalJson(materializedSteelComparison) : null,
         ],
       );
       const value: SourceReviewDecision = {
         id: inserted.rows[0].id, objectId: objectApiId,
         sourceFileId: sourceFileApiId, actorId: command.actor.userId,
-        contentHash, createdAt: asIso(inserted.rows[0].created_at), ...input,
+        contentHash, createdAt: asIso(inserted.rows[0].created_at), ...normalizedHashInput,
+        ...inventoryScopeHashFields(materializedInventory),...callInventoryScopeHashFields(materializedCallInventory),...railInventoryScopeHashFields(materializedRailInventory),...waterNodeScopeHashFields(materializedWaterNode),...lightingTechnologyScopeHashFields(materializedLightingTechnology),...steelComparisonScopeHashFields(materializedSteelComparison),
         sectionCode: input.sectionCode ?? null,
       };
       await this.insertCommandReceipt(
@@ -2423,7 +3588,478 @@ export class PostgresInspectionRepository implements InspectionRepository {
         beforeRef: null, afterRef: { decisionId: value.id, contentHash },
       });
       return { kind: "success", value, replayed: false } as const;
+      };
+      if(phase==="A")return {kind:"wall_review_prepared",fingerprint:guardFingerprint,
+        references:[...wallResources!.references.values()],commit};
+      return commit(client);
+    };
+    if(!wallRequested){
+      const result=await this.transaction(client=>execute(client));
+      if(result.kind==="wall_review_guard"||result.kind==="wall_review_prepared")throw new Error("unexpected review phase");
+      if(result.kind!=="v13_review_required")return result;
+    }
+    try{
+      if(!this.inventoryConnectionString)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      this.sourceReviewAdmission??=new SourceReviewCommandAdmission(this.inventoryConnectionString);
+      const admissionScope=canonicalJson({actorUserId:command.actor.userId,operation,
+        targetType:"SOURCE_FILE",targetId:sourceFileApiId,idempotencyKey:command.idempotencyKey});
+      return await this.sourceReviewAdmission.run(admissionScope,parentSignal=>withColumnPylonSectionIoBudget(async signal=>{
+      const installed=matrixConcreteWallInstalledIdentityV13();
+      const captured=await this.inventoryTransaction(false,signal,client=>captureFencedSourceReviewRead(client,checked=>execute(checked,"A")),true);
+      const first=captured.value;
+      if(first.kind!=="wall_review_prepared"){
+        if(first.kind==="wall_review_guard"||first.kind==="v13_review_required")throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        return first;
+      }
+      if(!this.storage)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      if(matrixConcreteWallInstalledIdentityV13()!==installed)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+      await verifyOriginalPdfSet({storage:this.storage,references:first.references,signal});
+      return this.inventoryTransaction(false,signal,async client=>{
+        // Fresh receipt/access/CAS can short-circuit before any raw origin replay.
+        const fresh=await execute(client,"C");
+        if(fresh.kind!=="wall_review_guard"){
+          if(fresh.kind==="wall_review_prepared"||fresh.kind==="v13_review_required")throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+          return fresh;
+        }
+        if(fresh.fingerprint!==first.fingerprint||matrixConcreteWallInstalledIdentityV13()!==installed)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+        await captured.replay(client);
+        signal.throwIfAborted();
+        if(matrixConcreteWallInstalledIdentityV13()!==installed)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+        return first.commit(client);
+      });
+    },{signal:parentSignal,deadlineMilliseconds:55_000}));}catch{
+      return {kind:"invalid_state",code:"MATRIX_FACT_TARGET_MISMATCH",message:"Исходные данные или доступ изменились во время проверки. Повторите проверку исходного факта."};
+    }
+  }
+
+  private retainSourceReviewPdfV13(resources:MatrixSourceReviewResourcesV13,ref:OriginalPdfReference):void {
+    if(!ref.storageKey||ref.expectedMediaType!=="application/pdf"||!/^[a-f0-9]{64}(?![\s\S])/u.test(ref.expectedSha256)
+      ||!Number.isSafeInteger(ref.expectedByteSize)||ref.expectedByteSize<5)
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const key=canonicalJson(ref);if(resources.references.has(key))return;
+    const bytes=[...resources.references.values()].reduce((sum,item)=>sum+item.expectedByteSize,0);
+    if(ref.expectedByteSize>67_108_864||resources.references.size>=64||bytes+ref.expectedByteSize>134_217_728)
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+    resources.references.set(key,{...ref});
+  }
+
+  /** Original manifest PDF references, after shared preflight and before source JSON. */
+  private async collectSourceReviewPdfsV13(client:PoolClient,objectId:string,checkId:string,
+    resources:MatrixSourceReviewResourcesV13):Promise<void> {
+    if(resources.collectedChecks.has(checkId))return;
+    await resources.budget.runByCheck(checkId);
+    const rows=(await client.query<{source_id:string;source_object_id:string;blob_object_id:string;storage_key:string;
+      blob_hash:string;item_hash:string;byte_size:string|number;media_type:string;scan_status:string;inclusion_role:string}>(
+      `SELECT source.id AS source_id,source.object_id AS source_object_id,blob.object_id AS blob_object_id,
+        blob.storage_key,blob.sha256 AS blob_hash,item.blob_sha256 AS item_hash,blob.byte_size,
+        blob.media_type,blob.scan_status,item.inclusion_role
+       FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+       JOIN manifest_items item ON item.manifest_id=run.manifest_id
+       JOIN source_files source ON source.id=item.source_file_id
+       JOIN blobs blob ON blob.id=source.blob_id
+       WHERE run.api_id=$1 AND run.object_id=$2 AND object.organization_id=$3
+         AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED')
+       ORDER BY source.api_id LIMIT 65`,[checkId,objectId,this.organizationId])).rows;
+    if(rows.length<1||rows.length>64||new Set(rows.map(row=>row.source_id)).size!==rows.length)
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    for(const row of rows){
+      if(row.source_object_id!==objectId||row.blob_object_id!==objectId||row.blob_hash.trim()!==row.item_hash.trim()
+        ||row.media_type!=="application/pdf"||row.scan_status!=="CLEAN"||row.inclusion_role!=="SOURCE")
+        throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      this.retainSourceReviewPdfV13(resources,{storageKey:row.storage_key,expectedSha256:row.item_hash.trim(),
+        expectedByteSize:Number(row.byte_size),expectedMediaType:"application/pdf"});
+    }
+    resources.collectedChecks.add(checkId);
+  }
+
+  /** Source-local immutable text origin. No scalar observation identifier is involved. */
+  private async loadInventoryOrigin(client:PoolClient,objectId:string,checkId:string,sourceFileId:string,budget?:MatrixPreparationBudgetV13):Promise<InventoryOriginalProjectionV13|null> {
+    if(budget)return this.loadInventoryOriginV13(client,objectId,checkId,sourceFileId,budget);
+    const run=await client.query<{id:string}>(`SELECT id FROM analysis_runs WHERE object_id=$1 AND api_id=$2
+      AND run_state IN ('PARTIAL','SUCCEEDED') AND sealed_at IS NOT NULL`,[objectId,checkId]);
+    if(run.rows.length!==1)return null;
+    const input=await this.loadAuthenticatedZu127GenericInputs(client,run.rows[0].id,objectId);
+    const source=input?.sourceFiles.find(s=>s.sourceFileId===sourceFileId);
+    const text=input?.textArtifacts.find(t=>t.sourceFileId===sourceFileId);
+    if(!input||!source||!text)return null;
+    try{assertSourceTextNative(text.artifact);}catch{return null;}
+    if(!Number.isSafeInteger(text.artifact.pageCount)||Number(text.artifact.pageCount)>512)return null;
+    const stage:'PD'|'RD'|'UNRESOLVED'=source.stages.length===1&&(source.stages[0]==='PD'||source.stages[0]==='RD')?source.stages[0] as 'PD'|'RD':'UNRESOLVED';
+    const textArtifactHash=sha256(canonicalSourceDeclarationJson({hashDomain:'matrix-source-declaration-text-artifact-v1',textArtifact:text.artifact}));
+    return {source,inputManifestHash:input.inputManifestHash,textStageContentHash:text.contentSha256,
+      textArtifactHash,textArtifact:text.artifact,stage,originalPageStages:input.sourceDecisions[sourceFileId]?.pageStages??{}};
+  }
+
+  private async loadInventoryOriginV13(client:PoolClient,objectId:string,checkId:string,sourceFileId:string,budget:MatrixPreparationBudgetV13):Promise<InventoryOriginalProjectionV13|null> {
+    await budget.runByCheck(checkId);
+    const run=await client.query<{id:string}>(`SELECT id FROM analysis_runs WHERE object_id=$1 AND api_id=$2
+      AND run_state IN ('PARTIAL','SUCCEEDED') AND sealed_at IS NOT NULL`,[objectId,checkId]);
+    if(run.rows.length!==1)return null;
+    const input=await loadImmutableSourceInputsV13(client,run.rows[0].id,objectId);
+    const source=input?.sourceFiles.find(s=>s.sourceFileId===sourceFileId);
+    const text=input?.textArtifacts.find(t=>t.sourceFileId===sourceFileId);
+    if(!input||!source||!text)return null;
+    try{assertSourceTextNative(text.artifact);}catch{return null;}
+    if(!Number.isSafeInteger(text.artifact.pageCount)||Number(text.artifact.pageCount)>512)return null;
+    const stage:'PD'|'RD'|'UNRESOLVED'=source.stages.length===1&&(source.stages[0]==='PD'||source.stages[0]==='RD')?source.stages[0] as 'PD'|'RD':'UNRESOLVED';
+    const textArtifactHash=sha256(canonicalSourceDeclarationJson({hashDomain:'matrix-source-declaration-text-artifact-v1',textArtifact:text.artifact}));
+    const rawPages=input.metadata.sources.find(source=>source.sourceFileId===sourceFileId)?.sourceReview?.body.pageStages??{};
+    if(!isRecord(rawPages))return null;const originalPageStages:Record<string,string>={};
+    for(const [page,value] of Object.entries(rawPages)){if(typeof value!=="string")return null;originalPageStages[page]=value;}
+    return {source,inputManifestHash:input.inputManifestHash,textStageContentHash:text.contentSha256,
+      textArtifactHash,textArtifact:text.artifact,stage,originalPageStages};
+  }
+
+  /** Snapshots come only from a sealed full-v2 original; review stages never rewrite that origin. */
+  private async materializeSteelComparisonScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<SteelComparisonScopeDecision> {
+    const scope=parseSteelComparisonScopeInput(raw);
+    const origins=new Map<string,Awaited<ReturnType<typeof this.loadInventoryOrigin>>>();
+    const claims:SteelComparisonScopeDecision['claims']=[];
+    const stale=()=>new SteelComparisonReviewValidationError('SNAPSHOT_MISMATCH',
+      'Исходное указание марки стали, привязка элемента или трактовка документа изменены. Проверьте полный исходник либо явно отзовите разметку.');
+    for(const claim of scope.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId)){
+        origins.set(claim.target.checkId,await this.loadInventoryOrigin(client,objectId,claim.target.checkId,sourceFileId,resources?.budget));
+        assertSteelComparisonReviewNative({scope,origins:[...origins.values()]},'MATERIALIZED');
+      }
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.stage==='UNRESOLVED'||origin.source.sha256!==sourceSha256
+        ||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash
+        ||claim.target.textArtifactHash!==origin.textArtifactHash
+        ||sha256(canonicalSourceDeclarationJson(origin.textArtifact))!==origin.textStageContentHash)throw stale();
+      let declarations:ReturnType<typeof extractSourceDeclarations>;
+      try {declarations=extractSourceDeclarations({objectId,inputManifestHash:origin.inputManifestHash,
+        sources:[{sourceFileId,sha256:sourceSha256,stages:origin.source.stages,pageStages:origin.originalPageStages}],
+        textArtifacts:[origin.textArtifact]});}catch{throw stale();}
+      const declaration=declarations.declarations.find(d=>d.id===claim.target.declarationId);
+      // Current stage eligibility is evaluated by the comparator, not used to rewrite or deny this original.
+      if(!declaration||Object.keys(pageStages).some(page=>!Number.isSafeInteger(Number(page))||Number(page)<1||Number(page)>Number(origin.textArtifact.pageCount)))throw stale();
+      const pages=origin.textArtifact.pages as {pageNumber:number;blocks:{text:string;bboxMilliPoints:number[];lineBboxesMilliPoints?:number[][]}[]}[];
+      for(const fragment of claim.memberMapping.scopeFragments){
+        const page=pages.find(p=>p.pageNumber===fragment.pageNumber),block=page?.blocks[fragment.blockIndex],lines=block?.text.split('\n');
+        const bounds=block?.lineBboxesMilliPoints?.[fragment.lineIndex]
+          ??(block?.lineBboxesMilliPoints===undefined&&lines?.length===1&&fragment.lineIndex===0?block?.bboxMilliPoints:undefined);
+        if(!bounds||lines?.[fragment.lineIndex]!==fragment.rawText
+          ||canonicalSourceDeclarationJson(bounds)!==canonicalSourceDeclarationJson(fragment.bboxMilliPoints))throw stale();
+      }
+      claims.push({...claim,declarationSnapshot:declaration});
+    }
+    return parseSteelComparisonScopeDecision({schemaVersion:scope.schemaVersion,claims},{sourceFileId,sourceSha256});
+  }
+
+  private async materializeInventoryScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<MatrixInventoryScopeDecision> {
+    const scope=parseInventoryScopeInput(raw);
+    const origins=new Map<string,Awaited<ReturnType<typeof this.loadInventoryOrigin>>>();
+    const claims:MatrixInventoryScopeDecision['claims']=[];
+    const stale=()=>new InventoryReviewValidationError('SNAPSHOT_MISMATCH',
+      'Перечень или трактовка источника изменены. Повторно откройте исходник и предпросмотр либо явно отзовите перечень.');
+    for(const claim of scope.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId))origins.set(claim.target.checkId,
+        await this.loadInventoryOrigin(client,objectId,claim.target.checkId,sourceFileId,resources?.budget));
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.stage==='UNRESOLVED'||origin.source.sha256!==sourceSha256
+        ||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash
+        ||claim.target.textArtifactHash!==origin.textArtifactHash)throw stale();
+      let result:ReturnType<typeof reconstructAr053InventorySource>;
+      try{result=reconstructAr053InventorySource({sourceFileId,sourceSha256,stage:origin.stage,pageStages,
+        textArtifact:origin.textArtifact,selection:claim.selection});}catch{throw stale();}
+      if(result.status!=='RECONSTRUCTED'||inventoryContentHash(result.inventory)!==claim.target.inventoryContentHash)throw stale();
+      claims.push({...claim,inventorySnapshot:result.inventory});
+    }
+    return parseInventoryScopeDecision({schemaVersion:scope.schemaVersion,claims});
+  }
+
+  private async materializeCallInventoryScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<MatrixCallInventoryScopeDecision> {
+    const scope=parseCallInventoryScopeInput(raw),origins=new Map<string,Awaited<ReturnType<typeof this.loadInventoryOrigin>>>();
+    const claims:MatrixCallInventoryScopeDecision['claims']=[];
+    const stale=()=>new CallInventoryReviewValidationError('SNAPSHOT_MISMATCH','Перечень системы вызова или трактовка источника изменены. Повторите предпросмотр либо явно отзовите перечень.');
+    for(const claim of scope.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId))origins.set(claim.target.checkId,await this.loadInventoryOrigin(client,objectId,claim.target.checkId,sourceFileId,resources?.budget));
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.stage==='UNRESOLVED'||origin.source.sha256!==sourceSha256||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash||claim.target.textArtifactHash!==origin.textArtifactHash)throw stale();
+      const result=reconstructOdi123CallInventorySource({sourceFileId,sourceSha256,stage:origin.stage,pageStages,textArtifact:origin.textArtifact,selection:claim.selection});
+      if(result.status!=='RECONSTRUCTED'||callInventoryContentHash(result.inventory)!==claim.target.inventoryContentHash)throw stale();
+      claims.push({...claim,inventorySnapshot:result.inventory});
+    }
+    return parseCallInventoryScopeDecision({schemaVersion:scope.schemaVersion,claims},{sourceFileId,sourceSha256});
+  }
+  async getMatrixCallInventorySourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixInventorySourcePagesRead>> {
+    return this.getMatrixInventorySourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixCallInventorySource(checkId:string,sourceFileId:string,selection:MatrixCallInventorySelection,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixCallInventoryPreviewRead>> {
+    const origin=await this.getMatrixCallInventorySourcePages(checkId,sourceFileId,actor);
+    if(!origin||origin==='AUTH_REQUIRED')return origin;
+    const result=reconstructOdi123CallInventorySource({sourceFileId,sourceSha256:origin.sourceSha256,stage:origin.stage,
+      pageStages:origin.pageStages,textArtifact:origin.textArtifact,selection});
+    return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,latestReviewHash:origin.latestReviewHash,result,
+      ...(result.status==='RECONSTRUCTED'?{target:{checkId,inputManifestHash:origin.inputManifestHash,textStageContentHash:origin.textStageContentHash,
+        textArtifactHash:origin.textArtifactHash,inventoryContentHash:callInventoryContentHash(result.inventory)}}:{})};
+  }
+
+  private async materializeRailInventoryScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<MatrixRailInventoryScopeDecision> {
+    const scope=parseRailInventoryScopeInput(raw),origins=new Map<string,Awaited<ReturnType<typeof this.loadInventoryOrigin>>>();
+    const claims:MatrixRailInventoryScopeDecision['claims']=[];
+    const stale=()=>new RailInventoryReviewValidationError('SNAPSHOT_MISMATCH','Перечень поручней или трактовка источника изменены. Повторите предпросмотр либо явно отзовите перечень.');
+    for(const claim of scope.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId))origins.set(claim.target.checkId,await this.loadInventoryOrigin(client,objectId,claim.target.checkId,sourceFileId,resources?.budget));
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.stage==='UNRESOLVED'||origin.source.sha256!==sourceSha256||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash||claim.target.textArtifactHash!==origin.textArtifactHash)throw stale();
+      const result=reconstructOdi120RailInventorySource({sourceFileId,sourceSha256,stage:origin.stage,pageStages,textArtifact:origin.textArtifact,selection:claim.selection});
+      if(result.status!=='RECONSTRUCTED'||railInventoryContentHash(result.inventory)!==claim.target.inventoryContentHash)throw stale();
+      claims.push({...claim,inventorySnapshot:result.inventory});
+    }
+    return parseRailInventoryScopeDecision({schemaVersion:scope.schemaVersion,claims},{sourceFileId,sourceSha256});
+  }
+  async getMatrixRailInventorySourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixInventorySourcePagesRead>> {
+    return this.getMatrixInventorySourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixRailInventorySource(checkId:string,sourceFileId:string,selection:MatrixRailInventorySelection,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixRailInventoryPreviewRead>> {
+    const origin=await this.getMatrixRailInventorySourcePages(checkId,sourceFileId,actor);
+    if(!origin||origin==='AUTH_REQUIRED')return origin;
+    const result=reconstructOdi120RailInventorySource({sourceFileId,sourceSha256:origin.sourceSha256,stage:origin.stage,
+      pageStages:origin.pageStages,textArtifact:origin.textArtifact,selection});
+    return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,latestReviewHash:origin.latestReviewHash,result,
+      ...(result.status==='RECONSTRUCTED'?{target:{checkId,inputManifestHash:origin.inputManifestHash,textStageContentHash:origin.textStageContentHash,
+        textArtifactHash:origin.textArtifactHash,inventoryContentHash:railInventoryContentHash(result.inventory)}}:{})};
+  }
+
+  private async materializeWaterNodeScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<MatrixWaterNodeScopeDecision> {
+    const scope=parseWaterNodeScopeInput(raw),origins=new Map<string,Awaited<ReturnType<typeof this.loadInventoryOrigin>>>();
+    const claims:MatrixWaterNodeScopeDecision['claims']=[];
+    const stale=()=>new WaterNodeReviewValidationError('SNAPSHOT_MISMATCH','Состав вводного узла ХВС или трактовка источника изменены. Повторите предпросмотр либо явно отзовите перечень.');
+    for(const claim of scope.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId))origins.set(claim.target.checkId,await this.loadInventoryOrigin(client,objectId,claim.target.checkId,sourceFileId,resources?.budget));
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.stage==='UNRESOLVED'||origin.source.sha256!==sourceSha256||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash||claim.target.textArtifactHash!==origin.textArtifactHash)throw stale();
+      const result=reconstructZu129WaterNodeSource({sourceFileId,sourceSha256,stage:origin.stage,pageStages,textArtifact:origin.textArtifact,selection:claim.selection});
+      if(result.status!=='RECONSTRUCTED'||waterNodeInventoryContentHash(result.inventory)!==claim.target.inventoryContentHash)throw stale();
+      claims.push({...claim,inventorySnapshot:result.inventory});
+    }
+    return parseWaterNodeScopeDecision({schemaVersion:scope.schemaVersion,claims},{sourceFileId,sourceSha256});
+  }
+  async getMatrixWaterNodeSourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixInventorySourcePagesRead>> {
+    return this.getMatrixInventorySourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixWaterNodeSource(checkId:string,sourceFileId:string,selection:MatrixWaterNodeInventorySelection,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixWaterNodePreviewRead>> {
+    const origin=await this.getMatrixWaterNodeSourcePages(checkId,sourceFileId,actor);
+    if(!origin||origin==='AUTH_REQUIRED')return origin;
+    const result=reconstructZu129WaterNodeSource({sourceFileId,sourceSha256:origin.sourceSha256,stage:origin.stage,
+      pageStages:origin.pageStages,textArtifact:origin.textArtifact,selection});
+    return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,latestReviewHash:origin.latestReviewHash,result,
+      ...(result.status==='RECONSTRUCTED'?{target:{checkId,inputManifestHash:origin.inputManifestHash,textStageContentHash:origin.textStageContentHash,
+        textArtifactHash:origin.textArtifactHash,inventoryContentHash:waterNodeInventoryContentHash(result.inventory)}}:{})};
+  }
+
+  private async materializeLightingTechnologyScope(client:PoolClient,objectId:string,sourceFileId:string,sourceSha256:string,
+    stages:string[],pageStages:SourceReviewInput['pageStages'],raw:unknown,resources?:MatrixSourceReviewResourcesV13):Promise<MatrixLightingTechnologyScopeDecision> {
+    const request=parseLightingTechnologyScopeInput(raw);
+    const origins=new Map<string,Awaited<ReturnType<typeof loadDocumentTextV3AuditSource>>>();
+    const claims:MatrixLightingTechnologyScopeDecision['claims']=[];
+    const stale=()=>new LightingTechnologyReviewValidationError('SNAPSHOT_MISMATCH','Исходное указание освещения или трактовка документа изменены. Повторите предпросмотр либо явно отзовите разметку.');
+    if(request.claims.length&&(stages.length!==1||!['PD','RD'].includes(stages[0])||Object.values(pageStages).some(stage=>stage!=='UNRESOLVED'&&stage!==stages[0])))throw stale();
+    for(const claim of request.claims){
+      if(resources)await this.collectSourceReviewPdfsV13(client,objectId,claim.target.checkId,resources);
+      if(!origins.has(claim.target.checkId))origins.set(claim.target.checkId,await loadDocumentTextV3AuditSource(client,objectId,claim.target.checkId,sourceFileId,buildScaffoldReleaseManifest(this.parameters.length).manifest,resources?.budget));
+      const origin=origins.get(claim.target.checkId);
+      if(!origin||origin.sourceSha256!==sourceSha256||claim.target.inputManifestHash!==origin.inputManifestHash
+        ||claim.target.textStageContentHash!==origin.textStageContentHash||claim.target.textArtifactHash!==origin.textArtifactContentHash)throw stale();
+      const result=reconstructLightingTechnologySourceV3({sourceFileId,sourceSha256,stage:stages[0],pageStages,textArtifact:origin.textArtifact,selection:claim.selection});
+      if(result.status!=='RECONSTRUCTED'||lightingTechnologyV3DeclarationContentHash(result.declaration)!==claim.target.declarationContentHash)throw stale();
+      claims.push({...claim,declarationSnapshot:result.declaration});
+    }
+    return parseLightingTechnologyScopeDecision({schemaVersion:request.schemaVersion,claims},{sourceFileId,sourceSha256});
+  }
+
+  async previewMatrixLightingTechnologySource(checkId:string,sourceFileId:string,selection:import('@inspector-ai/contracts').LightingTechnologyV3Selection,actor:AuthenticatedActor):Promise<ScopedReadResult<import('@inspector-ai/contracts').MatrixLightingTechnologyPreviewRead>> {
+    const origin=await this.getDocumentTextV3Source(checkId,sourceFileId,actor);
+    if(!origin||origin==='AUTH_REQUIRED')return origin;
+    const result=reconstructLightingTechnologySourceV3({sourceFileId,sourceSha256:origin.sourceSha256,stage:origin.stage,pageStages:origin.pageStages,textArtifact:origin.textArtifact,selection});
+    return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,latestReviewHash:origin.latestReviewHash,result,
+      ...(result.status==='RECONSTRUCTED'?{target:{checkId,inputManifestHash:origin.inputManifestHash,textStageContentHash:origin.textStageContentHash,textArtifactHash:origin.textArtifactContentHash,declarationContentHash:lightingTechnologyV3DeclarationContentHash(result.declaration)}}:{})};
+  }
+
+  async getDocumentTextV3Source(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV3AuditSourceRead>> {
+    const check=await this.getCheck(checkId,actor);if(!check||check==='AUTH_REQUIRED')return check;
+    const latest=await this.getSourceReview(check.objectId,sourceFileId,actor);
+    if(latest==='AUTH_REQUIRED')return undefined;
+    return this.transaction(async client=>{
+      const object=await client.query<{id:string}>('SELECT id FROM objects WHERE organization_id=$1 AND api_id=$2',[this.organizationId,check.objectId]);
+      if(!object.rows[0])return undefined;
+      const origin=await loadDocumentTextV3AuditSource(client,object.rows[0].id,checkId,sourceFileId,
+        buildScaffoldReleaseManifest(this.parameters.length).manifest);
+      if(!origin||latest&&latest.sourceSha256!==origin.sourceSha256)return undefined;
+      if(!latest){const exists=await client.query(`SELECT 1 FROM source_review_decisions r JOIN source_files s ON s.id=r.source_file_id
+        WHERE s.object_id=$1 AND s.api_id=$2 LIMIT 1`,[object.rows[0].id,sourceFileId]);if(exists.rows.length)return undefined;}
+      return {...origin,pageStages:latest?.pageStages??{},latestReviewHash:latest?.contentHash??null};
     });
+  }
+
+  async getDocumentTextV3LargeSource(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV3LargeAuditSourceRead>> {
+    const check=await this.getCheck(checkId,actor);if(!check||check==='AUTH_REQUIRED')return check;
+    const latest=await this.getSourceReview(check.objectId,sourceFileId,actor);
+    if(latest==='AUTH_REQUIRED')return undefined;
+    return this.transaction(async client=>{
+      const object=await client.query<{id:string}>('SELECT id FROM objects WHERE organization_id=$1 AND api_id=$2',[this.organizationId,check.objectId]);
+      if(!object.rows[0])return undefined;
+      const origin=await loadDocumentTextV3LargeAuditSource(client,object.rows[0].id,checkId,sourceFileId,
+        buildScaffoldReleaseManifest(this.parameters.length).manifest);
+      if(!origin||latest&&latest.sourceSha256!==origin.sourceSha256)return undefined;
+      if(!latest){const exists=await client.query(`SELECT 1 FROM source_review_decisions r JOIN source_files s ON s.id=r.source_file_id
+        WHERE s.object_id=$1 AND s.api_id=$2 LIMIT 1`,[object.rows[0].id,sourceFileId]);if(exists.rows.length)return undefined;}
+      const pageStages=latest?.pageStages??{};
+      // Artifact has <=1.4M nodes/depth64. This closed, flat metadata adds <66K nodes,
+      // keeping the whole source-read within its 1.5M-node/depth65 policy.
+      if(Object.keys(pageStages).length>32768)return undefined;
+      const value={...origin,pageStages,latestReviewHash:latest?.contentHash??null};
+      if(Buffer.byteLength(JSON.stringify(value),"utf8")>33554432)return undefined;
+      return value;
+    });
+  }
+
+  async getSourceOcrImports(checkId:string,actor?:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").SourceOcrImportWorkspace>> {
+    if(!actor)return "AUTH_REQUIRED";
+    if(actor.organizationId!==this.organizationId)return undefined;
+    return this.transaction(client=>sourceOcrWorkspace(client,checkId,actor));
+  }
+  async importSourceOcrCommand(checkId:string,sourceFileId:string,input:import("@inspector-ai/contracts").SourceOcrImportBundle,command:AuditedMutationCommand) {
+    if(command.actor.organizationId!==this.organizationId)throw new SourceOcrImportError(404,"NOT_FOUND","Проверка недоступна");
+    if(!this.storage)throw new SourceOcrImportError(503,"SOURCE_OCR_STORAGE_UNAVAILABLE","Хранилище PDF недоступно");
+    return this.transaction(async client=>{
+      const result=await captureSourceOcrImport(client,checkId,sourceFileId,input,command,buildScaffoldReleaseManifest(this.parameters.length).manifest,
+        async reference=>{await readVerifiedOriginalPdf({storage:this.storage!,...reference});});
+      if(!result.replayed){
+        const scope=(await client.query<{object_id:string;inspection_id:string}>("SELECT object_id,inspection_id FROM analysis_runs WHERE api_id=$1 AND object_id=(SELECT id FROM objects WHERE api_id=$2 AND organization_id=$3)",[checkId,result.value.objectId,this.organizationId])).rows[0];
+        await this.appendAuditEvent(client,{command,objectId:scope.object_id,inspectionId:scope.inspection_id,
+          action:"SOURCE_OCR_IMPORT",targetType:"CHECK",targetId:checkId,beforeRef:null,
+          afterRef:{importId:result.value.id,contentHash:result.value.contentHash},reason:"Импорт неподтверждённого OCR, без изменения native V4"});
+      }
+      return result;
+    });
+  }
+  async reviewSourceOcrCommand(checkId:string,input:import("@inspector-ai/contracts").SourceOcrReviewInput,command:AuditedMutationCommand) {
+    if(command.actor.organizationId!==this.organizationId)throw new SourceOcrImportError(404,"NOT_FOUND","Проверка недоступна");
+    return this.transaction(async client=>{
+      const result=await captureSourceOcrReview(client,checkId,input,command,async reference=>{
+        if(!this.storage)throw new SourceOcrImportError(503,"SOURCE_OCR_STORAGE_UNAVAILABLE","Хранилище PDF недоступно");
+        await readVerifiedOriginalPdf({storage:this.storage,...reference});
+      });
+      if(!result.replayed){
+        const scope=(await client.query<{object_id:string;inspection_id:string}>("SELECT object_id,inspection_id FROM analysis_runs WHERE api_id=$1 AND object_id=(SELECT id FROM objects WHERE api_id=$2 AND organization_id=$3)",[checkId,result.value.objectId,this.organizationId])).rows[0];
+        await this.appendAuditEvent(client,{command,objectId:scope.object_id,inspectionId:scope.inspection_id,
+          action:"SOURCE_OCR_TRANSCRIPTION_REVIEW",targetType:"CHECK",targetId:checkId,beforeRef:input.expectedReviewHash?{contentHash:input.expectedReviewHash}:null,
+          afterRef:{reviewId:result.value.id,contentHash:result.value.contentHash},reason:input.basis});
+      }
+      return result;
+    });
+  }
+
+  async getNativeAirflowComparisons(checkId:string,actor?:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").NativeAirflowWorkspace>> {
+    if(!actor)return "AUTH_REQUIRED";
+    if(actor.organizationId!==this.organizationId)return undefined;
+    return this.transaction(client=>nativeAirflowWorkspace(client,checkId,actor));
+  }
+
+  async compareNativeAirflowCommand(checkId:string,input:import("@inspector-ai/contracts").NativeAirflowCompareInput,command:AuditedMutationCommand) {
+    if(command.actor.organizationId!==this.organizationId)throw new NativeAirflowError(404,"NOT_FOUND","Проверка недоступна");
+    return this.transaction(async client=>{
+      const result=await captureNativeAirflow(client,checkId,input,command,buildScaffoldReleaseManifest(this.parameters.length).manifest);
+      if(!result.replayed){
+        const scope=(await client.query<{object_id:string;inspection_id:string}>("SELECT object_id,inspection_id FROM analysis_runs WHERE api_id=$1 AND object_id=(SELECT id FROM objects WHERE api_id=$2 AND organization_id=$3)",[checkId,result.value.objectId,this.organizationId])).rows[0];
+        await this.appendAuditEvent(client,{command,objectId:scope.object_id,inspectionId:scope.inspection_id,
+          action:"NATIVE_AIRFLOW_SOURCE_COMPARE",targetType:"CHECK",targetId:checkId,beforeRef:null,
+          afterRef:{comparisonId:result.value.id,contentHash:result.value.contentHash},reason:"Сверка исходных деклараций, без инженерной квалификации"});
+      }
+      return result;
+    });
+  }
+
+  async getNativeCapacityComparisons(checkId:string,actor?:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").NativeCapacityWorkspace>> {
+    if(!actor)return "AUTH_REQUIRED";
+    if(actor.organizationId!==this.organizationId)return undefined;
+    return this.transaction(client=>nativeCapacityWorkspace(client,checkId,actor));
+  }
+
+  async compareNativeCapacityCommand(checkId:string,input:import("@inspector-ai/contracts").NativeCapacityCompareInput,command:AuditedMutationCommand) {
+    if(command.actor.organizationId!==this.organizationId)throw new NativeCapacityError(404,"NOT_FOUND","Проверка недоступна");
+    return this.transaction(async client=>{
+      const result=await captureNativeCapacity(client,checkId,input,command,buildScaffoldReleaseManifest(this.parameters.length).manifest);
+      if(!result.replayed){
+        const scope=(await client.query<{object_id:string;inspection_id:string}>("SELECT object_id,inspection_id FROM analysis_runs WHERE api_id=$1 AND object_id=(SELECT id FROM objects WHERE api_id=$2 AND organization_id=$3)",[checkId,result.value.objectId,this.organizationId])).rows[0];
+        await this.appendAuditEvent(client,{command,objectId:scope.object_id,inspectionId:scope.inspection_id,
+          action:"NATIVE_CAPACITY_SOURCE_COMPARE",targetType:"CHECK",targetId:checkId,beforeRef:null,
+          afterRef:{comparisonId:result.value.id,contentHash:result.value.contentHash},reason:"Сверка исходных деклараций, без инженерной квалификации"});
+      }
+      return result;
+    });
+  }
+
+  async getDocumentTextV4FullSource(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").DocumentTextV4FullAuditSourceRead>> {
+    const check=await this.getCheck(checkId,actor);if(!check||check==='AUTH_REQUIRED')return check;
+    const latest=await this.getSourceReview(check.objectId,sourceFileId,actor);
+    if(latest==='AUTH_REQUIRED')return undefined;
+    return this.transaction(async client=>{
+      const object=await client.query<{id:string}>('SELECT id FROM objects WHERE organization_id=$1 AND api_id=$2',[this.organizationId,check.objectId]);
+      if(!object.rows[0])return undefined;
+      const origin=await loadDocumentTextV4FullAuditSource(client,object.rows[0].id,checkId,sourceFileId,
+        buildScaffoldReleaseManifest(this.parameters.length).manifest);
+      if(!origin||latest&&latest.sourceSha256!==origin.sourceSha256)return undefined;
+      if(!latest){const exists=await client.query(`SELECT 1 FROM source_review_decisions r JOIN source_files s ON s.id=r.source_file_id
+        WHERE s.object_id=$1 AND s.api_id=$2 LIMIT 1`,[object.rows[0].id,sourceFileId]);if(exists.rows.length)return undefined;}
+      const pageStages=latest?.pageStages??{};
+      // Artifact has <=1.4M nodes/depth64. This closed, flat metadata adds <66K nodes,
+      // keeping the whole source-read within its 1.5M-node/depth65 policy.
+      if(Object.keys(pageStages).length>32768)return undefined;
+      const value={...origin,pageStages,latestReviewHash:latest?.contentHash??null};
+      if(Buffer.byteLength(JSON.stringify(value),"utf8")>33554432)return undefined;
+      return value;
+    });
+  }
+
+  async getMatrixInventorySourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixInventorySourcePagesRead>> {
+    const check=await this.getCheck(checkId,actor);if(!check||check==='AUTH_REQUIRED')return check;
+    const latest=await this.getSourceReview(check.objectId,sourceFileId,actor);
+    if(latest==='AUTH_REQUIRED')return undefined;
+    return this.transaction(async client=>{
+      const object=await client.query<{id:string}>('SELECT id FROM objects WHERE organization_id=$1 AND api_id=$2',[this.organizationId,check.objectId]);
+      if(!object.rows[0])return undefined;
+      const origin=await this.loadInventoryOrigin(client,object.rows[0].id,checkId,sourceFileId);if(!origin)return undefined;
+      if(latest&&latest.sourceSha256!==origin.source.sha256)return undefined;
+      if(!latest){const exists=await client.query(`SELECT 1 FROM source_review_decisions r JOIN source_files s ON s.id=r.source_file_id
+        WHERE s.object_id=$1 AND s.api_id=$2 LIMIT 1`,[object.rows[0].id,sourceFileId]);if(exists.rows.length)return undefined;}
+
+      return {checkId,sourceFileId,sourceSha256:origin.source.sha256,inputManifestHash:origin.inputManifestHash,
+        textStageContentHash:origin.textStageContentHash,textArtifactHash:origin.textArtifactHash,stage:origin.stage,
+        pageStages:latest?.pageStages??{},latestReviewHash:latest?.contentHash??null,textArtifact:origin.textArtifact};
+    });
+  }
+
+  async previewMatrixInventorySource(checkId:string,sourceFileId:string,selection:MatrixInventorySelection,actor:AuthenticatedActor):Promise<ScopedReadResult<MatrixInventoryPreviewRead>> {
+    const origin=await this.getMatrixInventorySourcePages(checkId,sourceFileId,actor);
+    if(!origin||origin==='AUTH_REQUIRED')return origin;
+    if(origin.stage==='UNRESOLVED')return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,
+      result:{schemaVersion:'matrix-inventory-source-result-v1',status:'ABSTAIN',reasonCode:'STAGE_UNRESOLVED'}};
+    const result=reconstructAr053InventorySource({sourceFileId,sourceSha256:origin.sourceSha256,stage:origin.stage,
+      pageStages:origin.pageStages,textArtifact:origin.textArtifact,selection});
+    return {checkId,sourceFileId,sourceSha256:origin.sourceSha256,result,
+      ...(result.status==='RECONSTRUCTED'?{target:{checkId,inputManifestHash:origin.inputManifestHash,
+        textStageContentHash:origin.textStageContentHash,textArtifactHash:origin.textArtifactHash,
+        inventoryContentHash:inventoryContentHash(result.inventory)}}:{})};
   }
 
   async getSourceReview(
@@ -2439,11 +4075,12 @@ export class PostgresInspectionRepository implements InspectionRepository {
       link_group_id: string | null; section_code: SourceReviewDecision["sectionCode"];
       page_stages: Record<string, "PD" | "RD" | "ID">;
       basis_reference: string; actor_id: string; content_hash: string; created_at: Date | string;
+      matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null;
     }>(
       `SELECT review.id, object.api_id AS object_api_id, source.api_id AS source_api_id,
               review.source_sha256, review.revision_status, review.approval_status,
               review.link_group_id, review.section_code, review.page_stages, review.basis_reference,
-              review.actor_id, review.content_hash, review.created_at
+              review.actor_id, review.content_hash, review.created_at, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope
        FROM source_review_decisions review
        JOIN source_files source ON source.id = review.source_file_id
        JOIN objects object ON object.id = review.object_id
@@ -2459,6 +4096,15 @@ export class PostgresInspectionRepository implements InspectionRepository {
     );
     const row = result.rows[0];
     if (!row) return undefined;
+    {
+      try{if(row.steel_comparison_scope)parseSteelComparisonScopeDecision(row.steel_comparison_scope,{sourceFileId:row.source_api_id,sourceSha256:row.source_sha256.trim()});if(row.inventory_scope)parseInventoryScopeDecision(row.inventory_scope);if(row.call_inventory_scope)parseCallInventoryScopeDecision(row.call_inventory_scope,{sourceFileId:row.source_api_id,sourceSha256:row.source_sha256.trim()});if(row.rail_inventory_scope)parseRailInventoryScopeDecision(row.rail_inventory_scope,{sourceFileId:row.source_api_id,sourceSha256:row.source_sha256.trim()});if(row.water_node_scope)parseWaterNodeScopeDecision(row.water_node_scope,{sourceFileId:row.source_api_id,sourceSha256:row.source_sha256.trim()});if(row.lighting_technology_scope)parseLightingTechnologyScopeDecision(row.lighting_technology_scope,{sourceFileId:row.source_api_id,sourceSha256:row.source_sha256.trim()});}catch{return undefined;}
+      const expected=sha256(canonicalJson({objectApiId:row.object_api_id,sourceFileApiId:row.source_api_id,
+        sourceSha256:row.source_sha256.trim(),revisionStatus:row.revision_status,approvalStatus:row.approval_status,
+        linkGroupId:row.link_group_id,...(row.section_code?{sectionCode:row.section_code}:{}),pageStages:row.page_stages,
+        basis:{reference:row.basis_reference},...(row.matrix_scope?{matrixScope:row.matrix_scope}:{}),
+        ...(row.inventory_scope?{inventoryScope:row.inventory_scope}:{}),...(row.call_inventory_scope?{callInventoryScope:row.call_inventory_scope}:{}),...(row.rail_inventory_scope?{railInventoryScope:row.rail_inventory_scope}:{}),...(row.water_node_scope?{waterNodeScope:row.water_node_scope}:{}),...(row.lighting_technology_scope?{lightingTechnologyScope:row.lighting_technology_scope}:{}),...(row.steel_comparison_scope?{steelComparisonScope:row.steel_comparison_scope}:{}),actorId:row.actor_id}));
+      if(expected!==row.content_hash.trim())return undefined;
+    }
     return {
       id: row.id, objectId: row.object_api_id, sourceFileId: row.source_api_id,
       sourceSha256: row.source_sha256.trim(), revisionStatus: row.revision_status,
@@ -2466,6 +4112,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       sectionCode: row.section_code,
       pageStages: row.page_stages, basis: { reference: row.basis_reference },
       actorId: row.actor_id, contentHash: row.content_hash.trim(), createdAt: asIso(row.created_at),
+      ...(row.matrix_scope ? { matrixScope: row.matrix_scope } : {}), ...(row.inventory_scope ? { inventoryScope: row.inventory_scope } : {}),...(row.call_inventory_scope?{callInventoryScope:row.call_inventory_scope}:{}),...(row.rail_inventory_scope?{railInventoryScope:row.rail_inventory_scope}:{}),...(row.water_node_scope?{waterNodeScope:row.water_node_scope}:{}),...(row.lighting_technology_scope?{lightingTechnologyScope:row.lighting_technology_scope}:{}),...(row.steel_comparison_scope?{steelComparisonScope:row.steel_comparison_scope}:{}),
     };
   }
 
@@ -2652,18 +4299,27 @@ export class PostgresInspectionRepository implements InspectionRepository {
                AND access.permission_set @> ARRAY['UPLOAD']::text[]
            )`
         : "";
-      const object = await client.query<{ id: string; inspection_id: string }>(
-        `SELECT objects.id, inspection.id AS inspection_id
+      const object = await client.query<{ id: string; inspection_id: string; inspection_lifecycle: string }>(
+        `SELECT objects.id, inspection.id AS inspection_id, inspection.lifecycle AS inspection_lifecycle
          FROM objects
          JOIN inspections inspection ON inspection.object_id = objects.id
-         WHERE objects.organization_id = $1 AND objects.api_id = $2 AND inspection.lifecycle = 'OPEN'
+         WHERE objects.organization_id = $1 AND objects.api_id = $2
            ${accessClause}
-         FOR UPDATE OF objects, inspection`,
+         FOR UPDATE OF inspection`,
         actor
           ? [this.organizationId, objectApiId, actor.userId]
           : [this.organizationId, objectApiId],
       );
       if (!object.rows[0]) return { kind: "not_found" } as const;
+      if (object.rows[0].inspection_lifecycle !== "OPEN") return { kind: "invalid_state",
+        code: "INSPECTION_FINALIZED", message: "Проверка финализирована. Изменение комплекта недоступно до разрешённого отзыва протокола." } as const;
+      // Inspection serializes this aggregate with worker completion and recovery.
+      // Lock the object only after acquiring inspection, using a fresh statement.
+      const lockedObject = await client.query<{ id: string }>(
+        `SELECT id FROM objects WHERE id=$1 AND organization_id=$2 FOR UPDATE`,
+        [object.rows[0].id, this.organizationId],
+      );
+      if (!lockedObject.rows[0]) return { kind: "not_found" } as const;
       if (command && requestHash) {
         await this.lockCommandReceipt(client, command, "DOCUMENT_UPLOAD", "OBJECT", objectApiId);
         const receipt = await this.getCommandReceipt<{ value: BinaryUploadRecord }>(
@@ -2876,6 +4532,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
   async startCheckCommand(
     objectApiId: string,
     command: AuditedMutationCommand,
+    options?: { analysisMode: "SAMPLE" | "FULL"; sourceAuditV3?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3: true; analysisMode?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3Large: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV4Full?: never } | { sourceAuditV4Full: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV3Large?: never },
   ): Promise<AuditedMutationCommandResult<CheckRun>> {
     const result = await this.executeStartCheck(objectApiId, command.actor, {
       command,
@@ -2883,6 +4540,10 @@ export class PostgresInspectionRepository implements InspectionRepository {
       receiptTargetType: "OBJECT",
       receiptTargetId: objectApiId,
       responseStatus: 201,
+      ...(options?.analysisMode ? { analysisMode: options.analysisMode } : {}),
+      ...(options?.sourceAuditV3 ? { sourceAuditV3: true as const } : {}),
+      ...(options?.sourceAuditV3Large ? { sourceAuditV3Large: true as const } : {}),
+      ...(options?.sourceAuditV4Full ? { sourceAuditV4Full: true as const } : {}),
     });
     if (result.kind !== "success") return result;
     const value = await this.getCheckUnscoped(result.value.checkId);
@@ -2899,17 +4560,63 @@ export class PostgresInspectionRepository implements InspectionRepository {
       receiptTargetType: "OBJECT" | "ANALYSIS_RUN";
       receiptTargetId: string;
       responseStatus: 200 | 201;
+      analysisMode?: "SAMPLE" | "FULL";
+      sourceAuditV3?: true;
+      sourceAuditV3Large?: true;
+      sourceAuditV4Full?: true;
     },
   ): Promise<AuditedMutationCommandResult<{ checkId: string }>> {
     if (actor && actor.organizationId !== this.organizationId) return { kind: "not_found" };
+    // Authorize and reject a closed inspection before expensive profile/PDF
+    // admission. The transaction repeats this check under the inspection lock.
+    const initialScope = await this.readQuery<{ lifecycle: string }>(
+      `SELECT inspection.lifecycle FROM objects object
+       JOIN inspections inspection ON inspection.object_id=object.id
+       WHERE object.organization_id=$1 AND object.api_id=$2
+       ${actor ? `AND EXISTS (SELECT 1 FROM object_memberships access
+         WHERE access.object_id=object.id AND access.user_id=$3 AND access.revoked_at IS NULL
+           AND access.permission_set @> ARRAY['RUN']::text[])` : ""}`,
+      actor ? [this.organizationId, objectApiId, actor.userId] : [this.organizationId, objectApiId],
+    );
+    if (!initialScope.rows[0]) return { kind: "not_found" };
+    if (initialScope.rows[0].lifecycle !== "OPEN") return { kind: "invalid_state", code: "INSPECTION_FINALIZED",
+      message: "Проверка финализирована. Новый запуск недоступен до разрешённого отзыва финального протокола." };
     const requestHash = audited
       ? sha256(canonicalJson({
           operation: audited.operation,
           targetId: audited.receiptTargetId,
           objectId: objectApiId,
+          ...(audited.analysisMode ? { analysisMode: audited.analysisMode } : {}),
+          ...(audited.sourceAuditV3 ? { sourceAuditV3: true } : {}),
+          ...(audited.sourceAuditV3Large ? { sourceAuditV3Large: true } : {}),
+          ...(audited.sourceAuditV4Full ? { sourceAuditV4Full: true } : {}),
         }))
       : undefined;
     const checkApiId = `CHK-${randomUUID().slice(0, 8).toUpperCase()}`;
+    const sourceAuditOnly = Boolean(audited?.sourceAuditV3 || audited?.sourceAuditV3Large || audited?.sourceAuditV4Full)
+      || this.analysisProfile === "SOURCE_AUDIT_V3";
+    const runtimeUnavailable=this.analysisProfile==='MATRIX_V1'&&!audited?.sourceAuditV3&&!audited?.sourceAuditV3Large&&!audited?.sourceAuditV4Full
+      &&!isCurrentMatrixExecutionInstalled(selectedMatrixRuntimePolicyFromEnvironment()?.profileId);
+    let steelBefore:Awaited<ReturnType<PostgresInspectionRepository['steelAdmissionPreparation']>>|undefined;
+    let columnPylonBefore:Awaited<ReturnType<typeof prepareColumnPylonSectionAdmission>>|undefined;
+    if(!runtimeUnavailable&&this.analysisProfile==='MATRIX_V1'&&!audited?.sourceAuditV3&&!audited?.sourceAuditV3Large&&!audited?.sourceAuditV4Full&&isSteelComparisonProfile(selectedMatrixRuntimePolicyFromEnvironment()?.profileId)){
+      try{steelBefore=await withPdfIoBudget(async signal=>{
+        const prepared=await this.inventoryTransaction(true,signal,client=>this.steelAdmissionPreparation(client,objectApiId,actor,
+          isConcreteWallProfileV13(selectedMatrixRuntimePolicyFromEnvironment()?.profileId)));
+        if(prepared.references.length){if(!this.storage)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+          await verifyOriginalPdfSet({storage:this.storage,references:prepared.references,signal});}
+        return prepared;
+      });}catch{return {kind:'invalid_state',code:'STEEL_SNAPSHOT_INPUT_INTEGRITY',message:'Не удалось подтвердить исходные решения применимости пары.'};}
+    }
+    if(!runtimeUnavailable&&this.analysisProfile==='MATRIX_V1'&&!audited?.sourceAuditV3&&!audited?.sourceAuditV3Large&&!audited?.sourceAuditV4Full&&isColumnPylonSectionProfile(selectedMatrixRuntimePolicyFromEnvironment()?.profileId)){
+      try{columnPylonBefore=await withColumnPylonSectionIoBudget(async signal=>{
+        const prepared=await this.inventoryTransaction(true,signal,client=>prepareColumnPylonSectionAdmission(client,
+          {organizationId:this.organizationId,objectApiId,actor},buildScaffoldReleaseManifest(this.parameters.length).manifest));
+        if(prepared.references.length){if(!this.storage)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+          await verifyOriginalPdfSet({storage:this.storage,references:prepared.references,signal});}
+        return prepared;
+      });}catch{return{kind:'invalid_state',code:'KR060_SNAPSHOT_INPUT_INTEGRITY',message:'Не удалось подтвердить сохранённые пары сечений и исходники.'};}
+    }
     const created = await this.transaction(async (client) => {
       const accessClause = actor
         ? `AND EXISTS (
@@ -2924,23 +4631,34 @@ export class PostgresInspectionRepository implements InspectionRepository {
       const aggregate = await client.query<{
         object_id: string;
         inspection_id: string;
-        file_count: number;
+        inspection_lifecycle: "OPEN" | "FINALIZED";
       }>(
         `SELECT
            object.id AS object_id,
            inspection.id AS inspection_id,
-           object.file_count
+           inspection.lifecycle AS inspection_lifecycle
          FROM objects object
          JOIN inspections inspection ON inspection.object_id = object.id
-         WHERE object.organization_id = $1 AND object.api_id = $2 AND inspection.lifecycle = 'OPEN'
+         WHERE object.organization_id = $1 AND object.api_id = $2
            ${accessClause}
-         FOR UPDATE OF object, inspection`,
+         FOR UPDATE OF inspection`,
         actor
           ? [this.organizationId, objectApiId, actor.userId]
           : [this.organizationId, objectApiId],
       );
       if (!aggregate.rows[0]) return { kind: "not_found" } as const;
-      if (aggregate.rows[0].file_count === 0) {
+      if (aggregate.rows[0].inspection_lifecycle !== "OPEN") return {
+        kind: "invalid_state", code: "INSPECTION_FINALIZED",
+        message: "Проверка финализирована. Новый запуск недоступен до разрешённого отзыва финального протокола.",
+      } as const;
+      // A concurrent first upload may commit while this command waits for
+      // inspection. Read file_count in a fresh statement after that wait.
+      const lockedObject = await client.query<{ file_count: number }>(
+        `SELECT file_count FROM objects WHERE id=$1 AND organization_id=$2 FOR UPDATE`,
+        [aggregate.rows[0].object_id, this.organizationId],
+      );
+      if (!lockedObject.rows[0]) return { kind: "not_found" } as const;
+      if (lockedObject.rows[0].file_count === 0) {
         return {
           kind: "invalid_state",
           code: "DOCUMENTS_REQUIRED",
@@ -2967,25 +4685,51 @@ export class PostgresInspectionRepository implements InspectionRepository {
           return { kind: "success", value: receipt.response, replayed: true } as const;
         }
       }
+      // A stored receipt remains replayable after the installed runtime changes.
+      // The restriction applies only to a freshly authorised new command.
+      if(runtimeUnavailable)return {kind:'invalid_state',code:'MATRIX_RUNTIME_NOT_INSTALLED',message:process.env.INSPECTOR_MATRIX_CONCRETE_WALLS_V13==="1"?'Профиль v13 недоступен: принятую капсулу и полный состав runtime ещё не установили.':'Исторический профиль доступен для чтения. Для нового запуска выберите установленный профиль v12.'} as const;
       const activeRun = await client.query<{
         active_run_id: string | null;
         active_run_api_id: string | null;
         active_run_state: string | null;
+        release_content: Record<string, unknown> | null;
       }>(
         `SELECT
            inspection.active_run_id,
            run.api_id AS active_run_api_id,
-           run.run_state AS active_run_state
+           run.run_state AS active_run_state, release.content_json AS release_content
          FROM inspections inspection
          LEFT JOIN analysis_runs run ON run.id = inspection.active_run_id
+         LEFT JOIN analysis_releases release ON release.release_id = run.release_id
          WHERE inspection.id = $1`,
         [aggregate.rows[0].inspection_id],
       );
+      // Source reading is an independent append-only lane, never a replacement
+      // for the current engineering run or its mutable review aggregate.
+      const auditRelease = sourceAuditOnly ? await this.ensureAnalysisRelease(client, this.visualProfile,
+        audited?.sourceAuditV3, audited?.sourceAuditV3Large, audited?.sourceAuditV4Full) : null;
+      const auditRun = auditRelease ? await client.query<{
+        active_run_id: string; active_run_api_id: string; active_run_state: string; release_content: Record<string, unknown>;
+      }>(`SELECT run.id AS active_run_id, run.api_id AS active_run_api_id,
+          run.run_state AS active_run_state, release.content_json AS release_content
+        FROM analysis_runs run JOIN analysis_releases release ON release.release_id=run.release_id
+        WHERE run.inspection_id=$1 AND run.mode='NORMAL' AND run.run_state IN ('QUEUED','RUNNING')
+          AND release.release_id=$2 AND release.content_hash=$3 AND release.byte_size=$4
+          AND release.content_json=$5::jsonb ORDER BY run.started_at DESC,run.id DESC LIMIT 1`,
+        [aggregate.rows[0].inspection_id, auditRelease.manifest.releaseId, auditRelease.contentHash,
+          auditRelease.byteSize, auditRelease.canonical]) : null;
+      const reusableRun = sourceAuditOnly ? auditRun?.rows[0] : activeRun.rows[0];
       if (
-        (activeRun.rows[0].active_run_state === "QUEUED" || activeRun.rows[0].active_run_state === "RUNNING")
-        && activeRun.rows[0].active_run_api_id
+        reusableRun && (reusableRun.active_run_state === "QUEUED" || reusableRun.active_run_state === "RUNNING")
+        && reusableRun.active_run_api_id
       ) {
-        const activeCheckId = activeRun.rows[0].active_run_api_id;
+        const activeCheckId = reusableRun.active_run_api_id;
+        if (audited && (audited.analysisMode || audited.sourceAuditV3 || audited.sourceAuditV3Large || audited.sourceAuditV4Full || (reusableRun.release_content?.textLayer as {purpose?:string}|undefined)?.purpose === "SOURCE_AUDIT_ONLY")) {
+          const expected = await this.ensureAnalysisRelease(client, audited.analysisMode ? visualProfileForAnalysisMode(this.visualProfile, audited.analysisMode) : this.visualProfile, audited.sourceAuditV3, audited.sourceAuditV3Large, audited.sourceAuditV4Full);
+          if (canonicalJson(reusableRun.release_content) !== canonicalJson(expected.manifest))
+            return { kind: "invalid_state", code: "ACTIVE_ANALYSIS_MODE_CONFLICT",
+              message: "Уже выполняется другой режим проверки. Дождитесь завершения перед запуском нового режима." } as const;
+        }
         if (audited && requestHash) {
           await this.insertCommandReceipt(
             client,
@@ -3004,14 +4748,14 @@ export class PostgresInspectionRepository implements InspectionRepository {
             action: audited.operation,
             targetType: "ANALYSIS_RUN",
             targetId: activeCheckId,
-            beforeRef: { activeRunId: activeCheckId, state: activeRun.rows[0].active_run_state },
+            beforeRef: { activeRunId: activeCheckId, state: reusableRun.active_run_state },
             afterRef: { checkId: activeCheckId, reusedActiveRun: true },
           });
         }
         return { kind: "success", value: { checkId: activeCheckId }, replayed: false } as const;
       }
       const { object_id: objectId, inspection_id: inspectionId } = aggregate.rows[0];
-      const parentRunId = activeRun.rows[0].active_run_id;
+      const parentRunId = sourceAuditOnly ? null : activeRun.rows[0].active_run_id;
       const sources = await client.query<{
         id: string;
         api_id: string;
@@ -3094,7 +4838,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
           );
         }
       }
-      const release = await this.ensureAnalysisRelease(client);
+      const release = await this.ensureAnalysisRelease(client, audited?.analysisMode
+        ? visualProfileForAnalysisMode(this.visualProfile, audited.analysisMode) : this.visualProfile, audited?.sourceAuditV3, audited?.sourceAuditV3Large, audited?.sourceAuditV4Full);
       const releaseId = release.manifest.releaseId;
       const run = await client.query<{ id: string }>(
         `INSERT INTO analysis_runs (
@@ -3125,6 +4870,16 @@ export class PostgresInspectionRepository implements InspectionRepository {
             [run.rows[0].id, source.id, review.id, review.content_hash.trim()],
           );
         }
+      }
+      if(isSteelComparisonProfile(release.manifest.providerSlots.find(slot=>slot.stageJobType==='RULE_EVALUATION')?.profileId)){
+        if(!steelBefore)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+        await this.persistSteelApplicabilityRunSnapshot(client,{runId:run.rows[0].id,objectId,objectApiId,inputManifestHash:manifestHash,before:steelBefore,actor,
+          prechargeV13:isConcreteWallProfileV13(release.manifest.providerSlots.find(slot=>slot.stageJobType==='RULE_EVALUATION')?.profileId)});
+      }
+      if(isColumnPylonSectionProfile(release.manifest.providerSlots.find(slot=>slot.stageJobType==='RULE_EVALUATION')?.profileId)){
+        if(!columnPylonBefore)throw new InventoryLoaderIntegrityError('INVENTORY_INPUT_INTEGRITY');
+        await persistColumnPylonSectionRunSnapshot(client,{organizationId:this.organizationId,runId:run.rows[0].id,objectId,objectApiId,
+          inputManifestHash:manifestHash,before:columnPylonBefore,actor},buildScaffoldReleaseManifest(this.parameters.length).manifest);
       }
       await this.snapshotOcrTranscriptionDecisions(
         client, run.rows[0].id, objectId, objectApiId, sources.rows);
@@ -3200,13 +4955,13 @@ export class PostgresInspectionRepository implements InspectionRepository {
           [run.rows[0].id, decision.id, decision.content_hash.trim()],
         );
       }
-      await client.query(
+      if (!sourceAuditOnly) await client.query(
         `UPDATE inspections
          SET active_run_id = $1, working_manifest_id = $2, row_version = row_version + 1, updated_at = now()
          WHERE id = $3`,
         [run.rows[0].id, manifestId, inspectionId],
       );
-      await client.query(
+      if (!sourceAuditOnly) await client.query(
         `UPDATE objects
          SET display_status = 'PROCESSING', updated_at = now()
          WHERE id = $1`,
@@ -3333,11 +5088,19 @@ export class PostgresInspectionRepository implements InspectionRepository {
             manifestHash,
             rootJobId: inventoryJob.id,
             jobIds: jobs.map((job) => job.id),
-            supersedesRunId: activeRun.rows[0].active_run_api_id,
+            supersedesRunId: sourceAuditOnly ? null : activeRun.rows[0].active_run_api_id,
           },
         });
       }
       return { kind: "success", value: { checkId: checkApiId }, replayed: false } as const;
+    }).catch((error:unknown)=>{
+      // The transaction has already rolled back. A source/review change during
+      // PDF I/O is an expected v12 admission refusal, not an unhandled error.
+      if(columnPylonBefore&&(error instanceof InventoryLoaderIntegrityError||error instanceof ColumnPylonSectionInputError)){
+        return{kind:'invalid_state' as const,code:'KR060_SNAPSHOT_INPUT_INTEGRITY',
+          message:'Исходные данные или сохранённые решения изменились во время запуска. Повторите проверку.'};
+      }
+      throw error;
     });
     return created;
   }
@@ -3367,14 +5130,28 @@ export class PostgresInspectionRepository implements InspectionRepository {
   }
 
   async claimJob(jobId: string, input: JobClaimInput): Promise<JobClaimResult> {
-    return this.transaction(async (client) => {
-      const scope = await client.query<{ inspection_id: string; run_id: string }>(
-        `SELECT inspection_id, run_id
+    try { return await this.transaction(async (client) => {
+      const scope = await client.query<{ inspection_id: string; run_id: string; state: string }>(
+        `SELECT inspection_id, run_id, state
          FROM analysis_jobs
          WHERE id = $1 AND organization_id = $2`,
         [jobId, this.organizationId],
       );
       if (!scope.rows[0]) return { kind: "not_found" };
+      // A terminal delivery must ACK even when the bad immutable input that
+      // caused failure still exists. Do not re-run its failed preparation.
+      if (["SUCCEEDED", "FAILED", "DEAD", "CANCELLED"].includes(scope.rows[0].state))
+        return { kind: "already_terminal", state: scope.rows[0].state as "SUCCEEDED" | "FAILED" | "DEAD" | "CANCELLED" };
+      const claimProfiles=(await client.query<{object_id:string;profile_id:string}>(`SELECT run.object_id,slot->>'profileId' AS profile_id
+        FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+        JOIN analysis_jobs job ON job.run_id=run.id AND job.object_id=run.object_id AND job.inspection_id=run.inspection_id
+        JOIN analysis_releases release ON release.release_id=run.release_id AND job.release_id=run.release_id
+        CROSS JOIN LATERAL jsonb_array_elements(release.content_json->'providerSlots') slot
+        WHERE job.id=$1 AND run.id=$2 AND job.organization_id=$3 AND object.organization_id=$3
+          AND slot->>'stageJobType'='RULE_EVALUATION' LIMIT 2`,[jobId,scope.rows[0].run_id,this.organizationId])).rows;
+      if(claimProfiles.length!==1)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      const concreteWallClaim=claimProfiles.length===1&&isConcreteWallProfileV13(claimProfiles[0]!.profile_id);
+      const claimBudget=concreteWallClaim?createMatrixPreparationBudgetV13(client,claimProfiles[0]!.object_id):undefined;
       const inspection = await client.query<{
         id: string;
         lifecycle: "OPEN" | "FINALIZED";
@@ -3397,6 +5174,9 @@ export class PostgresInspectionRepository implements InspectionRepository {
          FOR UPDATE`,
         [scope.rows[0].run_id],
       );
+      // Completion grows retained JSON while holding these same locks. Charge
+      // only after acquiring them, before the first whole job/release read.
+      if(claimBudget)await claimBudget.runById(scope.rows[0].run_id);
       const job = await client.query<{
         id: string;
         organization_id: string;
@@ -3442,7 +5222,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       if (releaseManifest.releaseId !== row.release_id
         || sha256(releaseCanonical) !== row.release_manifest_hash.trim()
         || Buffer.byteLength(releaseCanonical, "utf8") !== Number(row.release_byte_size)) {
-        throw new Error("Job release manifest integrity check failed");
+        throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
       }
       assertAnalysisJobQueue(row.job_type, row.queue_name, releaseManifest);
       if ((input.queueName && input.queueName !== row.queue_name)
@@ -3467,7 +5247,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
       }
       if (
         inspection.rows[0]?.lifecycle !== "OPEN"
-        || inspection.rows[0].active_run_id !== row.run_id
+        || (inspection.rows[0].active_run_id !== row.run_id
+          && !await isDetachedSourceAuditJob(client, jobId, row.run_id, this.organizationId))
         || !run.rows[0]
         || !["QUEUED", "RUNNING"].includes(run.rows[0].run_state)
       ) {
@@ -3480,6 +5261,26 @@ export class PostgresInspectionRepository implements InspectionRepository {
         );
         return { kind: "already_terminal", state: "CANCELLED" };
       }
+      let frozenClaimManifest:FrozenSourceManifestV13|undefined;
+      if(concreteWallClaim){
+        const installed=matrixFullPolicyForProfile(MATRIX_CONCRETE_WALL_V13_PROFILE);
+        const ruleSlot=providerSlotForJob(releaseManifest,"RULE_EVALUATION");
+        if(!claimBudget||!installed||matrixConcreteWallInstalledIdentityV13()===null
+          ||ruleSlot?.profileId!==installed.profileId||ruleSlot.status!=="CONFIGURED"
+          ||ruleSlot.providerKind!=="RULE_ENGINE"||ruleSlot.adapterVersion!==installed.adapterVersion
+          ||ruleSlot.configHash!==installed.configHash
+          ||canonicalJson((releaseManifest.rules as Record<string,unknown>)?.matrixDefinitions)!==canonicalJson(installed.definitions))
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const manifests=(await client.query<{inspection_id:string;manifest_hash:string;manifest_json:unknown}>(`SELECT run.inspection_id,
+          manifest.sha256 AS manifest_hash,manifest.canonical_json AS manifest_json FROM analysis_runs run
+          JOIN input_manifests manifest ON manifest.id=run.manifest_id AND manifest.inspection_id=run.inspection_id
+          WHERE run.id=$1 AND run.object_id=$2 AND run.release_id=$3`,[row.run_id,row.object_id,row.release_id])).rows;
+        if(manifests.length!==1||manifests[0]!.inspection_id!==row.inspection_id
+          ||manifests[0]!.manifest_hash!==row.input_manifest_hash)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        frozenClaimManifest=pinFrozenSourceManifestV13({inspectionId:row.inspection_id,
+          inputManifestHash:row.input_manifest_hash,manifest:manifests[0]!.manifest_json});
+      }
       if (row.current_attempt_id) {
         await client.query(
           `UPDATE job_attempts
@@ -3490,12 +5291,9 @@ export class PostgresInspectionRepository implements InspectionRepository {
       }
       const attemptNumber = Number(row.attempt_count) + 1;
       if (attemptNumber > Number(row.max_attempts)) {
-        await client.query(
-          `UPDATE analysis_jobs
-           SET state = 'FAILED', completed_at = now(), updated_at = now(), last_error_code = 'ATTEMPTS_EXHAUSTED'
-           WHERE id = $1`,
-          [jobId],
-        );
+        await propagateTerminalJobFailure(client, {
+          jobId, organizationId: this.organizationId, reason: "ATTEMPTS_EXHAUSTED",
+        });
         return { kind: "already_terminal", state: "FAILED" };
       }
       const attemptId = randomUUID();
@@ -3521,7 +5319,18 @@ export class PostgresInspectionRepository implements InspectionRepository {
          WHERE id = $1 AND run_state IN ('QUEUED', 'RUNNING')`,
         [row.run_id, ACTIVE_STAGE_LABELS[row.job_type]],
       );
-      const sourceFiles = await client.query<{
+      const sourceFiles = concreteWallClaim ? await client.query<{
+        source_file_id:string;sha256:string;stages:Array<"PD"|"RD"|"ID">;byte_size:string|number;media_type:string;
+      }>(`SELECT source.api_id AS source_file_id,item.blob_sha256 AS sha256,
+          ARRAY(SELECT jsonb_array_elements_text(frozen->'stages')) AS stages,blob.byte_size,blob.media_type
+        FROM analysis_runs run JOIN manifest_items item ON item.manifest_id=run.manifest_id
+        JOIN input_manifests manifest ON manifest.id=run.manifest_id
+        JOIN source_files source ON source.id=item.source_file_id AND source.object_id=run.object_id
+        JOIN blobs blob ON blob.id=source.blob_id AND blob.object_id=run.object_id
+          AND blob.sha256=item.blob_sha256 AND blob.scan_status='CLEAN'
+        CROSS JOIN LATERAL jsonb_array_elements(manifest.canonical_json->'sources') frozen
+        WHERE run.id=$1 AND run.object_id=$2 AND frozen->>'sourceFileId'=source.api_id
+          AND frozen->>'sha256'=item.blob_sha256 ORDER BY source.api_id`,[row.run_id,row.object_id]) : await client.query<{
         source_file_id: string;
         sha256: string;
         stages: Array<"PD" | "RD" | "ID">;
@@ -3544,18 +5353,24 @@ export class PostgresInspectionRepository implements InspectionRepository {
          ORDER BY source.api_id`,
         [row.run_id],
       );
+      if(frozenClaimManifest&&(sourceFiles.rows.length!==frozenClaimManifest.sources.length
+        ||sourceFiles.rows.some((source,index)=>{
+          const frozen=frozenClaimManifest!.sources[index];
+          return !frozen||source.source_file_id!==frozen.sourceFileId||source.sha256!==frozen.sha256
+            ||canonicalJson(source.stages)!==canonicalJson(frozen.stages);
+        })))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
       const sourceReviews = await client.query<{
         source_file_id: string; source_sha256: string;
         revision_status: SourceReviewInput["revisionStatus"];
         approval_status: SourceReviewInput["approvalStatus"];
         link_group_id: string | null; section_code: SourceReviewDecision["sectionCode"];
         page_stages: SourceReviewInput["pageStages"]; basis_reference: string;
-        content_hash: string; decision_hash: string;
+        content_hash: string; decision_hash: string; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null;
       }>(
         `SELECT source.api_id AS source_file_id, review.source_sha256,
                 review.revision_status, review.approval_status, review.link_group_id,
                 review.section_code,
-                review.page_stages, review.basis_reference, review.content_hash,
+                review.page_stages, review.basis_reference, review.content_hash, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope,
                 snapshot.decision_hash
          FROM run_source_review_snapshots snapshot
          JOIN source_review_decisions review ON review.id = snapshot.decision_id
@@ -3566,19 +5381,34 @@ export class PostgresInspectionRepository implements InspectionRepository {
       const sourceDecisions: JobLease["inputs"]["sourceDecisions"] = {};
       for (const review of sourceReviews.rows) {
         if (review.content_hash.trim() !== review.decision_hash.trim()) {
-          throw new Error("run source review snapshot hash mismatch");
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
         }
         sourceDecisions[review.source_file_id] = {
           sourceSha256: review.source_sha256.trim(), revisionStatus: review.revision_status,
           approvalStatus: review.approval_status, linkGroupId: review.link_group_id,
           sectionCode: review.section_code,
           pageStages: review.page_stages, basis: { reference: review.basis_reference },
+          scopeProofs: bindMatrixSourceScope(review.matrix_scope, { sourceFileId: review.source_file_id,
+            sourceSha256: review.source_sha256.trim(), objectId: row.object_id,
+            inputManifestHash: row.input_manifest_hash.trim(), reviewContentHash: review.content_hash.trim() }),
         };
+      }
+      let scalarClaimInputs:JobLease["inputs"]|undefined;
+      if(concreteWallClaim&&row.job_type==="RULE_EVALUATION"){
+        if(!claimBudget)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const base=await loadImmutableSourceInputsV13(client,row.run_id,row.object_id);
+        if(!base||base.inputManifestHash!==row.input_manifest_hash)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const scalar=await this.prepareConcreteWallScalarV13(client,row.run_id,row.object_id,row.release_id,base,claimBudget);
+        const window=validateConcreteWallWindowV13(scalar.scalarInput.window),inputs=window.inputs as Record<string,unknown>;
+        scalarClaimInputs={sourceFiles:inputs.sourceFiles as JobLease["inputs"]["sourceFiles"],
+          sourceDecisions:inputs.sourceDecisions as JobLease["inputs"]["sourceDecisions"],
+          concreteWallOriginsV1:inputs.concreteWallOriginsV1 as Record<string,unknown>};
       }
       const reviewedEntityLinks = row.job_type === "RULE_EVALUATION"
         ? await this.loadReviewedFactEntityLinks(client, row.run_id, row.object_id) : [];
       if (reviewedEntityLinks === null) {
-        throw new Error("Run fact entity link snapshot integrity check failed");
+        throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
       }
       return {
         kind: "acquired",
@@ -3610,6 +5440,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
               || releaseManifest.rules.executionStatus === "UNCONFIGURED"
             ) ? {
               executionStatus: releaseManifest.rules.executionStatus,
+              ...(isRecord(releaseManifest.rules.matrixDefinitions)
+                ? { matrixDefinitions: releaseManifest.rules.matrixDefinitions } : {}),
               ...(isRecord(releaseManifest.rules.definitions)
                 && isRecord(releaseManifest.rules.definitions.navigation)
                 && isRecord(releaseManifest.rules.definitions.numeric)
@@ -3658,7 +5490,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
                 : {}),
             } : null,
           },
-          inputs: {
+          inputs: scalarClaimInputs ? {...scalarClaimInputs,reviewedEntityLinks} : {
             sourceDecisions,
             ...(row.job_type === "RULE_EVALUATION" ? { reviewedEntityLinks } : {}),
             sourceFiles: sourceFiles.rows.map((source) => ({
@@ -3673,7 +5505,45 @@ export class PostgresInspectionRepository implements InspectionRepository {
           },
         },
       };
-    });
+    }); } catch (error) {
+      const code = terminalClaimInputError(error);
+      if (!code) throw error;
+      // The claim transaction has rolled back all provisional attempt/fencing
+      // writes. Re-lock the same scoped run/job before persisting its failure.
+      return this.transaction(async client => {
+        const failed = await propagateTerminalJobFailure(client, { jobId, organizationId: this.organizationId,
+          reason: "CLAIM_INPUT_INTEGRITY", errorCode: code,
+          message: "Immutable job inputs failed validation before a worker lease could be delivered" });
+        if (failed) return { kind: "already_terminal", state: "FAILED" } as const;
+        const current = (await client.query<{ state: string; run_id: string; run_state: string;
+          lifecycle: string; active_run_id: string | null; current_attempt_id: string | null;
+          lease_expired: boolean; retry_due: boolean }>(
+          `SELECT job.state,job.run_id,run.run_state,inspection.lifecycle,inspection.active_run_id,
+             job.current_attempt_id,job.lease_until<=now() AS lease_expired,job.next_attempt_at<=now() AS retry_due
+           FROM analysis_jobs job JOIN analysis_runs run ON run.id=job.run_id
+           JOIN inspections inspection ON inspection.id=job.inspection_id
+           WHERE job.id=$1 AND job.organization_id=$2 FOR UPDATE OF job`, [jobId, this.organizationId])).rows[0];
+        if (!current) return { kind: "not_found" } as const;
+        if (["SUCCEEDED", "FAILED", "DEAD", "CANCELLED"].includes(current.state))
+          return { kind: "already_terminal", state: current.state as "SUCCEEDED" | "FAILED" | "DEAD" | "CANCELLED" };
+        const eligible = current.state === "READY" || current.state === "RETRY_WAIT" && current.retry_due
+          || current.state === "LEASED" && current.lease_expired;
+        if (eligible && (current.lifecycle !== "OPEN" || !["QUEUED", "RUNNING"].includes(current.run_state)
+          || current.active_run_id !== current.run_id
+            && !await isDetachedSourceAuditJob(client, jobId, current.run_id, this.organizationId))) {
+          if (current.current_attempt_id) await client.query(`UPDATE job_attempts SET state='CANCELLED',completed_at=now(),
+            error_code='STALE_SCOPE',error_message='Immutable input rejected outside an active worker scope'
+            WHERE id=$1 AND state='LEASED'`, [current.current_attempt_id]);
+          await client.query(`UPDATE analysis_jobs SET state='CANCELLED',current_attempt_id=NULL,lease_until=NULL,
+            fencing_token=fencing_token+CASE WHEN state='LEASED' THEN 1 ELSE 0 END,
+            last_error_code='STALE_SCOPE',completed_at=now(),updated_at=now() WHERE id=$1`, [jobId]);
+          return { kind: "already_terminal", state: "CANCELLED" } as const;
+        }
+        if (["LEASED", "BLOCKED", "RETRY_WAIT"].includes(current.state))
+          return { kind: "not_ready", state: current.state as "LEASED" | "BLOCKED" | "RETRY_WAIT" };
+        throw error;
+      });
+    }
   }
 
   async heartbeatJob(jobId: string, input: JobAttemptInput): Promise<JobHeartbeatResult> {
@@ -3728,7 +5598,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
       ) return { kind: "stale_attempt" };
       if (
         inspection.rows[0]?.lifecycle !== "OPEN"
-        || inspection.rows[0].active_run_id !== scope.rows[0].run_id
+        || (inspection.rows[0].active_run_id !== scope.rows[0].run_id
+          && !await isDetachedSourceAuditJob(client, jobId, scope.rows[0].run_id, this.organizationId))
         || !run.rows[0]
         || !["QUEUED", "RUNNING"].includes(run.rows[0].run_state)
       ) {
@@ -3752,8 +5623,9 @@ export class PostgresInspectionRepository implements InspectionRepository {
       }
       const leaseUntil = new Date(Date.now() + 90_000).toISOString();
       await client.query(
-        `UPDATE analysis_jobs SET lease_until = $2, updated_at = now() WHERE id = $1`,
-        [jobId, leaseUntil],
+        `UPDATE analysis_jobs SET lease_until = $2, updated_at = now(),
+           visual_progress = CASE WHEN job_type = 'ENTITY_EXTRACTION' AND $3::jsonb IS NOT NULL THEN $3::jsonb ELSE visual_progress END WHERE id = $1`,
+        [jobId, leaseUntil, input.visualProgress ? JSON.stringify(input.visualProgress) : null],
       );
       await client.query(
         `UPDATE job_attempts SET lease_until = $2 WHERE id = $1 AND state = 'LEASED'`,
@@ -3796,7 +5668,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         || !row.lease_until
         || new Date(row.lease_until).getTime() <= Date.now()
         || row.inspection_lifecycle !== "OPEN"
-        || row.active_run_id !== row.run_id
+        || (row.active_run_id !== row.run_id
+          && !await isDetachedSourceAuditJob(client, jobId, row.run_id, this.organizationId))
         || !["QUEUED", "RUNNING"].includes(row.run_state)
       ) return { kind: "stale_attempt" };
 
@@ -3864,7 +5737,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         || !row.lease_until
         || new Date(row.lease_until).getTime() <= Date.now()
         || row.inspection_lifecycle !== "OPEN"
-        || row.active_run_id !== row.run_id
+        || (row.active_run_id !== row.run_id
+          && !await isDetachedSourceAuditJob(client, jobId, row.run_id, this.organizationId))
         || !["QUEUED", "RUNNING"].includes(row.run_state)
       ) return { kind: "stale_attempt" };
 
@@ -3887,6 +5761,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
            ON text_job.id = artifact.job_id AND text_job.run_id = run.id
           AND text_job.job_type = 'DOCUMENT_TEXT_LAYER' AND text_job.state = 'SUCCEEDED'
          WHERE run.id = $1 AND source.api_id = $2
+           AND artifact.schema_version IN ('document-text-v1', 'document-text-v2')
          ORDER BY CASE artifact.schema_version WHEN 'document-text-v2' THEN 0 ELSE 1 END
          LIMIT 1`,
         [row.run_id, sourceFileId],
@@ -3914,6 +5789,286 @@ export class PostgresInspectionRepository implements InspectionRepository {
         schemaVersion: stored.schema_version,
       };
     });
+  }
+
+  /** Current worker scope is checked both before and after external PDF I/O. */
+  private async inventoryWorkerScope(client:PoolClient,jobId:string,input:JobAttemptInput){
+    const selected=await client.query<{run_id:string;object_id:string;job_type:string;state:string;current_attempt_id:string|null;
+      fencing_token:string|number;lease_until:Date|string|null;run_state:string;lifecycle:string;active_run_id:string|null}>(
+      `SELECT job.run_id,run.object_id,job.job_type,job.state,job.current_attempt_id,job.fencing_token,job.lease_until,
+       run.run_state,inspection.lifecycle,inspection.active_run_id FROM analysis_jobs job
+       JOIN analysis_runs run ON run.id=job.run_id JOIN inspections inspection ON inspection.id=run.inspection_id
+       WHERE job.id=$1 AND job.organization_id=$2`,[jobId,this.organizationId]);
+    const row=selected.rows[0];if(!row||row.job_type!=="RULE_EVALUATION")return {kind:"not_found" as const};
+    if(["SUCCEEDED","FAILED","DEAD","CANCELLED"].includes(row.state))return {kind:"already_terminal" as const,state:row.state as "SUCCEEDED"|"FAILED"|"DEAD"|"CANCELLED"};
+    if(row.state!=="LEASED"||row.current_attempt_id!==input.attemptId||Number(row.fencing_token)!==input.fencingToken
+      ||!row.lease_until||new Date(row.lease_until).getTime()<=Date.now()||row.lifecycle!=="OPEN"
+      ||(row.active_run_id!==row.run_id&&!await isDetachedSourceAuditJob(client,jobId,row.run_id,this.organizationId))
+      ||!["QUEUED","RUNNING"].includes(row.run_state))return {kind:"stale_attempt" as const};
+    return {kind:"current" as const,row};
+  }
+
+  private assertInventoryRelease(prepared:AuthenticatedInventoryPreparation,profile?:string|readonly string[],historicalRead=false):void {
+    const slot=providerSlotForJob(prepared.release,"RULE_EVALUATION"),policy=historicalRead
+      ?matrixStoredReadPolicyForReleaseV13(prepared.release):matrixFullPolicyForProfile(slot?.profileId);
+    if(!policy?.inventoryComparisons||(profile!==undefined&&!(typeof profile==="string"?policy.profileId===profile:profile.includes(policy.profileId)))||slot?.status!=="CONFIGURED"||slot.providerKind!=="RULE_ENGINE"
+      ||slot.adapterVersion!==policy.adapterVersion||slot.configHash!==policy.configHash
+      ||!isRecord(prepared.release.rules)||canonicalJson(prepared.release.rules.matrixDefinitions)!==canonicalJson(policy.definitions))
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+  }
+
+  async getJobInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import("./repository.js").JobInventoryComparisonInputsResult>{
+    const result=await this.getReviewedInventoryInputs(jobId,input,MATRIX_INVENTORY_PROFILE,options);
+    if(result.kind==="available"&&result.schemaVersion!=="matrix-ar053-loader-inputs-v1")return {kind:"integrity_error"};
+    return result as import("./repository.js").JobInventoryComparisonInputsResult;
+  }
+  async getJobReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import("./repository.js").JobReviewedInventoryComparisonInputsResult>{
+    const result=await this.getReviewedInventoryInputs(jobId,input,MATRIX_CALL_INVENTORY_PROFILE,options);
+    if(result.kind==="available"&&["matrix-reviewed-inventory-loader-inputs-v3","matrix-reviewed-inventory-loader-inputs-v4"].includes(result.schemaVersion))return {kind:"integrity_error"};
+    return result as import("./repository.js").JobReviewedInventoryComparisonInputsResult;
+  }
+
+  async getJobRailReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import("./repository.js").JobRailReviewedInventoryComparisonInputsResult>{
+    const result=await this.getReviewedInventoryInputs(jobId,input,MATRIX_RAIL_INVENTORY_PROFILE,options);
+    if(result.kind==="available"&&result.schemaVersion!=="matrix-reviewed-inventory-loader-inputs-v3")return {kind:"integrity_error"};
+    return result as import("./repository.js").JobRailReviewedInventoryComparisonInputsResult;
+  }
+  async getJobWaterNodeReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import("./repository.js").JobWaterNodeReviewedInventoryComparisonInputsResult>{
+    return this.getReviewedInventoryInputs(jobId,input,MATRIX_WATER_NODE_PROFILE,options) as Promise<import("./repository.js").JobWaterNodeReviewedInventoryComparisonInputsResult>;
+  }
+
+  async getJobLightingTechnologyReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import("./repository.js").JobLightingTechnologyReviewedInventoryComparisonInputsResult>{
+    return this.getReviewedInventoryInputs(jobId,input,MATRIX_LIGHTING_TECHNOLOGY_PROFILE,options) as Promise<import("./repository.js").JobLightingTechnologyReviewedInventoryComparisonInputsResult>;
+  }
+
+  async getJobSteelReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import('./repository.js').JobSteelReviewedInventoryComparisonInputsResult>{
+    return this.getReviewedInventoryInputs(jobId,input,[MATRIX_STEEL_COMPARISON_PROFILE,MATRIX_STEEL_COMPARISON_V11_PROFILE],options) as Promise<import('./repository.js').JobSteelReviewedInventoryComparisonInputsResult>;
+  }
+  async getJobColumnPylonSectionReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import('./repository.js').JobColumnPylonSectionReviewedInventoryComparisonInputsResult>{
+    return this.getReviewedInventoryInputs(jobId,input,MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE,options)as Promise<import('./repository.js').JobColumnPylonSectionReviewedInventoryComparisonInputsResult>;
+  }
+
+  async getJobConcreteWallReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}):Promise<import('./repository.js').JobConcreteWallReviewedInventoryComparisonInputsResult>{
+    return this.getReviewedInventoryInputs(jobId,input,MATRIX_CONCRETE_WALL_V13_PROFILE,options) as Promise<import('./repository.js').JobConcreteWallReviewedInventoryComparisonInputsResult>;
+  }
+
+  /** End full v13 worker A ownership before PDF B and fresh full C. */
+  private async prepareConcreteWallWorkerPdfAnchorV13(jobId:string,input:JobAttemptInput,signal:AbortSignal) {
+    const first=await this.inventoryTransaction(true,signal,async client=>{
+      const scope=await this.inventoryWorkerScope(client,jobId,input);if(scope.kind!=="current")return scope;
+      const prepared=await this.inventoryPreparation(client,scope.row.run_id,scope.row.object_id);this.assertInventoryRelease(prepared,MATRIX_CONCRETE_WALL_V13_PROFILE);
+      if(!prepared.concreteWallV13)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      if(!isCurrentMatrixExecutionInstalled(providerSlotForJob(prepared.release,"RULE_EVALUATION")?.profileId))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      return {kind:"prepared" as const,prepared};
+    });
+    if(first.kind!=="prepared")return first;
+    return {kind:"prepared" as const,prepared:Object.freeze({fingerprint:first.prepared.fingerprint,
+      references:Object.freeze(first.prepared.references.map(reference=>Object.freeze({
+        storageKey:reference.storageKey,expectedSha256:reference.expectedSha256,
+        expectedByteSize:reference.expectedByteSize,expectedMediaType:reference.expectedMediaType,
+      })))})};
+  }
+
+  private async getReviewedInventoryInputs(jobId:string,input:JobAttemptInput,profile:string|readonly string[],options?:{signal?:AbortSignal}):
+    Promise<import("./repository.js").JobLightingTechnologyReviewedInventoryComparisonInputsResult|import("./repository.js").JobSteelReviewedInventoryComparisonInputsResult|import("./repository.js").JobColumnPylonSectionReviewedInventoryComparisonInputsResult>{
+    const withBudget=profile===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(profile)?withColumnPylonSectionIoBudget:withPdfIoBudget;
+    try{return await withBudget(async signal=>{
+      const first=isConcreteWallProfileV13(profile)
+        ? await this.prepareConcreteWallWorkerPdfAnchorV13(jobId,input,signal)
+        : await this.inventoryTransaction(true,signal,async client=>{
+        const scope=await this.inventoryWorkerScope(client,jobId,input);if(scope.kind!=="current")return scope;
+        const prepared=await this.inventoryPreparation(client,scope.row.run_id,scope.row.object_id);this.assertInventoryRelease(prepared,profile);
+        if(isConcreteWallProfileV13(profile)&&!(prepared as MatrixRunPreparation).concreteWallV13)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        if(!isCurrentMatrixExecutionInstalled(providerSlotForJob(prepared.release,"RULE_EVALUATION")?.profileId))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        return {kind:"prepared" as const,prepared};
+      });
+      if(first.kind!=="prepared")return first;
+      if(!this.storage)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      await verifyOriginalPdfSet({storage:this.storage,references:first.prepared.references,signal});
+      return this.inventoryTransaction(true,signal,async client=>{
+        const scope=await this.inventoryWorkerScope(client,jobId,input);if(scope.kind!=="current")return scope;
+        const fresh=await this.inventoryPreparation(client,scope.row.run_id,scope.row.object_id);this.assertInventoryRelease(fresh,profile);
+        if(isConcreteWallProfileV13(profile)&&!(fresh as MatrixRunPreparation).concreteWallV13)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        assertInventoryPreparationUnchanged(first.prepared,fresh);
+        const actualProfile=providerSlotForJob(fresh.release,"RULE_EVALUATION")?.profileId;
+        if(isColumnPylonSectionProfile(actualProfile)){
+          const parent=validateMatrixReviewedLoaderV7({schemaVersion:'matrix-reviewed-inventory-loader-inputs-v7',objectId:fresh.run.objectId,
+            objectApiId:fresh.columnPylonSectionPackage?.objectId,inputManifestHash:fresh.run.inputManifestHash,
+            inventory:fresh.package,callInventory:fresh.callPackage,railInventory:fresh.railPackage,waterNode:fresh.waterPackage,
+            lightingTechnology:fresh.lightingPackage,steelComparison:fresh.steelPackage,steelApplicabilitySnapshot:fresh.steelApplicabilitySnapshot,
+            columnPylonSection:fresh.columnPylonSectionPackage,columnPylonSectionSnapshot:fresh.columnPylonSectionSnapshot});
+          const canonical=canonicalMatrixReviewedLoaderV7(parent);
+          return{kind:'available'as const,canonical,contentHash:sha256(canonical),byteSize:Buffer.byteLength(canonical),inputManifestHash:fresh.run.inputManifestHash,schemaVersion:'matrix-reviewed-inventory-loader-inputs-v7'as const};
+        }
+        const steel=isSteelComparisonProfile(actualProfile),lighting=steel||actualProfile===MATRIX_LIGHTING_TECHNOLOGY_PROFILE,water=lighting||actualProfile===MATRIX_WATER_NODE_PROFILE,rail=water||actualProfile===MATRIX_RAIL_INVENTORY_PROFILE,combined=rail||actualProfile===MATRIX_CALL_INVENTORY_PROFILE;
+        const schemaVersion=steel?"matrix-reviewed-inventory-loader-inputs-v6" as const:lighting?"matrix-reviewed-inventory-loader-inputs-v5" as const:water?"matrix-reviewed-inventory-loader-inputs-v4" as const:rail?"matrix-reviewed-inventory-loader-inputs-v3" as const:combined?"matrix-reviewed-inventory-loader-inputs-v2" as const:"matrix-ar053-loader-inputs-v1" as const;
+        const canonical=canonicalJson(combined?{schemaVersion,objectId:fresh.package.objectId,inputManifestHash:fresh.package.inputManifestHash,inventory:fresh.package,callInventory:fresh.callPackage,...(rail?{railInventory:fresh.railPackage}:{}),...(water?{waterNode:fresh.waterPackage}:{}),...(lighting?{lightingTechnology:fresh.lightingPackage}:{}),...(steel?{steelComparison:fresh.steelPackage,steelApplicabilitySnapshot:fresh.steelApplicabilitySnapshot}:{})}:fresh.package);
+        if(Buffer.byteLength(canonical)>64*1024*1024)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_LIMIT");
+        return {kind:"available" as const,canonical,contentHash:sha256(canonical),byteSize:Buffer.byteLength(canonical),
+          inputManifestHash:fresh.package.inputManifestHash,schemaVersion};
+      });
+    },{signal:options?.signal});}catch{return {kind:"integrity_error"};}
+  }
+
+  private async inventoryReadScope(client:PoolClient,checkId:string,actor:AuthenticatedActor){
+    if(!this.hasReadScope(actor))return null;
+    const selected=await client.query<{id:string;object_id:string;object_api_id:string;output_hash:string}>(
+      `SELECT run.id,run.object_id,object.api_id AS object_api_id,run.output_hash FROM analysis_runs run
+       JOIN objects object ON object.id=run.object_id WHERE run.api_id=$1 AND object.organization_id=$2
+       AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED') AND EXISTS
+       (SELECT 1 FROM object_memberships access WHERE access.object_id=object.id AND access.user_id=$3
+        AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['READ']::text[])`,[checkId,this.organizationId,actor.userId]);
+    return selected.rows.length===1?selected.rows[0]!:null;
+  }
+
+  /** Full immutable replay inside A/C. Today's latest reviews do not participate. */
+  private async inventoryStoredRead(client:PoolClient,checkId:string,actor:AuthenticatedActor):Promise<MatrixStoredReadValue|null>{
+    const scope=await this.inventoryReadScope(client,checkId,actor);if(!scope)return null;
+    return this.inventoryStoredReadScoped(client,checkId,scope);
+  }
+
+  /** Shared genuine full saved verifier; scope comes only from private scoped SQL. */
+  private async inventoryStoredReadScoped(client:PoolClient,checkId:string,scope:MatrixStoredReadScope,
+    operation?:MatrixOriginOperationV13):Promise<MatrixStoredReadValue>{
+    if(operation){this.assertMatrixOriginOperationV13(client,scope.object_id,operation);await operation.budget.runById(scope.id);}
+    const prepared=await this.inventoryPreparation(client,scope.id,scope.object_id,true,operation);this.assertInventoryRelease(prepared,undefined,true);
+    const saved=await client.query<{content_json:Record<string,unknown>;content_hash:string;byte_size:number|string;
+      provider_config_hash:string;provider_profile_id:string;input_manifest_hash:string}>(
+      `SELECT stage.content_json,stage.content_hash,stage.byte_size,stage.provider_config_hash,stage.provider_profile_id,
+       stage.input_manifest_hash FROM analysis_stage_artifacts stage WHERE stage.run_id=$1 AND stage.job_type='RULE_EVALUATION'`,[scope.id]);
+    if(saved.rows.length!==1)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");const stage=saved.rows[0]!;
+    if(stage.content_hash.trim()!==sha256(canonicalJson(stage.content_json))||Number(stage.byte_size)!==Buffer.byteLength(canonicalJson(stage.content_json)))
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const execution=await this.validateMatrixStage(client,scope.id,scope.object_id,stage.input_manifest_hash.trim(),stage.content_json,
+      stage.provider_config_hash.trim(),stage.provider_profile_id,prepared,true);
+    if(!execution)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const inventory=buildInventoryComparisons(prepared.package),call=matrixFullPolicyForProfile(stage.provider_profile_id)?.callInventoryComparisons?buildCallInventoryComparisons(prepared.callPackage):undefined;
+    const rail=matrixFullPolicyForProfile(stage.provider_profile_id)?.railInventoryComparisons?buildRailInventoryComparisons(prepared.railPackage):undefined;
+    const water=matrixFullPolicyForProfile(stage.provider_profile_id)?.waterNodeComparisons?buildWaterNodeComparisons(prepared.waterPackage):undefined;
+    const lighting=matrixFullPolicyForProfile(stage.provider_profile_id)?.lightingTechnologyComparisons?buildLightingTechnologyComparisons(prepared.lightingPackage):undefined;
+    const steel=matrixFullPolicyForProfile(stage.provider_profile_id)?.steelComparisons?buildSteelComparisons(prepared.steelPackage):undefined;
+    const column=matrixFullPolicyForProfile(stage.provider_profile_id)?.columnPylonSectionComparisons?buildColumnPylonSectionComparisons(prepared.columnPylonSectionPackage,prepared.columnPylonSectionSnapshot):undefined;
+    const baseCoverage=mergeInventoryCoverage(execution.coverage,inventory),callCoverage=call?mergeCallInventoryCoverage(baseCoverage,call):baseCoverage;
+    const railCoverage=rail?mergeRailInventoryCoverage(callCoverage,rail):callCoverage;
+    const waterCoverage=water?mergeWaterNodeCoverage(railCoverage,water):railCoverage;
+    const lightingCoverage=lighting?mergeLightingTechnologyCoverage(waterCoverage,lighting):waterCoverage;
+    const steelCoverage=steel?mergeSteelComparisonCoverage(lightingCoverage,steel):lightingCoverage;
+    const coverage=column?mergeColumnPylonSectionCoverage(steelCoverage,column):steelCoverage;
+    const results=await client.query<{rule_key:string;rule_version:string;parameter_code:string;comparison_variant:string;
+      execution_status:string;machine_status:string;result_payload:unknown;entity_key:unknown;evidence_fingerprint:string|null}>(
+      `SELECT rule_key,rule_version,parameter_code,comparison_variant,execution_status,machine_status,result_payload,entity_key,evidence_fingerprint
+       FROM rule_results WHERE run_id=$1 ORDER BY id`,[scope.id]);
+    const expectedResults=[...execution.results.map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+      comparison_variant:r.comparisonVariant,execution_status:r.executionStatus,machine_status:r.machineStatus,result_payload:r,entity_key:{key:r.entityKey},evidence_fingerprint:null})),
+      ...inventory.results.map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{inventoryIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(call?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{callInventoryIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(rail?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{railInventoryIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(water?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{waterNodeIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(lighting?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{lightingTechnologyIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(steel?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{steelComparisonIdentity:r.kind==="SCOPED_COMPARISON"?r.identity:null},evidence_fingerprint:null})),
+      ...(column?.results??[]).map(r=>({rule_key:r.ruleId,rule_version:r.ruleVersion,parameter_code:r.parameterCode,
+        comparison_variant:r.comparisonVariant,execution_status:"SUCCEEDED",machine_status:r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE"?"CANDIDATE":"NOT_COMPARABLE",result_payload:r,
+        entity_key:{columnPylonSectionPairKey:r.kind==="SCOPED_COMPARISON"?r.pairKey:null},evidence_fingerprint:null}))];
+    const ordered=(rows:unknown[])=>rows.map(r=>canonicalJson(r)).sort();
+    if(canonicalJson(ordered(results.rows))!==canonicalJson(ordered(expectedResults)))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const persistedCoverage=await client.query<{parameter_id:number;parameter_code:string;parameter_name:string;execution_rollup:string;reason:string;atomic_summary:unknown}>(
+      `SELECT parameter_id,parameter_code,parameter_name,execution_rollup,reason,atomic_summary FROM parameter_coverage WHERE run_id=$1 ORDER BY parameter_id`,[scope.id]);
+    const expectedCoverage=coverage.map(c=>{const p=this.parameters.find(p=>p.parameter_code===c.parameterCode);if(!p)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      return {parameter_id:p.parameter_id,parameter_code:c.parameterCode,parameter_name:p.parameter_name,execution_rollup:c.executionStatus,reason:c.reason,atomic_summary:c};});
+    if(canonicalJson(ordered(persistedCoverage.rows))!==canonicalJson(ordered(expectedCoverage)))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const identity=resolveMatrixSubmissionIdentity(scope.object_api_id,prepared.package.sources.map(s=>({sourceFileId:s.sourceFileId,sha256:s.sourceSha256,stages:s.stages})));
+    const submission=this.matrixSubmission(execution,scope.object_api_id,identity,inventory,call,rail,water,lighting,steel,column),canonical=canonicalJson(submission);
+    const snapshots=await client.query<{execution_hash:string;submission_hash:string;submission_bytes:Buffer;metadata:Record<string,unknown>}>(
+      `SELECT execution_hash,submission_hash,submission_bytes,metadata FROM machine_prediction_snapshots WHERE run_id=$1`,[scope.id]);
+    const snapshot=snapshots.rows[0];
+    if(snapshots.rows.length!==1||!snapshot||snapshot.execution_hash.trim()!==stage.content_hash.trim()
+      ||snapshot.submission_hash.trim()!==sha256(canonical)||!snapshot.submission_bytes.equals(Buffer.from(canonical))
+      ||scope.output_hash?.trim()!==sha256(canonicalJson({executionHash:stage.content_hash.trim(),submissionHash:sha256(canonical)})))
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const expectedMetadata={officialIdsVerified:identity.officialIdsVerified,mappingVersion:identity.mappingVersion,
+      mappingHash:identity.mappingHash,partial:true,omittedResults:coverage.filter(c=>c.executionStatus==="UNSUPPORTED").length,
+      scope:"SCOPED_TEXT_FACT_COMPARISONS",confidencePolicy:matrixConfidencePolicyForProfile(stage.provider_profile_id),
+      sourceIds:identity.officialIdsVerified?"VERIFIED_PUBLIC_DATASET_IDS":"APPLICATION_IDS",
+      submissionPurpose:identity.officialIdsVerified?"PARTIAL_MACHINE_OUTPUT":"DIAGNOSTIC_PARTIAL_MACHINE_OUTPUT"};
+    if(canonicalJson(snapshot.metadata)!==canonicalJson(expectedMetadata))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    const evidence=inventoryComparisonEvidence(prepared,inventory);
+    const read:MatrixExecutionRead={checkId,contentHash:stage.content_hash.trim(),execution,presentation:matrixPresentationForProfile(execution,stage.provider_profile_id),
+      projectConstraints:stage.content_json.projectConstraints as MatrixExecutionRead["projectConstraints"],
+      sourceDeclarations:stage.content_json.sourceDeclarations as MatrixExecutionRead["sourceDeclarations"],
+      inventoryComparisons:inventory,inventoryComparisonEvidence:evidence,...(call?{callInventoryComparisons:call,callInventoryComparisonEvidence:callInventoryComparisonEvidence(prepared,call)}:{}),...(rail?{railInventoryComparisons:rail,railInventoryComparisonEvidence:railInventoryComparisonEvidence(prepared,rail)}:{}),...(water?{waterNodeComparisons:water,waterNodeComparisonEvidence:waterNodeComparisonEvidence(prepared,water)}:{}),...(lighting?{lightingTechnologyComparisons:lighting,lightingTechnologyComparisonEvidence:lightingTechnologyComparisonEvidence(prepared.lightingPackage,lighting)}:{}),...(steel?{steelComparisons:steel,steelApplicabilitySnapshot:prepared.steelApplicabilitySnapshot,steelComparisonEvidence:steelComparisonEvidence(prepared.steelPackage,steel)}:{}),
+      ...(column?{columnPylonSectionComparisons:column,columnPylonSectionSnapshot:prepared.columnPylonSectionSnapshot,columnPylonSectionComparisonEvidence:columnPylonSectionComparisonEvidence(prepared.columnPylonSectionPackage,prepared.columnPylonSectionSnapshot,column)}:{}),effectiveCoverage:coverage,
+      submission:{contentHash:snapshot.submission_hash.trim(),officialIdsVerified:snapshot.metadata.officialIdsVerified===true,
+        mappingVersion:String(snapshot.metadata.mappingVersion??"matrix-code-mapping-v1"),partial:true,
+        omittedResults:Number(snapshot.metadata.omittedResults??0)}};
+    return {prepared,read,submission,boundaryScope:{runId:scope.id,objectId:scope.object_id,objectApiId:scope.object_api_id},coverage:persistedCoverage.rows.map(c=>({parameterId:c.parameter_id,parameterCode:c.parameter_code,
+      parameterName:c.parameter_name,executionStatus:c.execution_rollup as ParameterCoverageItem["executionStatus"],reason:c.reason,
+      ...(c.atomic_summary?{atomic:c.atomic_summary as ParameterCoverageItem["atomic"]}:{})})),
+      fingerprint:sha256(canonicalJson({prepared:prepared.fingerprint,stageHash:stage.content_hash.trim(),results:ordered(results.rows),coverage:ordered(persistedCoverage.rows),
+        submissionHash:snapshot.submission_hash.trim(),metadata:snapshot.metadata,outputHash:scope.output_hash}))};
+  }
+
+  /** Fresh authorization plus exact raw inputs observed by the full A validation. */
+  private async inventoryReplayColumnPylonRead(client:PoolClient,checkId:string,actor:AuthenticatedActor,
+    expectedScope:{runId:string;objectId:string;objectApiId:string},captured:CapturedSavedRead<unknown>):Promise<void>{
+    const scope=await this.inventoryReadScope(client,checkId,actor);
+    if(!scope||scope.id!==expectedScope.runId||scope.object_id!==expectedScope.objectId
+      ||scope.object_api_id!==expectedScope.objectApiId)
+      throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+    await captured.replay(client);
+  }
+
+  private async verifiedInventoryRead(checkId:string,actor:AuthenticatedActor,options?:{signal?:AbortSignal;deadlineMilliseconds?:number},profile?:string){
+    const columnProfile=profile===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(profile);
+    const withBudget=columnProfile?withColumnPylonSectionIoBudget:withPdfIoBudget;
+    try{return await withBudget(async signal=>{
+      // Non-SQL inputs are small installed catalog/scaffold values. Keep their
+      // detached canonical identity within this invocation, alongside A's SQL proof.
+      const installedInputs=()=>sha256(canonicalJson({parameters:this.parameters,
+        scaffold:buildScaffoldReleaseManifest(this.parameters.length).manifest,
+        ...(isConcreteWallProfileV13(profile)?{concreteWallInstalledIdentity:matrixConcreteWallInstalledIdentityV13()}:{} )}));
+      const initialInputs=columnProfile?installedInputs():undefined;
+      const unchangedInputs=()=>{if(columnProfile&&installedInputs()!==initialInputs)
+        throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");};
+      const captured=columnProfile?await this.inventoryTransaction(true,signal,client=>
+        captureSavedRead(client,checked=>this.inventoryStoredRead(checked,checkId,actor))):undefined;
+      const first=captured?captured.value:await this.inventoryTransaction(true,signal,client=>this.inventoryStoredRead(client,checkId,actor));
+      if(!first)return null;
+      if(columnProfile){this.assertInventoryRelease(first.prepared,profile,true);unchangedInputs();}
+      if(!this.storage)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      await verifyOriginalPdfSet({storage:this.storage,references:first.prepared.references,signal});
+      if(captured){
+        unchangedInputs();
+        await this.inventoryTransaction(true,signal,async client=>{
+          unchangedInputs();
+          await this.inventoryReplayColumnPylonRead(client,checkId,actor,first.boundaryScope,captured);
+          unchangedInputs();
+        });
+        unchangedInputs();signal.throwIfAborted();return first;
+      }
+      const after=await this.inventoryTransaction(true,signal,client=>this.inventoryStoredRead(client,checkId,actor));
+      if(!after||after.fingerprint!==first.fingerprint)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");return after;
+    },options);}catch{return null;}
+  }
+
+  private async inventoryCheckProfile(checkId:string,options?:{signal?:AbortSignal}):Promise<string|undefined>{
+    const selected=await withPdfIoBudget(signal=>this.inventoryTransaction(true,signal,client=>client.query<{profile:string}>(`SELECT slot->>'profileId' profile FROM analysis_runs run
+      JOIN objects object ON object.id=run.object_id
+      JOIN analysis_releases release ON release.release_id=run.release_id,
+      LATERAL jsonb_array_elements(release.content_json->'providerSlots') slot
+      WHERE run.api_id=$1 AND object.organization_id=$2 AND slot->>'stageJobType'='RULE_EVALUATION'`,[checkId,this.organizationId])),options);
+    return selected.rows.length===1&&[MATRIX_INVENTORY_PROFILE,MATRIX_CALL_INVENTORY_PROFILE,MATRIX_RAIL_INVENTORY_PROFILE,MATRIX_WATER_NODE_PROFILE,MATRIX_LIGHTING_TECHNOLOGY_PROFILE,MATRIX_STEEL_COMPARISON_PROFILE,MATRIX_STEEL_COMPARISON_V11_PROFILE,MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE,MATRIX_CONCRETE_WALL_V13_PROFILE].includes(selected.rows[0]!.profile)?selected.rows[0]!.profile:undefined;
   }
 
   async getJobOcrLayoutArtifact(
@@ -3969,7 +6124,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         || !row.lease_until
         || new Date(row.lease_until).getTime() <= Date.now()
         || row.inspection_lifecycle !== "OPEN"
-        || row.active_run_id !== row.run_id
+        || (row.active_run_id !== row.run_id
+          && !await isDetachedSourceAuditJob(client, jobId, row.run_id, this.organizationId))
         || !["QUEUED", "RUNNING"].includes(row.run_state)
       ) return { kind: "stale_attempt" };
 
@@ -4072,8 +6228,65 @@ export class PostgresInspectionRepository implements InspectionRepository {
     });
   }
 
-  async completeJob(jobId: string, input: JobCompleteInput): Promise<JobCompleteResult> {
-    const completed = await this.transaction(async (client) => {
+  /** Keep full A out of the caller's PDF await and subsequent fresh-C capture. */
+  private async prepareConcreteWallCompletionPdfAnchorV13(runId:string,objectId:string,
+    signal:AbortSignal):Promise<MatrixCompletionPdfAnchorV13> {
+    const prepared=await this.inventoryTransaction(true,signal,
+      client=>this.inventoryPreparation(client,runId,objectId));
+    // Preserve the old order: transaction COMMIT, release check, then PDF B.
+    this.assertInventoryRelease(prepared);
+    return Object.freeze({completionPreparation:"CONCRETE_WALL_V13_PDF_ANCHOR",fingerprint:prepared.fingerprint,
+      references:Object.freeze(prepared.references.map(reference=>Object.freeze({
+        storageKey:reference.storageKey,expectedSha256:reference.expectedSha256,
+        expectedByteSize:reference.expectedByteSize,expectedMediaType:reference.expectedMediaType,
+      })))});
+  }
+
+  async completeJob(jobId: string, input: JobCompleteInput, options?: {signal?:AbortSignal;sourceAuditProfileVersion?:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" | "SOURCE_AUDIT_V4_FULL_SOURCE_V1"}): Promise<JobCompleteResult> {
+    try {
+      const started=Date.now();
+      const selected=await withPdfIoBudget(signal=>this.inventoryTransaction(true,signal,client=>client.query<{profile_id:string|null;job_type:string;run_id:string;object_id:string;
+          state:string;current_attempt_id:string|null;fencing_token:string|number;lease_until:Date|string|null}>(
+          `SELECT job.job_type,job.run_id,job.object_id,job.state,job.current_attempt_id,job.fencing_token,job.lease_until,
+           (SELECT slot->>'profileId' FROM jsonb_array_elements(release.content_json->'providerSlots') slot
+             WHERE slot->>'stageJobType'='RULE_EVALUATION') AS profile_id FROM analysis_jobs job
+           JOIN analysis_runs run ON run.id=job.run_id JOIN analysis_releases release ON release.release_id=run.release_id
+           WHERE job.id=$1 AND job.organization_id=$2`,[jobId,this.organizationId])),{signal:options?.signal});
+      const row=selected.rows[0];
+      const columnProfile=row?.profile_id===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(row?.profile_id);
+      const withBudget=columnProfile?withColumnPylonSectionIoBudget:withPdfIoBudget;
+      const outcome=await withBudget(async signal=>{
+        if(!row||![MATRIX_INVENTORY_PROFILE,MATRIX_CALL_INVENTORY_PROFILE,MATRIX_RAIL_INVENTORY_PROFILE,MATRIX_WATER_NODE_PROFILE,MATRIX_LIGHTING_TECHNOLOGY_PROFILE,MATRIX_STEEL_COMPARISON_PROFILE,MATRIX_STEEL_COMPARISON_V11_PROFILE,MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE,MATRIX_CONCRETE_WALL_V13_PROFILE].includes(row.profile_id??"")||!["RULE_EVALUATION","ANALYSIS_SEAL_UNSUPPORTED"].includes(row.job_type)
+          ||row.profile_id===MATRIX_LIGHTING_TECHNOLOGY_PROFILE||row.profile_id===MATRIX_STEEL_COMPARISON_PROFILE
+          ||row.state!=="LEASED"||row.current_attempt_id!==input.attemptId||Number(row.fencing_token)!==input.fencingToken
+          ||!row.lease_until||new Date(row.lease_until).getTime()<=Date.now())return {legacy:true as const};
+        if(new Date(row.lease_until).getTime()-Date.now()<=500)throw new PdfIoError("PDF_IO_DEADLINE");
+        const leaseDeadline=new AbortController();
+        const leaseTimer=setTimeout(()=>leaseDeadline.abort(new PdfIoError("PDF_IO_DEADLINE")),new Date(row.lease_until).getTime()-Date.now()-500);
+        const verificationSignal=AbortSignal.any([signal,leaseDeadline.signal]);
+        try{
+          const prepared=isConcreteWallProfileV13(row.profile_id)
+            ? await this.prepareConcreteWallCompletionPdfAnchorV13(row.run_id,row.object_id,verificationSignal)
+            : await this.inventoryTransaction(true,verificationSignal,client=>this.inventoryPreparation(client,row.run_id,row.object_id));
+          if (!("completionPreparation" in prepared)) this.assertInventoryRelease(prepared);
+          if(!this.storage)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+          await verifyOriginalPdfSet({storage:this.storage,references:prepared.references,signal:verificationSignal});
+          verificationSignal.throwIfAborted();
+          return {legacy:false as const,result:await this.completeStoredJob(jobId,input,prepared,verificationSignal,options?.sourceAuditProfileVersion)};
+        }finally{clearTimeout(leaseTimer);}
+      },{signal:options?.signal,deadlineMilliseconds:Math.max(1,(columnProfile?55_000:20_000)-(Date.now()-started))});
+      return outcome.legacy?this.completeStoredJob(jobId,input,undefined,options?.signal,options?.sourceAuditProfileVersion):outcome.result;
+    }catch(error){
+      return {kind:"invalid_state",code:error instanceof PdfIoError||error instanceof InventoryLoaderIntegrityError?error.code:"INVENTORY_INPUT_INTEGRITY",
+        message:"Не удалось подтвердить неизменность исходных файлов и сохранённых перечней. Повторите проверку."};
+    }
+  }
+
+  private async completeStoredJob(jobId:string,input:JobCompleteInput,prepared?:MatrixRunPreparation|MatrixCompletionPdfAnchorV13,
+    signal?:AbortSignal,sourceAuditProfileVersion?:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" | "SOURCE_AUDIT_V4_FULL_SOURCE_V1"):Promise<JobCompleteResult> {
+    const transaction=prepared ? <T>(operation:(client:PoolClient)=>Promise<T>)=>this.inventoryTransaction(false,signal,operation)
+      : <T>(operation:(client:PoolClient)=>Promise<T>)=>this.transaction(operation);
+    const completed = await transaction(async (client) => {
       const scope = await client.query<{ inspection_id: string; run_id: string }>(
         `SELECT inspection_id, run_id FROM analysis_jobs WHERE id = $1 AND organization_id = $2`,
         [jobId, this.organizationId],
@@ -4106,14 +6319,29 @@ export class PostgresInspectionRepository implements InspectionRepository {
         lease_until: Date | string | null;
         input_manifest_hash: string;
         release_id: string;
+        source_audit_profile_version: string | null;
+        matrix_profile_id: string | null;
       }>(
         `SELECT job_type, state, current_attempt_id, fencing_token, lease_until,
-                input_manifest_hash, release_id
+                input_manifest_hash, release_id,
+                (SELECT release.content_json->'textLayer'->>'sourceAuditProfileVersion'
+                 FROM analysis_releases release WHERE release.release_id=analysis_jobs.release_id) AS source_audit_profile_version,
+                (SELECT slot->>'profileId' FROM analysis_releases release,
+                   LATERAL jsonb_array_elements(release.content_json->'providerSlots') slot
+                 WHERE release.release_id=analysis_jobs.release_id
+                   AND slot->>'stageJobType'='RULE_EVALUATION') AS matrix_profile_id
          FROM analysis_jobs WHERE id = $1 FOR UPDATE`,
         [jobId],
       );
       const row = job.rows[0];
       if (!row || !run.rows[0]) return { kind: "not_found" } as const;
+      // Authenticate endpoint/profile before any terminal replay or state mutation.
+      if (sourceAuditProfileVersion
+        ? row.job_type !== "DOCUMENT_TEXT_LAYER" || row.source_audit_profile_version !== sourceAuditProfileVersion
+        : row.job_type === "DOCUMENT_TEXT_LAYER" && row.source_audit_profile_version !== null) {
+        return { kind: "invalid_state", code: "SOURCE_AUDIT_COMPLETION_PROFILE_MISMATCH",
+          message: "Команда завершения не соответствует сохранённому профилю job" } as const;
+      }
       if (
         row.state === "SUCCEEDED"
         && row.current_attempt_id === input.attemptId
@@ -4133,7 +6361,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
       ) return { kind: "stale_attempt" } as const;
       if (
         inspection.rows[0]?.lifecycle !== "OPEN"
-        || inspection.rows[0].active_run_id !== run.rows[0].id
+        || (inspection.rows[0].active_run_id !== run.rows[0].id
+          && !await isDetachedSourceAuditJob(client, jobId, run.rows[0].id, this.organizationId))
         || !["QUEUED", "RUNNING"].includes(run.rows[0].run_state)
       ) {
         return {
@@ -4141,6 +6370,16 @@ export class PostgresInspectionRepository implements InspectionRepository {
           code: "STALE_RUN_SCOPE",
           message: "Run больше не является активным OPEN scope",
         } as const;
+      }
+      // Finite historical identities permit authenticated reads and terminal replay.
+      // New stage adoption requires the corresponding installed execution runtime.
+      if(row.matrix_profile_id===MATRIX_LIGHTING_TECHNOLOGY_PROFILE||row.matrix_profile_id===MATRIX_STEEL_COMPARISON_PROFILE)
+        return {kind:'invalid_state',code:'MATRIX_RUNTIME_NOT_INSTALLED',message:'Исторический профиль доступен для чтения; новое выполнение требует соответствующего архивного runtime.'} as const;
+      let validationPreparation:MatrixRunPreparation|undefined;
+      if(prepared){
+        const current=await this.inventoryPreparation(client,run.rows[0].id,run.rows[0].object_id);
+        assertInventoryPreparationUnchanged(prepared,current);signal?.throwIfAborted();
+        validationPreparation="completionPreparation" in prepared ? current : prepared;
       }
       const result = input.result
         ?? (row.job_type === "ANALYSIS_SEAL_UNSUPPORTED"
@@ -4181,14 +6420,29 @@ export class PostgresInspectionRepository implements InspectionRepository {
           } as const;
         }
       } else if (row.job_type === "DOCUMENT_TEXT_LAYER") {
-        const release = await client.query<{ content_json: Record<string, unknown> }>(
-          `SELECT content_json FROM analysis_releases WHERE release_id = $1`, [row.release_id],
+        const release = await client.query<{ content_json: Record<string, unknown>; content_hash: string; byte_size: number }>(
+          `SELECT content_json,content_hash,byte_size FROM analysis_releases WHERE release_id = $1`, [row.release_id],
         );
         const releaseTextLayer = release.rows[0]?.content_json?.textLayer;
+        const isV4Audit = sourceAuditProfileVersion === "SOURCE_AUDIT_V4_FULL_SOURCE_V1";
+        const isV3Audit = isRecord(releaseTextLayer) && (releaseTextLayer.artifactSchemaVersion === "document-text-v3" || isV4Audit && releaseTextLayer.artifactSchemaVersion === "document-text-v4");
+        const isLargeAudit = sourceAuditProfileVersion === "SOURCE_AUDIT_V3_LARGE_VERTICAL_V1";
+        const expectedAuditRelease = isV3Audit ? isV4Audit
+          ? buildDocumentTextV4FullAuditReleaseManifest(this.parameters.length) : isLargeAudit
+          ? buildDocumentTextV3LargeAuditReleaseManifest(this.parameters.length)
+          : buildDocumentTextV3AuditReleaseManifest(this.parameters.length) : null;
         if (!isRecord(releaseTextLayer)
-          || releaseTextLayer.artifactSchemaVersion !== "document-text-v2"
+          || (isV3Audit ? !(isV4Audit
+            ? validateDocumentTextV4FullAuditRelease(releaseTextLayer, { requireCurrentProducer: true }) : isLargeAudit
+            ? validateDocumentTextV3LargeAuditRelease(releaseTextLayer, { requireCurrentProducer: true })
+            : validateDocumentTextV3AuditRelease(releaseTextLayer, { requireCurrentProducer: true }))
+            || canonicalJson(release.rows[0]?.content_json) !== expectedAuditRelease?.canonical
+            || release.rows[0]?.content_hash.trim() !== expectedAuditRelease?.contentHash
+            || Number(release.rows[0]?.byte_size) !== expectedAuditRelease?.byteSize
+            || row.release_id !== expectedAuditRelease?.manifest.releaseId
+          : releaseTextLayer.artifactSchemaVersion !== "document-text-v2"
           || !["text-layer-quality-v1", TEXT_QUALITY_POLICY_VERSION].includes(
-            String(releaseTextLayer.qualityPolicyVersion))) {
+            String(releaseTextLayer.qualityPolicyVersion)))) {
           return {
             kind: "invalid_state",
             code: "INVALID_JOB_RESULT",
@@ -4210,12 +6464,17 @@ export class PostgresInspectionRepository implements InspectionRepository {
            ORDER BY source.api_id`,
           [run.rows[0].id],
         );
-        const validated = validateDocumentTextResult(result, expectedSources.rows.map((source) => ({
+        const sources = expectedSources.rows.map((source) => ({
           id: source.id,
           apiId: source.api_id,
           sha256: source.sha256.trim(),
           mediaType: source.media_type,
-        })), releaseTextLayer as unknown as AnalysisReleaseManifest["textLayer"]);
+        }));
+        const validated = isV3Audit
+          ? isV4Audit ? validateDocumentTextV4FullAuditResult(result, sources, releaseTextLayer)
+            : isLargeAudit ? validateDocumentTextV3LargeAuditResult(result, sources, releaseTextLayer)
+            : validateDocumentTextV3AuditResult(result, sources, releaseTextLayer as unknown as DocumentTextV3AuditRelease)
+          : validateDocumentTextResult(result, sources, releaseTextLayer as unknown as Extract<AnalysisReleaseManifest["textLayer"], { artifactSchemaVersion: "document-text-v2" }>);
         if (!validated) {
           return {
             kind: "invalid_state",
@@ -4227,8 +6486,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
           await client.query(
             `INSERT INTO analysis_text_artifacts (
                id, job_id, run_id, source_file_id, schema_version, input_sha256,
-               content_hash, byte_size, page_count, text_page_count, content_json
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb)`,
+               content_hash, byte_size, page_count, text_page_count, content_json, resource_policy_version
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12)`,
             [
               artifact.id,
               jobId,
@@ -4239,12 +6498,16 @@ export class PostgresInspectionRepository implements InspectionRepository {
               artifact.contentHash,
               artifact.byteSize,
               artifact.artifact.pageCount,
-              artifact.artifact.textPageCount,
+              (artifact.artifact.schemaVersion === "document-text-v3" || artifact.artifact.schemaVersion === "document-text-v4")
+                ? artifact.artifact.locatedTextPageCount : artifact.artifact.textPageCount,
               artifact.canonical,
+              isV4Audit ? "document-text-v4-full-source-bounds-v1" : isLargeAudit ? "document-text-v3-large-source-bounds-v1" : null,
             ],
           );
         }
-        const ocrRequiredPageCount = countOcrRequiredPages(validated.artifacts);
+        // V3 audit preserves its actual quality counts in storedResult. It has no selected
+        // engineering/OCR provider and must never enter the historical v2 consumer DAG.
+        const ocrRequiredPageCount = isV3Audit ? 0 : countOcrRequiredPages(validated.artifacts as ValidatedTextArtifact[]);
         const ruleSlot = release.rows[0]
           ? providerSlotForJob(release.rows[0].content_json, "RULE_EVALUATION") : null;
         const pinnedOcrHeatReview = ruleSlot?.status === "CONFIGURED"
@@ -4255,7 +6518,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
             || ruleSlot.profileId === "typed-pz002-pz017-ocr-heat-fact-family-candidate-preview-observations-ocr-v1"
             || isOcrTableProfile(ruleSlot.profileId)
             || ruleSlot.profileId === UNRESOLVED_FAMILY_OCR_PROFILE);
-        if (ocrRequiredPageCount > 0 || pinnedOcrHeatReview) {
+        if (!isV3Audit && (ocrRequiredPageCount > 0 || pinnedOcrHeatReview)) {
           const adjacentStages = await client.query<{ id: string; job_type: AnalysisJobType }>(
             `SELECT id, job_type
              FROM analysis_jobs
@@ -4407,6 +6670,15 @@ export class PostgresInspectionRepository implements InspectionRepository {
               [run.rows[0].id],
             );
             const pdfSources = sources.rows.filter((source) => source.media_type === "application/pdf");
+            const v9VisualSlot = slot.adapterVersion === "9" && ((slot.profileId === v9FullVisualProposalProfileId
+              && slot.configHash === v9FullVisualProposalConfigHash) || (slot.profileId === v9SampleVisualProposalProfileId
+              && slot.configHash === v9SampleVisualProposalConfigHash));
+            const v8VisualSlot = slot.adapterVersion === "8" && ((slot.profileId === v8FullVisualProposalProfileId
+              && slot.configHash === v8FullVisualProposalConfigHash) || (slot.profileId === v8SampleVisualProposalProfileId
+              && slot.configHash === v8SampleVisualProposalConfigHash));
+            const v7VisualSlot = slot.adapterVersion === "7" && ((slot.profileId === v7FullVisualProposalProfileId
+              && slot.configHash === v7FullVisualProposalConfigHash) || (slot.profileId === v7SampleVisualProposalProfileId
+              && slot.configHash === v7SampleVisualProposalConfigHash));
             const currentVisualSlot = slot.profileId === visualProposalProfileId
               && slot.configHash === visualProposalConfigHash && slot.adapterVersion === "4";
             const v5VisualSlot = slot.profileId === v5VisualProposalProfileId
@@ -4419,7 +6691,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               && slot.configHash === v2VisualProposalConfigHash && slot.adapterVersion === "2";
             const legacyVisualSlot = slot.profileId === legacyVisualProposalProfileId
               && slot.configHash === legacyVisualProposalConfigHash && slot.adapterVersion === "1";
-            const validated = (currentVisualSlot || v5VisualSlot || v6VisualSlot || v3VisualSlot || v2VisualSlot || legacyVisualSlot)
+            const validated = (v9VisualSlot || v8VisualSlot || v7VisualSlot || currentVisualSlot || v5VisualSlot || v6VisualSlot || v3VisualSlot || v2VisualSlot || legacyVisualSlot)
               && pdfSources.every((source) => Number.isSafeInteger(source.page_count) && Number(source.page_count) > 0)
               ? validateVisualProposalStageResult(
                   result,
@@ -4472,7 +6744,23 @@ export class PostgresInspectionRepository implements InspectionRepository {
           const slot = release.rows[0]
             ? providerSlotForJob(release.rows[0].content_json, row.job_type)
             : null;
-          if (slot?.status === "CONFIGURED") {
+          if (slot?.status === "CONFIGURED" && matrixFullPolicyForProfile(slot.profileId)) {
+            const validated = await this.validateMatrixStage(client, run.rows[0].id,
+              run.rows[0].object_id, row.input_manifest_hash.trim(), result, slot.configHash, slot.profileId, validationPreparation);
+            if (!validated) return { kind: "invalid_state", code: "INVALID_JOB_RESULT",
+              message: "Matrix execution не соответствует immutable sources, registry или безопасным gates" } as const;
+            const canonical = canonicalJson({ ...result, execution: validated });
+            const contentHash = sha256(canonical);
+            await client.query(`INSERT INTO analysis_stage_artifacts
+              (id,job_id,run_id,job_type,schema_version,disposition,reason_code,provider_kind,
+               provider_profile_id,provider_config_hash,output_count,input_manifest_hash,content_hash,byte_size,content_json)
+              VALUES ($1,$2,$3,'RULE_EVALUATION','analysis-stage-result-v2','RULES_EVALUATED',
+                'MATRIX_ATOMIC_EXECUTION','RULE_ENGINE',$4,$5,$6,$7,$8,$9,$10::jsonb)`,
+              [randomUUID(),jobId,run.rows[0].id,slot.profileId,slot.configHash,
+                Number(result.outputCount),row.input_manifest_hash.trim(),contentHash,Buffer.byteLength(canonical),canonical]);
+            storedResult = { schemaVersion: "analysis-stage-result-v2", contentHash,
+              outputCount: Number(result.outputCount), disposition: "RULES_EVALUATED" };
+          } else if (slot?.status === "CONFIGURED") {
             const sources = await client.query<{ api_id: string; sha256: string }>(
               `SELECT source.api_id, item.blob_sha256 AS sha256
                FROM analysis_runs analysis_run
@@ -4983,7 +7271,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
           }, traceId, occurredAt);
         }
       } else {
-        const aggregateVersion = await this.sealUnsupportedRun(client, run.rows[0]);
+        const aggregateVersion = await this.sealUnsupportedRun(client, run.rows[0], validationPreparation);
         const eventId = randomUUID();
         await client.query(
           `INSERT INTO domain_outbox (
@@ -5012,7 +7300,10 @@ export class PostgresInspectionRepository implements InspectionRepository {
       return { kind: "completed", checkId: run.rows[0].api_id, replayed: false } as const;
     });
     if (completed.kind !== "completed") return completed;
-    const check = await this.getCheckUnscoped(completed.checkId);
+    const check = prepared ? await this.inventoryTransaction(true,signal,async client=>{
+      const selected=await client.query<CheckRow>(`${checkSelect} WHERE object.organization_id=$1 AND run.api_id=$2`,[this.organizationId,completed.checkId]);
+      return selected.rows[0]?mapCheck(selected.rows[0]):undefined;
+    }) : await this.getCheckUnscoped(completed.checkId);
     if (!check) return { kind: "not_found" };
     return { kind: "completed", check, replayed: completed.replayed };
   }
@@ -5086,7 +7377,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
       ) return { kind: "stale_attempt" };
       if (
         inspection.rows[0]?.lifecycle !== "OPEN"
-        || inspection.rows[0].active_run_id !== row.run_id
+        || (inspection.rows[0].active_run_id !== row.run_id
+          && !await isDetachedSourceAuditJob(client, jobId, row.run_id, this.organizationId))
         || !run.rows[0]
         || !["QUEUED", "RUNNING"].includes(run.rows[0].run_state)
       ) {
@@ -5135,73 +7427,10 @@ export class PostgresInspectionRepository implements InspectionRepository {
         );
         return { kind: "retry_scheduled", nextAttemptAt };
       }
-      await client.query(
-        `UPDATE analysis_jobs
-         SET state = 'FAILED', lease_until = NULL, last_error_code = $2,
-             last_error_message = $3, completed_at = now(), updated_at = now()
-         WHERE id = $1`,
-        [jobId, input.errorCode, input.message],
-      );
-      await client.query(
-        `WITH RECURSIVE descendants(id) AS (
-           SELECT dependency.job_id
-           FROM analysis_job_dependencies dependency
-           WHERE dependency.prerequisite_job_id = $1
-           UNION
-           SELECT dependency.job_id
-           FROM analysis_job_dependencies dependency
-           JOIN descendants parent ON parent.id = dependency.prerequisite_job_id
-         )
-         UPDATE analysis_jobs descendant
-         SET state = 'CANCELLED', current_attempt_id = NULL, lease_until = NULL,
-             last_error_code = 'PREREQUISITE_FAILED',
-             last_error_message = 'Prerequisite job завершился terminal failure',
-             completed_at = now(), updated_at = now()
-         WHERE descendant.id IN (SELECT id FROM descendants)
-           AND descendant.state IN ('BLOCKED', 'READY', 'RETRY_WAIT')`,
-        [jobId],
-      );
-      const failedRun = await client.query<{ event_version: string | number }>(
-        `UPDATE analysis_runs
-         SET run_state = 'FAILED', display_status = 'FAILED', current_stage = 'Worker завершился ошибкой',
-             completed_at = now(), event_version = event_version + 1
-         WHERE id = $1 AND run_state IN ('QUEUED', 'RUNNING')
-         RETURNING event_version`,
-        [row.run_id],
-      );
-      await client.query(
-        `UPDATE objects SET display_status = 'FAILED', updated_at = now() WHERE id = $1`,
-        [row.object_id],
-      );
-      const aggregateVersion = Number(failedRun.rows[0].event_version);
-      const eventId = randomUUID();
-      await client.query(
-        `INSERT INTO domain_outbox (
-           id, event_type, aggregate_type, aggregate_id, aggregate_version,
-           exchange_name, routing_key, payload
-         ) VALUES ($1, 'stage.finished', 'ANALYSIS_RUN', $2, $3, 'inspector.events', 'stage.finished', $4::jsonb)`,
-        [
-          eventId,
-          row.run_id,
-          aggregateVersion,
-          JSON.stringify({
-            schema_version: "1.0",
-            event_id: eventId,
-            event_type: "stage.finished",
-            occurred_at: new Date().toISOString(),
-            trace_id: randomUUID(),
-            organization_id: this.organizationId,
-            object_id: row.object_id,
-            inspection_id: run.rows[0].inspection_id,
-            run_id: row.run_id,
-            job_id: jobId,
-            job_type: row.job_type,
-            aggregate_version: aggregateVersion,
-            outcome: "FAILED",
-            error_code: input.errorCode,
-          }),
-        ],
-      );
+      await propagateTerminalJobFailure(client, {
+        jobId, organizationId: this.organizationId, reason: "REPORTED_FAILURE",
+        errorCode: input.errorCode, message: input.message,
+      });
       return { kind: "failed" };
     });
   }
@@ -5255,7 +7484,51 @@ export class PostgresInspectionRepository implements InspectionRepository {
     );
   }
 
-  private async ensureAnalysisRelease(client: PoolClient): Promise<ReturnType<typeof buildScaffoldReleaseManifest>> {
+  private async ensureAnalysisRelease(client: PoolClient, visualProfile = this.visualProfile, sourceAuditV3 = false, sourceAuditV3Large = false, sourceAuditV4Full = false): Promise<ReturnType<typeof buildScaffoldReleaseManifest>> {
+    if (sourceAuditV4Full || sourceAuditV3Large || sourceAuditV3 || this.analysisProfile === "SOURCE_AUDIT_V3") {
+      const release = sourceAuditV4Full ? buildDocumentTextV4FullAuditReleaseManifest(this.parameters.length)
+        : sourceAuditV3Large ? buildDocumentTextV3LargeAuditReleaseManifest(this.parameters.length)
+        : buildDocumentTextV3AuditReleaseManifest(this.parameters.length);
+      await client.query(`INSERT INTO analysis_releases
+        (release_id,schema_version,lifecycle,content_hash,byte_size,content_json,external_network_allowed)
+        VALUES ($1,'analysis-release-v1','DRAFT',$2,$3,$4::jsonb,false)
+        ON CONFLICT (release_id) DO NOTHING`,
+        [release.manifest.releaseId, release.contentHash, release.byteSize, release.canonical]);
+      const stored = await client.query<{content_hash:string;byte_size:number;content_json:unknown}>(
+        "SELECT content_hash,byte_size,content_json FROM analysis_releases WHERE release_id=$1", [release.manifest.releaseId]);
+      if (stored.rows[0]?.content_hash.trim() !== release.contentHash || Number(stored.rows[0]?.byte_size) !== release.byteSize
+        || canonicalJson(stored.rows[0]?.content_json) !== release.canonical) throw new Error("source audit release identity conflict");
+      return release;
+    }
+    if (this.analysisProfile === "MATRIX_V1") {
+      const base = process.env.INSPECTOR_MATRIX_VISUAL_PROPOSALS === "1"
+        ? buildPilotPz002ReleaseManifest(this.parameters.length, visualProfile).manifest
+        : buildScaffoldReleaseManifest(this.parameters.length).manifest;
+      const { releaseId: _previousId, ...previous } = base;
+      const selectedPolicy=selectedMatrixRuntimePolicyFromEnvironment();
+      if(!selectedPolicy||!isCurrentMatrixExecutionInstalled(selectedPolicy.profileId))throw new Error("MATRIX_RUNTIME_NOT_INSTALLED");
+      const identity = { ...previous, lifecycle: "DRAFT" as const, rules: { catalogVersion: "matrix-132-v1" as const,
+        parameterCount: this.parameters.length, executionStatus: "PILOT" as const,
+        matrixDefinitions:selectedPolicy.definitions },
+        providerSlots: base.providerSlots.map((slot) => slot.stageJobType === "RULE_EVALUATION"
+          ? { ...slot, status: "CONFIGURED" as const, profileId: selectedPolicy.profileId, adapterVersion: selectedPolicy.adapterVersion, configHash: selectedPolicy.configHash, resourceProfile: "CPU" }
+          : slot.stageJobType === "DOCUMENT_OCR_LAYOUT" && process.env.INSPECTOR_MATRIX_OCR_LAYOUT === "1"
+            ? { ...slot,status:"CONFIGURED" as const,profileId:boundedOcrProfileIdV2,adapterVersion:"2",configHash:boundedOcrConfigHashV2,resourceProfile:"CPU" }
+            : slot) };
+      const manifest: AnalysisReleaseManifest = { ...identity,
+        releaseId: `release:matrix-v1:${sha256(canonicalJson(identity)).slice(0, 24)}` };
+      const canonical = canonicalJson(manifest);
+      const release = { manifest, canonical, contentHash: sha256(canonical), byteSize: Buffer.byteLength(canonical) };
+      await client.query(`INSERT INTO analysis_releases
+        (release_id,schema_version,lifecycle,content_hash,byte_size,content_json,external_network_allowed)
+        VALUES ($1,'analysis-release-v1','DRAFT',$2,$3,$4::jsonb,false)
+        ON CONFLICT (release_id) DO NOTHING`,
+        [manifest.releaseId, release.contentHash, release.byteSize, canonical]);
+      const stored = await client.query<{content_hash:string}>(
+        "SELECT content_hash FROM analysis_releases WHERE release_id=$1", [manifest.releaseId]);
+      if (stored.rows[0]?.content_hash.trim() !== release.contentHash) throw new Error("matrix release identity conflict");
+      return release;
+    }
     const ocrSelection = process.env.INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE ?? "v1";
     const heatRowSelection = process.env.INSPECTOR_OCR_HEAT_ROW_PROFILE ?? "";
     const factFamilySelection = process.env.INSPECTOR_FACT_FAMILY_PROFILE ?? "";
@@ -5449,7 +7722,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       throw new Error("INSPECTOR_OCR_LAYOUT_SELECTION_PROFILE=v6 requires OCR review consumers unset");
     }
     const release = this.analysisProfile === "PILOT_PZ002_PZ017"
-      ? buildPilotPz002Pz017ReleaseManifest(this.parameters.length, this.visualProfile,
+      ? buildPilotPz002Pz017ReleaseManifest(this.parameters.length, visualProfile,
           ocrSelection === "v6" ? "V6" : ocrSelection === "v5" ? "V5" : ocrSelection === "v4" ? "V4"
             : ocrSelection === "v3" ? "V3"
             : ocrSelection === "v2" ? "V2" : "V1",
@@ -5466,7 +7739,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
           unresolvedConfigSelection === "v3", layerAssemblySelection === "v1",
           kr065OpeningSelection === "v1")
       : this.analysisProfile === "PILOT_PZ002"
-        ? buildPilotPz002ReleaseManifest(this.parameters.length, this.visualProfile)
+        ? buildPilotPz002ReleaseManifest(this.parameters.length, visualProfile)
         : buildScaffoldReleaseManifest(this.parameters.length);
     await client.query(
       `INSERT INTO analysis_releases (
@@ -5501,6 +7774,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
   private async sealUnsupportedRun(
     client: PoolClient,
     run: { id: string; api_id: string; inspection_id: string; object_id: string },
+    prepared?:MatrixRunPreparation,
   ): Promise<number> {
     await this.verifyOcrTypedFactCandidateArtifact(client, run.id);
     const pilotRelease = await client.query<{ lifecycle: string; execution_status: string | null;
@@ -5533,6 +7807,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         throw new Error("OCR v6 immutable stage integrity check failed");
       }
     }
+    if (pilotRelease.rows[0] && matrixFullPolicyForProfile(providerSlotForJob(pilotRelease.rows[0].content_json,
+      "RULE_EVALUATION")?.profileId)) return this.sealMatrixRun(client, run, prepared);
     if (pilotRelease.rows[0]?.execution_status === "PILOT") {
       return this.sealPilotPz002Run(client, run);
     }
@@ -5575,8 +7851,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
     await client.query(
       `UPDATE objects
        SET display_status = 'PARTIAL', stats = $1::jsonb, updated_at = now()
-       WHERE id = $2`,
-      [JSON.stringify(stats), run.object_id],
+       WHERE id = $2 AND EXISTS (SELECT 1 FROM inspections WHERE active_run_id = $3 AND object_id = $2)`,
+      [JSON.stringify(stats), run.object_id, run.id],
     );
     return Number(updatedRun.rows[0].event_version);
   }
@@ -5587,7 +7863,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       review_source_sha256: string | null; revision_status: string | null;
       approval_status: string | null; link_group_id: string | null;
       page_stages: Record<string, string> | null;
-      review_content_hash: string | null; decision_hash: string | null;
+      review_content_hash: string | null; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null; decision_hash: string | null;
       content_json: Record<string, unknown> | null; content_hash: string | null;
     }>(
       `SELECT source.api_id AS source_file_id, item.blob_sha256 AS sha256,
@@ -5684,7 +7960,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       approval_status: string | null; link_group_id: string | null;
       section_code: SourceReviewDecision["sectionCode"];
       page_stages: Record<string, unknown> | null; basis_reference: string | null;
-      actor_id: string | null; review_content_hash: string | null; decision_hash: string | null;
+      actor_id: string | null; review_content_hash: string | null; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null; decision_hash: string | null;
       snapshot_decision_id: string | null; review_id: string | null;
     }>(
       `SELECT source.api_id AS source_file_id, item.blob_sha256 AS source_sha256,
@@ -5695,7 +7971,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               review.revision_status, review.approval_status, review.link_group_id,
               review.section_code,
               review.page_stages, review.basis_reference, review.actor_id,
-              review.content_hash AS review_content_hash, snapshot.decision_hash,
+              review.content_hash AS review_content_hash, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope, snapshot.decision_hash,
               snapshot.decision_id AS snapshot_decision_id, review.id AS review_id
        FROM analysis_runs run
        JOIN objects object ON object.id = run.object_id
@@ -5727,7 +8003,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         revisionStatus: source.revision_status, approvalStatus: source.approval_status,
         linkGroupId: source.link_group_id, pageStages: source.page_stages,
         ...(source.section_code ? { sectionCode: source.section_code } : {}),
-        basis: { reference: source.basis_reference }, actorId: source.actor_id,
+        basis: { reference: source.basis_reference },
+        ...(source.matrix_scope ? { matrixScope: source.matrix_scope } : {}), ...(source.inventory_scope ? { inventoryScope: source.inventory_scope } : {}),...(source.call_inventory_scope?{callInventoryScope:source.call_inventory_scope}:{}),...(source.rail_inventory_scope?{railInventoryScope:source.rail_inventory_scope}:{}),...(source.water_node_scope?{waterNodeScope:source.water_node_scope}:{}),...(source.lighting_technology_scope?{lightingTechnologyScope:source.lighting_technology_scope}:{}),...(source.steel_comparison_scope?{steelComparisonScope:source.steel_comparison_scope}:{}), actorId: source.actor_id,
       }));
       if (source.review_content_hash.trim() !== contentHash
         || source.decision_hash.trim() !== contentHash) return null;
@@ -5760,7 +8037,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       revision_status: string | null; approval_status: string | null;
       link_group_id: string | null; section_code: string | null;
       page_stages: Record<string, string> | null; basis_reference: string | null;
-      actor_id: string | null; review_content_hash: string | null;
+      actor_id: string | null; review_content_hash: string | null; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null;
     }>(
       `SELECT source.id AS source_internal_id, source.api_id AS source_file_id,
               source.object_id AS source_object_id, object.api_id AS object_api_id,
@@ -5777,7 +8054,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               review.source_sha256 AS review_source_sha256,
               review.revision_status, review.approval_status, review.link_group_id,
               review.section_code, review.page_stages, review.basis_reference,
-              review.actor_id, review.content_hash AS review_content_hash
+              review.actor_id, review.content_hash AS review_content_hash, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope
        FROM analysis_runs run
        JOIN objects object ON object.id = run.object_id
        JOIN manifest_items item ON item.manifest_id = run.manifest_id
@@ -5832,7 +8109,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
           approvalStatus: row.approval_status, linkGroupId: row.link_group_id,
           pageStages: row.page_stages,
           ...(row.section_code ? { sectionCode: row.section_code } : {}),
-          basis: { reference: row.basis_reference }, actorId: row.actor_id,
+          basis: { reference: row.basis_reference },
+          ...(row.matrix_scope ? { matrixScope: row.matrix_scope } : {}), ...(row.inventory_scope ? { inventoryScope: row.inventory_scope } : {}),...(row.call_inventory_scope?{callInventoryScope:row.call_inventory_scope}:{}),...(row.rail_inventory_scope?{railInventoryScope:row.rail_inventory_scope}:{}),...(row.water_node_scope?{waterNodeScope:row.water_node_scope}:{}),...(row.lighting_technology_scope?{lightingTechnologyScope:row.lighting_technology_scope}:{}),...(row.steel_comparison_scope?{steelComparisonScope:row.steel_comparison_scope}:{}), actorId: row.actor_id,
         }));
         if (row.review_content_hash.trim() !== contentHash
           || row.snapshot_hash.trim() !== contentHash) return null;
@@ -6041,7 +8319,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       approval_status: string | null; link_group_id: string | null;
       section_code: SourceReviewDecision["sectionCode"];
       page_stages: Record<string, string> | null; basis_reference: string | null;
-      actor_id: string | null; review_content_hash: string | null; decision_hash: string | null;
+      actor_id: string | null; review_content_hash: string | null; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null; decision_hash: string | null;
       snapshot_decision_id: string | null; review_id: string | null;
       content_json: Record<string, unknown> | null; content_hash: string | null;
       byte_size: number | string | null;
@@ -6054,7 +8332,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               review.revision_status, review.approval_status, review.link_group_id,
               review.section_code,
               review.page_stages, review.basis_reference, review.actor_id,
-              review.content_hash AS review_content_hash, snapshot.decision_hash,
+              review.content_hash AS review_content_hash, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope, snapshot.decision_hash,
               snapshot.decision_id AS snapshot_decision_id, review.id AS review_id,
               artifact.content_json, artifact.content_hash, artifact.byte_size
        FROM analysis_runs run
@@ -6099,6 +8377,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
           approvalStatus: source.approval_status, linkGroupId: source.link_group_id,
           ...(source.section_code ? { sectionCode: source.section_code } : {}),
           pageStages: source.page_stages, basis: { reference: source.basis_reference },
+          ...(source.matrix_scope ? { matrixScope: source.matrix_scope } : {}), ...(source.inventory_scope ? { inventoryScope: source.inventory_scope } : {}),...(source.call_inventory_scope?{callInventoryScope:source.call_inventory_scope}:{}),...(source.rail_inventory_scope?{railInventoryScope:source.rail_inventory_scope}:{}),...(source.water_node_scope?{waterNodeScope:source.water_node_scope}:{}),...(source.lighting_technology_scope?{lightingTechnologyScope:source.lighting_technology_scope}:{}),...(source.steel_comparison_scope?{steelComparisonScope:source.steel_comparison_scope}:{}),
           actorId: source.actor_id,
         }));
         if (reviewHash !== source.review_content_hash.trim()
@@ -6138,7 +8417,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       sectionCode: string | null }>;
     sourceDecisions: Record<string, { sourceSha256: string; revisionStatus: string;
       approvalStatus: string; linkGroupId: string | null; sectionCode: string | null;
-      pageStages: Record<string, string>; basis: { reference: string } }>;
+      pageStages: Record<string, string>; basis: { reference: string }; scopeProofs: Record<string, Record<string, unknown>> }>;
     textArtifacts: Array<{ sourceFileId: string; contentSha256: string;
       artifact: Record<string, unknown> }>;
     pdfStorageRefs: Record<string, { storageKey: string; sha256: string; byteSize: number }>;
@@ -6171,7 +8450,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       approval_status: string | null; link_group_id: string | null;
       section_code: string | null; page_stages: Record<string, string> | null;
       basis_reference: string | null; actor_id: string | null;
-      review_content_hash: string | null; text_job_id: string | null;
+      review_content_hash: string | null; matrix_scope: MatrixSourceScope | null; inventory_scope: MatrixInventoryScopeDecision | null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null; text_job_id: string | null;
       text_job_run_id: string | null; text_job_object_id: string | null;
       text_job_type: string | null; text_job_state: string | null;
       text_job_manifest_hash: string | null; text_job_release_id: string | null;
@@ -6195,7 +8474,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               review.source_sha256 AS review_source_sha256,
               review.revision_status, review.approval_status, review.link_group_id,
               review.section_code, review.page_stages, review.basis_reference,
-              review.actor_id, review.content_hash AS review_content_hash,
+              review.actor_id, review.content_hash AS review_content_hash, review.matrix_scope, review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope,
               text.job_id AS text_job_id, text.content_json AS text_artifact,
               text.content_hash AS text_hash, text.byte_size AS text_byte_size,
               text.input_sha256 AS text_input_sha256, text.page_count AS text_page_count,
@@ -6226,7 +8505,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       sectionCode: string | null }> = [];
     const sourceDecisions: Record<string, { sourceSha256: string; revisionStatus: string;
       approvalStatus: string; linkGroupId: string | null; sectionCode: string | null;
-      pageStages: Record<string, string>; basis: { reference: string } }> = {};
+      pageStages: Record<string, string>; basis: { reference: string }; scopeProofs: Record<string, Record<string, unknown>> }> = {};
     const textArtifacts: Array<{ sourceFileId: string; contentSha256: string;
       artifact: Record<string, unknown> }> = [];
     const pdfStorageRefs: Record<string, { storageKey: string; sha256: string;
@@ -6279,12 +8558,14 @@ export class PostgresInspectionRepository implements InspectionRepository {
           || !row.revision_status || !row.approval_status
           || !row.page_stages || !row.basis_reference || !row.actor_id
           || !row.review_content_hash || !row.snapshot_hash) return null;
+        try{if(row.steel_comparison_scope)parseSteelComparisonScopeDecision(row.steel_comparison_scope,{sourceFileId:sourceId,sourceSha256:sourceHash});}catch{return null;}
         reviewHash = sha256(canonicalJson({
           objectApiId: row.object_api_id, sourceFileApiId: sourceId,
           sourceSha256: sourceHash, revisionStatus: row.revision_status,
           approvalStatus: row.approval_status, linkGroupId: row.link_group_id,
           ...(row.section_code ? { sectionCode: row.section_code } : {}),
           pageStages: row.page_stages, basis: { reference: row.basis_reference },
+          ...(row.matrix_scope ? { matrixScope: row.matrix_scope } : {}), ...(row.inventory_scope ? { inventoryScope: row.inventory_scope } : {}),...(row.call_inventory_scope?{callInventoryScope:row.call_inventory_scope}:{}),...(row.rail_inventory_scope?{railInventoryScope:row.rail_inventory_scope}:{}),...(row.water_node_scope?{waterNodeScope:row.water_node_scope}:{}),...(row.lighting_technology_scope?{lightingTechnologyScope:row.lighting_technology_scope}:{}),...(row.steel_comparison_scope?{steelComparisonScope:row.steel_comparison_scope}:{}),
           actorId: row.actor_id,
         }));
         if (row.review_content_hash.trim() !== reviewHash
@@ -6295,6 +8576,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
           approvalStatus: row.approval_status, linkGroupId: row.link_group_id,
           sectionCode, pageStages: row.page_stages,
           basis: { reference: row.basis_reference },
+          scopeProofs: bindMatrixSourceScope(row.matrix_scope, { sourceFileId: sourceId, sourceSha256: sourceHash,
+            objectId, inputManifestHash: manifestHash, reviewContentHash: reviewHash }),
         };
       }
       sourceFiles.push({ sourceFileId: sourceId, objectId: row.object_api_id,
@@ -6746,6 +9029,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
           .includes(item.parameter_code)))
         .map((item) => item.parameter_code),
     });
+    await this.carryUnchangedCandidateReviews(client, run);
     const updatedRun = await client.query<{ event_version: number | string }>(
       `UPDATE analysis_runs
        SET run_state = 'PARTIAL', display_status = 'PARTIAL', progress = 100,
@@ -6760,10 +9044,18 @@ export class PostgresInspectionRepository implements InspectionRepository {
     );
     await client.query(
       `UPDATE objects SET display_status = 'PARTIAL', stats = $1::jsonb, updated_at = now()
-       WHERE id = $2`,
-      [JSON.stringify(stats), run.object_id],
+       WHERE id = $2 AND EXISTS (SELECT 1 FROM inspections WHERE active_run_id = $3 AND object_id = $2)`,
+      [JSON.stringify(stats), run.object_id, run.id],
     );
     return Number(updatedRun.rows[0].event_version);
+  }
+
+  async listObjectChecks(objectId: string, actor: AuthenticatedActor): Promise<ScopedReadResult<CheckRun[]>> {
+    if (actor.organizationId !== this.organizationId || !this.hasReadScope(actor)) return undefined;
+    if (!(await this.hasObjectPermission(objectId, actor, "READ"))) return undefined;
+    const rows = await this.readQuery<CheckRow>(`${checkSelect} WHERE object.organization_id = $1
+      AND object.api_id = $2 ORDER BY run.started_at DESC, run.id DESC LIMIT 100`, [this.organizationId, objectId]);
+    return rows.rows.map(mapCheck);
   }
 
   async getCheck(id: string, actor?: AuthenticatedActor): Promise<ScopedReadResult<CheckRun>> {
@@ -6855,7 +9147,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               result.execution_status, result.machine_status, result.result_payload
        FROM analysis_runs run
        JOIN inspections inspection ON inspection.id = run.inspection_id
-         AND inspection.active_run_id = run.id
+
        JOIN objects object ON object.id = run.object_id
        LEFT JOIN analysis_releases release ON release.release_id = run.release_id
        LEFT JOIN input_manifests manifest ON manifest.id = run.manifest_id
@@ -8028,7 +10320,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       link_group_id: string | null; section_code: SourceReviewDecision["sectionCode"];
       page_stages: SourceReviewDecision["pageStages"];
       basis_reference: string; actor_id: string; content_hash: string;
-      created_at: Date | string;
+      created_at: Date | string; matrix_scope:MatrixSourceScope|null; inventory_scope:MatrixInventoryScopeDecision|null; call_inventory_scope:MatrixCallInventoryScopeDecision|null; rail_inventory_scope:MatrixRailInventoryScopeDecision|null; water_node_scope:MatrixWaterNodeScopeDecision|null; lighting_technology_scope:MatrixLightingTechnologyScopeDecision|null; steel_comparison_scope:SteelComparisonScopeDecision|null;
     }>(
       `SELECT snapshot.decision_id AS snapshot_decision_id,
               snapshot.decision_hash AS snapshot_hash,
@@ -8036,7 +10328,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               review.source_sha256, review.revision_status,
               review.approval_status, review.link_group_id,
               review.section_code, review.page_stages, review.basis_reference,
-              review.actor_id, review.content_hash, review.created_at
+              review.actor_id, review.content_hash, review.created_at,review.matrix_scope,review.inventory_scope,review.call_inventory_scope,review.rail_inventory_scope,review.water_node_scope,review.lighting_technology_scope,review.steel_comparison_scope
        FROM run_source_review_snapshots snapshot
        JOIN source_review_decisions review ON review.id = snapshot.decision_id
        WHERE snapshot.run_id = $1 AND snapshot.source_file_id = $2`,
@@ -8059,6 +10351,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       pageStages: parseJson<SourceReviewDecision["pageStages"]>(review.page_stages),
       basis: { reference: review.basis_reference }, actorId: review.actor_id,
       contentHash: review.content_hash.trim(), createdAt: asIso(review.created_at),
+      ...(review.matrix_scope?{matrixScope:review.matrix_scope}:{}),...(review.inventory_scope?{inventoryScope:review.inventory_scope}:{}),...(review.call_inventory_scope?{callInventoryScope:review.call_inventory_scope}:{}),...(review.rail_inventory_scope?{railInventoryScope:review.rail_inventory_scope}:{}),...(review.water_node_scope?{waterNodeScope:review.water_node_scope}:{}),...(review.lighting_technology_scope?{lightingTechnologyScope:review.lighting_technology_scope}:{}),...(review.steel_comparison_scope?{steelComparisonScope:review.steel_comparison_scope}:{}),
     };
     const context: OcrRowApplicabilityVerificationContext = {
       targetCheckId: "", objectId: selected.object_api_id,
@@ -9782,7 +12075,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
     if (sha256(canonical) !== row.content_hash.trim()
       || Buffer.byteLength(canonical, "utf8") !== Number(row.byte_size)
       || !isRecord(content.analysis)
-      || !["visual-proposal-analysis-v1", "visual-proposal-analysis-v2", "visual-proposal-analysis-v3", "visual-proposal-analysis-v4", "visual-proposal-analysis-v5", "visual-proposal-analysis-v6"].includes(
+      || !["visual-proposal-analysis-v1", "visual-proposal-analysis-v2", "visual-proposal-analysis-v3", "visual-proposal-analysis-v4", "visual-proposal-analysis-v5", "visual-proposal-analysis-v6", "visual-proposal-analysis-v7", "visual-proposal-analysis-v8", "visual-proposal-analysis-v9"].includes(
         String(content.analysis.schemaVersion),
       )) {
       throw new Error("visual proposal artifact integrity check failed");
@@ -10182,8 +12475,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
     if (!pilot || pilot === "AUTH_REQUIRED" || pilot === "FORBIDDEN" || !pilot.reviewCandidates) {
       return undefined;
     }
-    const scope = await this.readQuery<{ id: string; can_review: boolean }>(
-      `SELECT run.id, EXISTS (
+    const scope = await this.readQuery<{ id: string; can_review: boolean; lifecycle: string; active_run_id: string }>(
+      `SELECT run.id, inspection.lifecycle, inspection.active_run_id, EXISTS (
          SELECT 1 FROM object_memberships member
          WHERE member.object_id = run.object_id AND member.user_id = $3
            AND member.revoked_at IS NULL
@@ -10192,18 +12485,19 @@ export class PostgresInspectionRepository implements InspectionRepository {
        FROM analysis_runs run
        JOIN objects object ON object.id = run.object_id
        JOIN inspections inspection ON inspection.id = run.inspection_id
-         AND inspection.active_run_id = run.id
        WHERE object.organization_id = $1 AND run.api_id = $2`,
       [this.organizationId, checkId, actor.userId],
     );
     if (!scope.rows[0]) return undefined;
     const rows = await this.readQuery<{ id: string; candidate_id: string; rule_stage_hash: string;
-      saved_stage_hash: string;
+      saved_stage_hash: string; inherited_from: ReviewCandidateDecisionRead["inheritedFrom"] | null;
       decision: ReviewCandidateDecisionRead["decision"]; note: string; actor_id: string;
-      decision_hash: string; created_at: Date | string }>(
+      decision_hash: string; review_details: ReviewCandidateDecisionInput["details"] | null;
+      expected_decision_hash: string | null; has_expected_decision_hash: boolean; created_at: Date | string }>(
       `SELECT decision.id, decision.candidate_id, decision.rule_stage_hash,
               stage.content_hash AS saved_stage_hash, decision.decision,
-              decision.note, decision.actor_id, decision.decision_hash, decision.created_at
+              decision.note, decision.actor_id, decision.decision_hash, decision.created_at,
+              decision.inherited_from, decision.review_details, decision.expected_decision_hash, decision.has_expected_decision_hash
        FROM review_candidate_decisions decision
        JOIN analysis_stage_artifacts stage ON stage.id = decision.rule_stage_artifact_id
          AND stage.run_id = decision.run_id AND stage.job_type = 'RULE_EVALUATION'
@@ -10218,17 +12512,26 @@ export class PostgresInspectionRepository implements InspectionRepository {
           schemaVersion: "review-candidate-decision-v1",
           candidateId: row.candidate_id.trim(),
           artifactHash: pilot.reviewCandidates.contentHash,
-          decision: row.decision, note: row.note, actorId: row.actor_id,
+          decision: row.decision, note: row.note,
+          ...(row.inherited_from ? { inheritedFrom: row.inherited_from } : {}),
+          ...(row.review_details ? { details: row.review_details } : {}),
+          ...(row.has_expected_decision_hash ? { expectedDecisionHash: row.expected_decision_hash?.trim() ?? null } : {}),
+          actorId: row.actor_id,
           stageHash: row.saved_stage_hash.trim(),
         })) !== row.decision_hash.trim()) {
         throw new Error("review candidate decision integrity check failed");
       }
     }
-    return { canReview: actor.capabilities.includes("REVIEW_DECIDE") && scope.rows[0].can_review,
+    return { canReview: actor.capabilities.includes("REVIEW_DECIDE") && scope.rows[0].can_review
+        && scope.rows[0].lifecycle === "OPEN" && scope.rows[0].active_run_id === scope.rows[0].id,
       items: rows.rows.map((row) => ({
         id: row.id, checkId, schemaVersion: "review-candidate-decision-v1",
         candidateId: row.candidate_id.trim(), artifactHash: pilot.reviewCandidates!.contentHash,
-        decision: row.decision, note: row.note, actorId: row.actor_id,
+        decision: row.decision, note: row.note,
+        ...(row.inherited_from ? { inheritedFrom: row.inherited_from } : {}),
+          ...(row.review_details ? { details: row.review_details } : {}),
+        ...(row.has_expected_decision_hash ? { expectedDecisionHash: row.expected_decision_hash?.trim() ?? null } : {}),
+        actorId: row.actor_id,
         decisionHash: row.decision_hash.trim(), createdAt: asIso(row.created_at),
       })) };
   }
@@ -10242,11 +12545,13 @@ export class PostgresInspectionRepository implements InspectionRepository {
     if (normalized.schemaVersion !== "review-candidate-decision-v1"
       || !/^[a-f0-9]{64}$/u.test(normalized.candidateId)
       || !/^[a-f0-9]{64}$/u.test(normalized.artifactHash)
-      || !["ACCEPT_FOR_REVIEW", "REJECT"].includes(normalized.decision)
+      || !["ACCEPT_FOR_REVIEW", "REJECT", "CONFIRM", "CLARIFY", "PARTIAL_CONFIRM", "CORRECT_EVIDENCE"].includes(normalized.decision)
       || normalized.note.length < 8 || normalized.note.length > 1000) {
       return { kind: "invalid_state", code: "INVALID_REVIEW_CANDIDATE_DECISION",
         message: "Некорректное решение по подсказке" };
     }
+    const reviewError = validateInspectorReview(normalized);
+    if (reviewError) return { kind: "invalid_state", code: "INVALID_REVIEW_EVIDENCE", message: reviewError };
     const pilot = await this.getPilotResults(checkId, command.actor);
     if (!pilot || pilot === "AUTH_REQUIRED" || pilot === "FORBIDDEN"
       || !pilot.reviewCandidates) return { kind: "not_found" };
@@ -10269,9 +12574,9 @@ export class PostgresInspectionRepository implements InspectionRepository {
       }
       const scope = await client.query<{ run_id: string; object_id: string;
         inspection_id: string; object_api_id: string; run_state: string;
-        active_run_id: string | null }>(
+        active_run_id: string | null; lifecycle: string }>(
         `SELECT run.id AS run_id, run.object_id, inspection.id AS inspection_id,
-                object.api_id AS object_api_id, run.run_state, inspection.active_run_id
+                object.api_id AS object_api_id, run.run_state, inspection.active_run_id, inspection.lifecycle
          FROM analysis_runs run
          JOIN inspections inspection ON inspection.id = run.inspection_id
          JOIN objects object ON object.id = run.object_id
@@ -10285,6 +12590,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
       );
       const selected = scope.rows[0];
       if (!selected) return { kind: "not_found" } as const;
+      if (selected.lifecycle !== "OPEN") return { kind: "invalid_state", code: "FINALIZED",
+        message: "Проверка финализирована; решения доступны только для чтения" } as const;
       if (selected.active_run_id !== selected.run_id
         || !["SUCCEEDED", "PARTIAL"].includes(selected.run_state)) {
         return { kind: "invalid_state", code: "STALE_REVIEW_CANDIDATE",
@@ -10313,16 +12620,67 @@ export class PostgresInspectionRepository implements InspectionRepository {
         return { kind: "invalid_state", code: "STALE_REVIEW_CANDIDATE",
           message: "Подсказка отсутствует в сохранённом артефакте" } as const;
       }
+      const latest = await client.query<{ decision_hash: string }>(
+        `SELECT decision_hash FROM review_candidate_decisions WHERE run_id = $1 AND candidate_id = $2
+         ORDER BY created_at DESC, id DESC LIMIT 1`, [selected.run_id, normalized.candidateId]);
+      if (Object.hasOwn(normalized, "expectedDecisionHash")
+        && (latest.rows[0]?.decision_hash.trim() ?? null) !== normalized.expectedDecisionHash) {
+        return { kind: "invalid_state", code: "REVIEW_VERSION_CONFLICT",
+          message: "Решение изменилось; обновите историю перед повтором" } as const;
+      }
+      if (normalized.details) {
+        const evidence = await client.query<{ api_id: string; sha256: string; page_count: number;
+          stages: string[]; revision_status: string | null; approval_status: string | null;
+          page_stages: Record<string, string> | null; link_group_id: string | null }>(
+          `SELECT source.api_id, blob.sha256, text.page_count,
+             ARRAY(SELECT jsonb_array_elements_text(entry->'stages')
+               FROM input_manifests manifest, jsonb_array_elements(manifest.canonical_json->'sources') entry
+               WHERE manifest.id = run.manifest_id AND entry->>'sourceFileId' = source.api_id) AS stages,
+             review.revision_status, review.approval_status, review.page_stages, review.link_group_id
+           FROM analysis_runs run
+           JOIN manifest_items item ON item.manifest_id = run.manifest_id
+           JOIN source_files source ON source.id = item.source_file_id AND source.object_id = run.object_id
+           JOIN blobs blob ON blob.id = source.blob_id
+           LEFT JOIN analysis_text_artifacts text ON text.source_file_id = source.id
+             AND text.input_sha256 = blob.sha256 AND text.run_id = run.id
+           LEFT JOIN run_source_review_snapshots snapshot ON snapshot.run_id = run.id AND snapshot.source_file_id = source.id
+           LEFT JOIN source_review_decisions review ON review.id = snapshot.decision_id
+             AND review.source_sha256 = blob.sha256 AND review.content_hash = snapshot.decision_hash
+           WHERE run.id = $1`, [selected.run_id]);
+        const confirming = normalized.decision === "CONFIRM" || normalized.decision === "PARTIAL_CONFIRM";
+        const confirmedIds = normalized.decision === "PARTIAL_CONFIRM"
+          ? new Set(normalized.details.parts.filter(p => p.decision === "CONFIRM").flatMap(p => p.evidenceIds))
+          : new Set(normalized.details.sources.filter(s => normalized.details!.comparisonPair.split("_").includes(s.stage)).map(s => s.id));
+        const links = new Set<string>();
+        for (const ref of normalized.details.sources) {
+          const source = evidence.rows.find(row => row.api_id === ref.sourceFileId);
+          if (!source || source.sha256.trim() !== ref.sourceSha256 || !source.page_count
+            || ref.pageNumber > source.page_count || !source.stages.includes(ref.stage))
+            return { kind: "invalid_state", code: "EVIDENCE_OUTSIDE_MANIFEST",
+              message: "Источник, SHA, стадия или страница не принадлежит текущему запуску" } as const;
+          if (confirming && confirmedIds.has(ref.id)) {
+            if (source.revision_status !== "CURRENT" || source.approval_status !== "APPROVED"
+              || (source.stages.length !== 1 && source.page_stages?.[String(ref.pageNumber)] !== ref.stage) || !source.link_group_id)
+              return { kind: "invalid_state", code: "SOURCE_REVIEW_REQUIRED",
+                message: "Сначала подтвердите редакцию, согласование, стадию и связь источников, затем запустите проверку" } as const;
+            links.add(source.link_group_id);
+          }
+        }
+        if (confirming && links.size !== 1) return { kind: "invalid_state", code: "SOURCE_LINK_MISMATCH",
+          message: "Источники относятся к разным комплектам" } as const;
+      }
       const decisionHash = sha256(canonicalJson({ checkId, ...normalized,
         actorId: command.actor.userId, stageHash: saved.content_hash.trim() }));
       const inserted = await client.query<{ id: string; created_at: Date | string }>(
         `INSERT INTO review_candidate_decisions (object_id, run_id, rule_stage_artifact_id,
-           rule_stage_hash, candidate_id, decision, note, actor_id, decision_hash)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+           rule_stage_hash, candidate_id, decision, note, actor_id, decision_hash,
+           review_details, expected_decision_hash, has_expected_decision_hash)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12)
          ON CONFLICT (run_id, decision_hash) DO NOTHING RETURNING id, created_at`,
         [selected.object_id, selected.run_id, saved.id, saved.content_hash.trim(),
           normalized.candidateId, normalized.decision, normalized.note,
-          command.actor.userId, decisionHash],
+          command.actor.userId, decisionHash, normalized.details ? JSON.stringify(normalized.details) : null,
+          normalized.expectedDecisionHash ?? null, Object.hasOwn(normalized, "expectedDecisionHash")],
       );
       const existing = inserted.rows[0] ? null : await client.query<{ id: string; created_at: Date | string }>(
         `SELECT id, created_at FROM review_candidate_decisions
@@ -10335,6 +12693,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       await this.insertCommandReceipt(client, command, operation, "REVIEW_CANDIDATE",
         targetId, requestHash, 201, { value }, true);
       if (inserted.rows[0]) {
+        await client.query(`UPDATE inspections SET row_version = row_version + 1 WHERE id = $1`, [selected.inspection_id]);
         await this.appendAuditEvent(client, { command, objectId: selected.object_id,
           inspectionId: selected.inspection_id, action: operation,
           targetType: "REVIEW_CANDIDATE", targetId, beforeRef: null,
@@ -10870,6 +13229,95 @@ export class PostgresInspectionRepository implements InspectionRepository {
     return { kind: "success", value, replayed: result.replayed };
   }
 
+  private async carryUnchangedCandidateReviews(client: PoolClient,
+    run: { id: string; api_id: string; inspection_id: string; object_id: string }): Promise<void> {
+    const current = await this.candidateReviewSnapshot(client, run.id, run.api_id);
+    if (!current || !Array.isArray(current.artifact.candidates)) return;
+    const previous = await client.query<{ id: string; api_id: string }>(
+      `SELECT old.id, old.api_id FROM analysis_runs old JOIN analysis_runs current ON current.id = $1
+       WHERE old.inspection_id = current.inspection_id AND old.id <> current.id
+         AND old.release_id = current.release_id AND old.sealed_at IS NOT NULL
+         AND old.started_at < current.started_at ORDER BY old.started_at DESC LIMIT 1`, [run.id]);
+    if (!previous.rows[0]) return;
+    const oldRun = previous.rows[0];
+    const old = await this.candidateReviewSnapshot(client, oldRun.id, oldRun.api_id);
+    if (!old || !Array.isArray(old.artifact.candidates)) return;
+    const inputs = async (id: string) => (await client.query<{
+      source_id: string; sha256: string; review_hash: string | null; section: string | null; text_hash: string | null; stages: unknown
+    }>(`SELECT source.api_id AS source_id, item.blob_sha256 AS sha256,
+          snapshot.decision_hash AS review_hash, review.section_code AS section, text.content_hash AS text_hash,
+          (SELECT entry->'stages' FROM input_manifests manifest, jsonb_array_elements(manifest.canonical_json->'sources') entry
+           WHERE manifest.id = run.manifest_id AND entry->>'sourceFileId' = source.api_id) AS stages
+        FROM analysis_runs run JOIN manifest_items item ON item.manifest_id = run.manifest_id
+        JOIN source_files source ON source.id = item.source_file_id
+        LEFT JOIN run_source_review_snapshots snapshot ON snapshot.run_id = run.id AND snapshot.source_file_id = source.id
+        LEFT JOIN source_review_decisions review ON review.id = snapshot.decision_id
+        LEFT JOIN analysis_text_artifacts text ON text.run_id = run.id AND text.source_file_id = source.id
+          AND text.schema_version = 'document-text-v2'
+        WHERE run.id = $1 ORDER BY source.api_id`, [id])).rows;
+    const before = await inputs(oldRun.id), after = await inputs(run.id);
+    const latest = new Map(old.decisions.map(event => [event.candidateId, event]));
+    const stage = await client.query<{ id: string; content_hash: string }>(
+      `SELECT id, content_hash FROM analysis_stage_artifacts WHERE run_id = $1 AND job_type = 'RULE_EVALUATION'`, [run.id]);
+    for (const raw of current.artifact.candidates) {
+      if (!isRecord(raw) || typeof raw.candidateId !== "string") continue;
+      const event = latest.get(raw.candidateId);
+      if (!event || ["ACCEPT_FOR_REVIEW", "CORRECT_EVIDENCE"].includes(event.decision)
+        || !old.artifact.candidates.some(candidate => canonicalJson(candidate) === canonicalJson(raw))) continue;
+      const dependencies = new Set([String(raw.sourceFileId), ...(event.details?.sources.map(ref => ref.sourceFileId) ?? []),
+        ...(Array.isArray(raw.relatedDocuments) ? raw.relatedDocuments.filter(isRecord).map(ref => String(ref.sourceFileId)) : [])]);
+      const relevant = (row: typeof before[number]) => dependencies.has(row.source_id)
+        || row.section === null || row.section === raw.sectionCode;
+      // A new unknown/same-section file or a changed revision/link/text invalidates review.
+      if (canonicalJson(before.filter(relevant)) !== canonicalJson(after.filter(relevant))) continue;
+      const inheritedFrom = { decisionId: event.id, checkId: event.checkId,
+        decisionHash: event.decisionHash, createdAt: event.createdAt };
+      const payload = { schemaVersion: "review-candidate-decision-v1", candidateId: event.candidateId,
+        artifactHash: String(current.artifact.contentHash), decision: event.decision, note: event.note,
+        ...(event.details ? { details: event.details } : {}), expectedDecisionHash: null, inheritedFrom };
+      const decisionHash = sha256(canonicalJson({ checkId: run.api_id, ...payload,
+        actorId: event.actorId, stageHash: stage.rows[0].content_hash.trim() }));
+      await client.query(`INSERT INTO review_candidate_decisions (object_id, run_id, rule_stage_artifact_id,
+        rule_stage_hash, candidate_id, decision, note, actor_id, decision_hash, review_details,
+        expected_decision_hash, has_expected_decision_hash, inherited_from)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,NULL,true,$11::jsonb)
+        ON CONFLICT (run_id, decision_hash) DO NOTHING`, [run.object_id, run.id, stage.rows[0].id,
+          stage.rows[0].content_hash.trim(), event.candidateId, event.decision, event.note, event.actorId,
+          decisionHash, event.details ? JSON.stringify(event.details) : null, JSON.stringify(inheritedFrom)]);
+    }
+  }
+
+  private async candidateReviewSnapshot(client: PoolClient, runId: string, checkId: string): Promise<ProtocolExport["candidateReview"]> {
+    const stages = await client.query<{ content_json: Record<string, unknown>; content_hash: string }>(
+      `SELECT content_json, content_hash FROM analysis_stage_artifacts WHERE run_id = $1 AND job_type = 'RULE_EVALUATION'`, [runId]);
+    if (stages.rows.length !== 1) return undefined;
+    const stage = stages.rows[0];
+    const content = parseJson<Record<string, unknown>>(stage.content_json);
+    if (sha256(canonicalJson(content)) !== stage.content_hash.trim()) throw new Error("candidate protocol stage integrity check failed");
+    if (!isRecord(content.reviewCandidates)) return undefined;
+    const artifact = content.reviewCandidates;
+    const rows = await client.query<{ id: string; candidate_id: string; decision: ReviewCandidateDecisionRead["decision"];
+      inherited_from: ReviewCandidateDecisionRead["inheritedFrom"] | null; note: string; actor_id: string; decision_hash: string; rule_stage_hash: string;
+      review_details: ReviewCandidateDecisionInput["details"] | null; expected_decision_hash: string | null;
+      has_expected_decision_hash: boolean; created_at: Date | string }>(
+      `SELECT * FROM review_candidate_decisions WHERE run_id = $1 ORDER BY created_at, id`, [runId]);
+    const decisions = rows.rows.map(row => {
+      const payload: ReviewCandidateDecisionInput & Pick<ReviewCandidateDecisionRead, "inheritedFrom"> = { schemaVersion: "review-candidate-decision-v1",
+        candidateId: row.candidate_id.trim(), artifactHash: String(artifact.contentHash),
+        decision: row.decision, note: row.note,
+        ...(row.inherited_from ? { inheritedFrom: row.inherited_from } : {}),
+        ...(row.review_details ? { details: row.review_details } : {}),
+        ...(row.has_expected_decision_hash ? { expectedDecisionHash: row.expected_decision_hash?.trim() ?? null } : {}) };
+      if (row.rule_stage_hash.trim() !== stage.content_hash.trim()
+        || sha256(canonicalJson({ checkId, ...payload, actorId: row.actor_id,
+          stageHash: stage.content_hash.trim() })) !== row.decision_hash.trim())
+        throw new Error("candidate protocol decision integrity check failed");
+      return { ...payload, id: row.id, checkId, actorId: row.actor_id,
+        decisionHash: row.decision_hash.trim(), createdAt: asIso(row.created_at) };
+    });
+    return { artifact, decisions };
+  }
+
   async finalize(checkId: string, actor?: AuthenticatedActor): Promise<FinalizeResult> {
     if (actor && actor.organizationId !== this.organizationId) return undefined;
     const check = await this.getCheckUnscoped(checkId);
@@ -11049,7 +13497,17 @@ export class PostgresInspectionRepository implements InspectionRepository {
       const decisionSet = reviewRows.rows
         .map(mapFinalizationDecision)
         .sort((left, right) => left.itemId.localeCompare(right.itemId));
-      const decisionSetHash = sha256(canonicalJson(decisionSet));
+      const candidateReview = await this.candidateReviewSnapshot(client, activeRun.rows[0].id, checkId);
+      if (candidateReview && Array.isArray(candidateReview.artifact.candidates)) {
+        const latest = new Map(candidateReview.decisions.map(event => [event.candidateId, event]));
+        if (candidateReview.artifact.candidates.some(candidate => isRecord(candidate)
+          && (!latest.has(String(candidate.candidateId))
+            || ["ACCEPT_FOR_REVIEW", "CORRECT_EVIDENCE"].includes(latest.get(String(candidate.candidateId))!.decision))))
+          return { kind: "invalid_state", code: "PENDING_CANDIDATE_REVIEW",
+            message: "Рассмотрите подсказки и повторно проверьте исправленные доказательства" } as const;
+      }
+      const decisionSetHash = sha256(canonicalJson([...decisionSet, ...(candidateReview?.decisions.map(event =>
+        ({ candidateId: event.candidateId, decisionHash: event.decisionHash })) ?? [])]));
       if (input.decisionSetHash !== decisionSetHash) {
         return {
           kind: "invalid_state",
@@ -11062,7 +13520,8 @@ export class PostgresInspectionRepository implements InspectionRepository {
         parameter_id: number;
         parameter_code: string;
         parameter_name: string;
-        execution_rollup: "UNSUPPORTED" | "PARTIAL";
+        execution_rollup: ParameterCoverageItem["executionStatus"];
+      atomic_summary: ParameterCoverageItem["atomic"];
         reason: string;
       }>(
         `SELECT parameter_id, parameter_code, parameter_name, execution_rollup, reason
@@ -11203,6 +13662,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
               }
             : null,
         },
+        ...(candidateReview ? { candidateReview } : {}),
         findings: activeReviews
           .map(mapFinding)
           .sort((left, right) => left.parameterCode.localeCompare(right.parameterCode)
@@ -11645,7 +14105,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
     const result = await this.readQuery<ProtocolRow>(
       `${protocolSelect}
        WHERE object.organization_id = $1
-         AND run.api_id = $2
+         AND protocol.inspection_id = (SELECT inspection_id FROM analysis_runs WHERE api_id = $2)
          AND EXISTS (
            SELECT 1
            FROM object_memberships access
@@ -11756,14 +14216,701 @@ export class PostgresInspectionRepository implements InspectionRepository {
     };
   }
 
+  private validProtocolRenderKey(key: ProtocolRenderedArtifactKey): boolean {
+    return typeof key?.protocolId === "string" && key.protocolId.length > 0 && key.protocolId.length <= 200
+      && ["pdf", "docx", "xml"].includes(key.format)
+      && typeof key.templateVersion === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(key.templateVersion)
+      && typeof key.snapshotHash === "string" && /^[a-f0-9]{64}$/.test(key.snapshotHash);
+  }
+
+  private validProtocolRenderContent(content: ProtocolRenderedArtifactContent): boolean {
+    const mediaTypes = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xml: "application/xml" };
+    return this.validProtocolRenderKey(content) && Buffer.isBuffer(content.bytes)
+      && content.bytes.length > 0 && content.bytes.length <= 16777216
+      && content.mediaType === mediaTypes[content.format] && sha256(content.bytes) === content.contentHash;
+  }
+
+  /** The same object READ scope as canonical JSON; lock membership while inserting the cache. */
+  private async protocolRenderSource(client: Pool | PoolClient, key: ProtocolRenderedArtifactKey,
+    actor: AuthenticatedActor, lockMembership = false): Promise<{ protocolId: string; artifactId: string } | undefined> {
+    const result = await client.query<{
+      protocol_id: string; artifact_id: string; snapshot_hash: string;
+      content_hash: string; byte_size: string; content_bytes: Buffer;
+    }>(`SELECT protocol.id AS protocol_id, artifact.id AS artifact_id, protocol.snapshot_hash,
+        artifact.content_hash, artifact.byte_size, artifact.content_bytes
+      FROM inspection_protocol_versions protocol
+      JOIN protocol_artifacts artifact ON artifact.protocol_id = protocol.id
+        AND artifact.format = 'JSON' AND artifact.canonicalization_version = 'inspector-c14n-v1'
+      JOIN inspections inspection ON inspection.id = protocol.inspection_id
+      JOIN objects object ON object.id = inspection.object_id
+      JOIN object_memberships access ON access.object_id = object.id AND access.user_id = $3
+        AND access.revoked_at IS NULL AND access.permission_set @> ARRAY['READ']::text[]
+      WHERE object.organization_id = $1 AND protocol.api_id = $2
+      ${lockMembership ? "FOR SHARE OF access" : ""}`,
+    [this.organizationId, key.protocolId, actor.userId]);
+    const row = result.rows[0];
+    if (!row || row.snapshot_hash !== key.snapshotHash || row.content_hash !== key.snapshotHash
+      || !Buffer.isBuffer(row.content_bytes) || Number(row.byte_size) !== row.content_bytes.length
+      || sha256(row.content_bytes) !== key.snapshotHash) return undefined;
+    return { protocolId: row.protocol_id, artifactId: row.artifact_id };
+  }
+
+  async getRenderedProtocolArtifact(key: ProtocolRenderedArtifactKey,
+    actor?: AuthenticatedActor): Promise<ScopedReadResult<ProtocolRenderedArtifactContent>> {
+    if (!actor) return "AUTH_REQUIRED";
+    if (!this.hasReadScope(actor) || !this.validProtocolRenderKey(key)) return undefined;
+    const savedKey = { protocolId: key.protocolId, format: key.format,
+      templateVersion: key.templateVersion, snapshotHash: key.snapshotHash };
+    return this.transaction(async client => {
+      const source = await this.protocolRenderSource(client, savedKey, actor, true);
+      if (!source) return undefined;
+      const result = await client.query<{ content_bytes: Buffer; content_hash: string; media_type: string; byte_size: number }>(
+        `SELECT content_bytes, content_hash, media_type, byte_size FROM protocol_rendered_artifacts
+         WHERE protocol_id = $1 AND source_artifact_id = $2 AND format = $3
+           AND template_version = $4 AND snapshot_hash = $5`,
+        [source.protocolId, source.artifactId, savedKey.format, savedKey.templateVersion, savedKey.snapshotHash]);
+      const row = result.rows[0];
+      if (!row || row.byte_size !== row.content_bytes.length) return undefined;
+      const content = { ...savedKey, bytes: Buffer.from(row.content_bytes), contentHash: row.content_hash, mediaType: row.media_type };
+      return this.validProtocolRenderContent(content) ? content : undefined;
+    });
+  }
+
+  async saveRenderedProtocolArtifact(content: ProtocolRenderedArtifactContent,
+    actor?: AuthenticatedActor): Promise<ScopedReadResult<ProtocolRenderedArtifactContent>> {
+    if (!actor) return "AUTH_REQUIRED";
+    if (!this.hasReadScope(actor) || !this.validProtocolRenderContent(content)) return undefined;
+    // Copy before the first await; caller mutation cannot alter bytes after validation.
+    const saved = { ...content, bytes: Buffer.from(content.bytes) };
+    return this.transaction(async client => {
+      const source = await this.protocolRenderSource(client, saved, actor, true);
+      if (!source) return undefined;
+      await client.query(`INSERT INTO protocol_rendered_artifacts
+        (protocol_id, source_artifact_id, format, template_version, snapshot_hash, media_type,
+         byte_size, content_hash, content_bytes)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        ON CONFLICT (protocol_id, format, template_version, snapshot_hash) DO NOTHING`,
+      [source.protocolId, source.artifactId, saved.format, saved.templateVersion, saved.snapshotHash,
+        saved.mediaType, saved.bytes.length, saved.contentHash, saved.bytes]);
+      // Separate statement sees the committed winner after a concurrent ON CONFLICT wait.
+      const result = await client.query<{ content_bytes: Buffer; content_hash: string; media_type: string; byte_size: number }>(
+        `SELECT content_bytes, content_hash, media_type, byte_size FROM protocol_rendered_artifacts
+         WHERE protocol_id = $1 AND source_artifact_id = $2 AND format = $3
+           AND template_version = $4 AND snapshot_hash = $5`,
+      [source.protocolId, source.artifactId, saved.format, saved.templateVersion, saved.snapshotHash]);
+      const row = result.rows[0];
+      if (!row || row.byte_size !== row.content_bytes.length) return undefined;
+      const winner = { protocolId: saved.protocolId, format: saved.format, templateVersion: saved.templateVersion,
+        snapshotHash: saved.snapshotHash, bytes: Buffer.from(row.content_bytes), contentHash: row.content_hash, mediaType: row.media_type };
+      return this.validProtocolRenderContent(winner) ? winner : undefined;
+    });
+  }
+
+  private async validateMatrixStage(client: PoolClient, runId: string, objectId: string,
+    manifestHash: string, result: Record<string, unknown>, configHash: string | null,
+    profileId: string | null,prepared?:MatrixRunPreparation,historicalRead=false) {
+    const historicalRelease = historicalRead ? await client.query<{content_json:Record<string,unknown>}>(`SELECT release.content_json FROM analysis_runs run
+      JOIN analysis_releases release ON release.release_id=run.release_id WHERE run.id=$1`,[runId]) : undefined;
+    const policy = historicalRead ? matrixStoredReadPolicyForReleaseV13(historicalRelease?.rows[0]?.content_json)
+      : matrixFullPolicyForProfile(profileId);
+    const concreteWall = isConcreteWallProfileV13(profileId);
+    if(concreteWall){try{assertConcreteWallLeaseNativeV13(result);}catch{return null;}}
+    // Admit the native value before touching a new-profile result property.
+    if(policy?.columnPylonSectionComparisons){try{assertColumnPylonSectionStageNative(result);}catch{return null;}}
+    if (!policy || profileId !== policy.profileId || configHash !== policy.configHash || result.schemaVersion !== "analysis-stage-result-v2"
+      || result.jobType !== "RULE_EVALUATION" || result.inputManifestHash !== manifestHash
+      || result.providerKind !== "RULE_ENGINE" || result.providerProfileId !== policy.profileId
+      || result.providerConfigHash !== policy.configHash || result.disposition !== "RULES_EVALUATED"
+      || Buffer.byteLength(canonicalJson(result)) > 8388608
+      || (concreteWall&&["wallScope","concreteWallOriginsV1","concreteWallExecution"].some(key=>Object.hasOwn(result,key)))
+      || ["columnPylonSectionComparisonEvidence","columnPylonSectionIdentity","columnPylonSectionScope","steelComparisonScope","steelComparisonEvidence","steelComparisonIdentity","lightingTechnologyScope","lightingTechnologyComparisonEvidence","lightingTechnologyIdentity","waterNodeScope","waterNodeComparisonEvidence","nodeIdentity","constraints", "declarations", "productScope", "railInventoryComparisonEvidence", "railInventoryScope", "callInventoryComparisonEvidence", "callInventoryScope"].some(key => Object.hasOwn(result,key))
+      || (!policy.projectConstraints && Object.hasOwn(result, "projectConstraints"))
+      || (!policy.sourceDeclarations && Object.hasOwn(result, "sourceDeclarations"))
+      || (!policy.inventoryComparisons && ["inventoryComparisons","effectiveCoverage"].some(key=>Object.hasOwn(result,key)))
+      || (!policy.callInventoryComparisons && Object.hasOwn(result,"callInventoryComparisons"))
+      || (!policy.railInventoryComparisons && Object.hasOwn(result,"railInventoryComparisons"))
+      || (!policy.waterNodeComparisons && Object.hasOwn(result,"waterNodeComparisons"))
+      || (!policy.lightingTechnologyComparisons && Object.hasOwn(result,"lightingTechnologyComparisons"))
+      || (!policy.steelComparisons && ["steelComparisons","steelApplicabilitySnapshot"].some(key=>Object.hasOwn(result,key)))
+      || (!policy.columnPylonSectionComparisons && ["columnPylonSectionComparisons","columnPylonSectionSnapshot"].some(key=>Object.hasOwn(result,key)))) return null;
+    const release = historicalRelease ?? await client.query<{content_json:Record<string,unknown>}>(`SELECT release.content_json FROM analysis_runs run
+      JOIN analysis_releases release ON release.release_id=run.release_id WHERE run.id=$1`,[runId]);
+    const manifest = release.rows[0]?.content_json;
+    const ruleSlot = manifest ? providerSlotForJob(manifest,"RULE_EVALUATION") : null;
+    if (!manifest || ruleSlot?.status !== "CONFIGURED" || ruleSlot.providerKind !== "RULE_ENGINE"
+      || ruleSlot.profileId !== policy.profileId || ruleSlot.configHash !== policy.configHash
+      || ruleSlot.adapterVersion !== policy.adapterVersion
+      || canonicalJson((manifest.rules as Record<string,unknown>)?.matrixDefinitions) !== canonicalJson(policy.definitions)) return null;
+    let scalarInput: MatrixConcreteWallV13Input | undefined;
+    type LegacyInputs = NonNullable<Awaited<ReturnType<PostgresInspectionRepository["loadAuthenticatedZu127GenericInputs"]>>>;
+    let inputs: Pick<LegacyInputs,"inputManifestHash"|"sourceFiles"|"sourceDecisions"|"textArtifacts"> | null;
+    if(concreteWall){
+      const composition=prepared?.concreteWallV13,identity=matrixConcreteWallInstalledIdentityV13();
+      if(!composition||identity===null||identity!==composition.installedIdentity
+        ||prepared!.run.id!==runId||prepared!.run.objectId!==objectId
+        ||prepared!.run.releaseId!==manifest.releaseId||prepared!.run.inputManifestHash!==manifestHash
+        ||composition.base.inputManifestHash!==manifestHash)return null;
+      scalarInput=composition.scalarInput;
+      let window:Record<string,unknown>;
+      try{window=validateConcreteWallWindowV13(scalarInput.window);}catch{return null;}
+      if(window.objectId!==objectId||window.runId!==runId||window.releaseId!==manifest.releaseId
+        ||window.inputManifestHash!==manifestHash)return null;
+      const windowInputs=window.inputs as Record<string,unknown>;
+      inputs={inputManifestHash:composition.base.inputManifestHash,sourceFiles:composition.base.sourceFiles,
+        sourceDecisions:windowInputs.sourceDecisions as LegacyInputs["sourceDecisions"],
+        textArtifacts:composition.base.textArtifacts};
+    }else inputs=await this.loadAuthenticatedZu127GenericInputs(client,runId,objectId);
+    if (!inputs || inputs.inputManifestHash !== manifestHash) return null;
+    const sources = inputs.sourceFiles.map((source) => {
+        const decision = inputs.sourceDecisions[source.sourceFileId];
+        return { sourceFileId: source.sourceFileId, sha256: source.sha256, stages: source.stages,
+          review: decision ?? null,
+          textArtifact: inputs.textArtifacts.find((a) => a.sourceFileId === source.sourceFileId)?.artifact ?? null };
+      });
+    if (policy.projectConstraints && !validateProjectConstraints(result.projectConstraints, {
+      objectId, inputManifestHash: manifestHash, sources,
+      textArtifacts: inputs.textArtifacts.map(item => item.artifact),
+    })) return null;
+    if (policy.sourceDeclarations && !(policy.sourceDeclarationsSchemaVersion === "matrix-source-declarations-v2"
+      ? validateSourceDeclarationsV2 : validateSourceDeclarations)(result.sourceDeclarations, {
+      objectId, inputManifestHash: manifestHash,
+      sources: sources.map(source => ({ ...source, pageStages: source.review?.pageStages ?? {} })),
+      textArtifacts: inputs.textArtifacts.map(item => item.artifact),
+    })) return null;
+    // Typed inventory results never enter the legacy scalar observation/result namespace.
+    const reservedInventory=["columnPylonSectionComparisons","columnPylonSectionSnapshot","columnPylonSectionComparisonEvidence","columnPylonSectionIdentity","columnPylonSectionScope","steelComparisons","steelApplicabilitySnapshot","steelComparisonScope","steelComparisonEvidence","steelComparisonIdentity","lightingTechnologyScope","lightingTechnologyComparisons","lightingTechnologyComparisonEvidence","lightingTechnologyIdentity","waterNodeScope","waterNodeComparisons","waterNodeComparisonEvidence","nodeIdentity","railInventoryComparisons","railInventoryComparisonEvidence","railInventoryScope","railInventoryIdentity","callInventoryComparisons","callInventoryComparisonEvidence","callInventoryScope","roomMapping","roomToken","callInventoryIdentity","inventoryComparisons","effectiveCoverage","inventoryComparisonEvidence","inventorySnapshot","inventoryContentHash",
+      "featureRows","unresolvedRows","comparisonScope","missingFeatureKeys","reviewDecisionId","reviewContentHash"];
+    if(isRecord(result.execution)&&[result.execution,
+      ...(Array.isArray(result.execution.observations)?result.execution.observations:[]),
+      ...(Array.isArray(result.execution.results)?result.execution.results:[])].some(item=>isRecord(item)&&reservedInventory.some(key=>Object.hasOwn(item,key))))return null;
+    const execution = concreteWall
+      ? validateMatrixScalarStageForProfileV13(profileId,result.execution,undefined,scalarInput)
+      : validateMatrixExecution(result.execution, { objectId, inputManifestHash: manifestHash,sources });
+    if (!execution) return null;
+    if(policy.inventoryComparisons){
+      if(!prepared||prepared.package.objectId!==objectId||prepared.package.inputManifestHash!==manifestHash)return null;
+      try{const expected=buildInventoryComparisons(prepared.package);
+        const call=policy.callInventoryComparisons?buildCallInventoryComparisons(prepared.callPackage):undefined;
+        const rail=policy.railInventoryComparisons?buildRailInventoryComparisons(prepared.railPackage):undefined;
+        const water=policy.waterNodeComparisons?buildWaterNodeComparisons(prepared.waterPackage):undefined;
+        const lighting=policy.lightingTechnologyComparisons?buildLightingTechnologyComparisons(prepared.lightingPackage):undefined;
+        const steel=policy.steelComparisons?buildSteelComparisons(prepared.steelPackage):undefined;
+        const column=policy.columnPylonSectionComparisons?buildColumnPylonSectionComparisons(prepared.columnPylonSectionPackage,prepared.columnPylonSectionSnapshot):undefined;
+        let coverage=mergeInventoryCoverage(execution.coverage,expected);
+        if(call)coverage=mergeCallInventoryCoverage(coverage,call);
+        if(rail)coverage=mergeRailInventoryCoverage(coverage,rail);
+        if(water)coverage=mergeWaterNodeCoverage(coverage,water);
+        if(lighting)coverage=mergeLightingTechnologyCoverage(coverage,lighting);
+        if(steel)coverage=mergeSteelComparisonCoverage(coverage,steel);
+        if(column)coverage=mergeColumnPylonSectionCoverage(coverage,column);
+        if(canonicalJson(result.inventoryComparisons)!==canonicalJson(expected)
+          ||(call&&canonicalJson(result.callInventoryComparisons)!==canonicalJson(call))
+          ||(rail&&canonicalJson(result.railInventoryComparisons)!==canonicalJson(rail))
+          ||(water&&canonicalJson(result.waterNodeComparisons)!==canonicalJson(water))
+          ||(lighting&&canonicalJson(result.lightingTechnologyComparisons)!==canonicalJson(lighting))
+          ||(steel&&(canonicalJson(result.steelComparisons)!==canonicalJson(steel)||canonicalJson(result.steelApplicabilitySnapshot)!==canonicalJson(prepared.steelApplicabilitySnapshot)))
+          ||(column&&(canonicalMatrixReviewedLoaderV7(result.columnPylonSectionComparisons)!==canonicalMatrixReviewedLoaderV7(column)||canonicalMatrixReviewedLoaderV7(result.columnPylonSectionSnapshot)!==canonicalMatrixReviewedLoaderV7(prepared.columnPylonSectionSnapshot)))
+          ||canonicalJson(result.effectiveCoverage)!==canonicalJson(coverage)
+          ||result.outputCount!==execution.results.length+expected.results.length+(call?.results.length??0)+(rail?.results.length??0)+(water?.results.length??0)+(lighting?.results.length??0)+(steel?.results.length??0)+(column?.results.length??0))return null;
+      }catch{return null;}
+    }else if(result.outputCount!==execution.results.length)return null;
+    const slot=providerSlotForJob(manifest,"DOCUMENT_OCR_LAYOUT");
+    if(slot?.status==="CONFIGURED"){
+      if(slot.profileId!==boundedOcrProfileIdV2||slot.configHash!==boundedOcrConfigHashV2||slot.adapterVersion!=="2")return null;
+      const saved=await client.query<{content_json:Record<string,unknown>;content_hash:string;byte_size:number|string}>(
+        `SELECT stage.content_json,stage.content_hash,stage.byte_size FROM analysis_stage_artifacts stage
+         JOIN analysis_jobs job ON job.id=stage.job_id AND job.run_id=stage.run_id AND job.state='SUCCEEDED'
+         JOIN analysis_runs run ON run.id=stage.run_id AND run.release_id=job.release_id
+         WHERE stage.run_id=$1 AND stage.job_type='DOCUMENT_OCR_LAYOUT' AND job.input_manifest_hash=$2`,[runId,manifestHash]);
+      const ocr=saved.rows[0];
+      if(saved.rows.length===0){
+        const jobs=await client.query<{n:number}>("SELECT count(*)::int n FROM analysis_jobs WHERE run_id=$1 AND job_type='DOCUMENT_OCR_LAYOUT'",[runId]);
+        const noRequiredPages=sources.every(source=>Array.isArray(source.textArtifact?.pages)&&source.textArtifact.pages.every((page:unknown)=>
+          isRecord(page)&&isRecord(page.quality)&&page.quality.disposition==="TEXT_LAYER_CANDIDATE"));
+        if(jobs.rows[0]?.n!==0||!noRequiredPages)return null;
+        execution.ocrCandidates=[];execution.ocrSummary={processedPageCount:0,ocrRequiredPageCount:0,deferredPageCount:0,skippedRenderPixelPageCount:0,maxPagesPerRun:2};
+        return execution;
+      }
+      if(saved.rows.length!==1||!ocr||ocr.content_hash.trim()!==sha256(canonicalJson(ocr.content_json))
+        ||Number(ocr.byte_size)!==Buffer.byteLength(canonicalJson(ocr.content_json)))return null;
+      const validated=validateBoundedOcrStageResult(ocr.content_json,manifestHash,objectId,inputs.sourceFiles.map(source=>({
+        apiId:source.sourceFileId,sha256:source.sha256,byteSize:source.byteSize,mediaType:source.mediaType,
+        textArtifact:sources.find(s=>s.sourceFileId===source.sourceFileId)?.textArtifact??null})),boundedOcrProfileIdV2);
+      if(!validated||validated.contentHash!==ocr.content_hash.trim())return null;
+      execution.ocrCandidates=extractMatrixOcrCandidates(ocr.content_json,sources,matrixRegistry);
+      const analysis=ocr.content_json.analysis as Record<string,unknown>;
+      execution.ocrSummary={processedPageCount:Number(analysis.processedPageCount),ocrRequiredPageCount:Number(analysis.ocrRequiredPageCount),
+        deferredPageCount:Number(analysis.deferredPageCount),skippedRenderPixelPageCount:Number(analysis.skippedRenderPixelPageCount),maxPagesPerRun:2};
+    }
+    if(Buffer.byteLength(canonicalJson({...result,execution}))>8388608)return null;
+    return execution;
+  }
+
+  private matrixSubmission(execution:import("@inspector-ai/contracts").MatrixExecution,objectId:string,
+    identity:ReturnType<typeof resolveMatrixSubmissionIdentity>,inventory?:InventoryComparisons,call?:CallInventoryComparisons,rail?:RailInventoryComparisons,water?:WaterNodeComparisons,lighting?:LightingTechnologyExecutionComparisons,steel?:SteelComparisonExecutionComparisons,column?:ColumnPylonSectionExecutionComparisons) {
+    const submission=buildMatrixSubmission(execution,objectId,identity);
+    for(const item of inventory?.results??[])submission.checks.push({parameter_code:"M-053",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Область ведомости не установлена",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of call?.results??[])submission.checks.push({parameter_code:"M-123",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Помещение системы вызова не установлено",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of rail?.results??[])submission.checks.push({parameter_code:"M-120",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Помещение ведомости поручней не установлено",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of water?.results??[])submission.checks.push({parameter_code:"M-129",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Общедомовой вводной узел ХВС не установлен",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of lighting?.results??[])submission.checks.push({parameter_code:"M-130",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Позиция источника света не установлена",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of steel?.results??[])submission.checks.push({parameter_code:"M-056",
+      location:item.kind==="SCOPED_COMPARISON"?item.identity.entityKey:"Физический элемент стальной конструкции не установлен",
+      pd_value:null,rd_value:null,id_value:null,violation_label:"COMPARISON_IMPOSSIBLE",
+      protocol_status:"COMPARISON_IMPOSSIBLE",criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    for(const item of column?.results??[]){
+      // No-decrease is a successful scoped comparison, never a submitted issue.
+      if(item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="NO_DECREASE_IN_REVIEWED_PAIR")continue;
+      const numeric=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE"?item.comparison.comparison:null;
+      submission.checks.push({parameter_code:"M-060",location:item.kind==="SCOPED_COMPARISON"?`${item.identity.entityKey} · пара ${item.pairKey}`:"Рассмотренная пара колонны / пилона не установлена",
+        pd_value:numeric?`${numeric.expectedAreaMm2} мм²`:null,rd_value:numeric?`${numeric.actualAreaMm2} мм²`:null,id_value:null,
+        violation_label:"COMPARISON_IMPOSSIBLE",protocol_status:"COMPARISON_IMPOSSIBLE",
+        criticality:item.kind==="SCOPED_COMPARISON"?item.comparison.reasonCode:item.reasonCode,evidence:[]});
+    }
+    return submission;
+  }
+
+  private async sealMatrixRun(client: PoolClient,
+    run: { id: string; api_id: string; inspection_id: string; object_id: string },prepared?:MatrixRunPreparation): Promise<number> {
+    const saved = await client.query<{ content_json: Record<string, unknown>; content_hash: string;
+      byte_size: number | string; input_manifest_hash: string; provider_config_hash: string;
+      provider_profile_id: string; release_json: Record<string, unknown> }>(
+      `SELECT stage.content_json,stage.content_hash,stage.byte_size,stage.input_manifest_hash,
+        stage.provider_config_hash,stage.provider_profile_id,release.content_json AS release_json
+       FROM analysis_stage_artifacts stage
+       JOIN analysis_jobs job ON job.id=stage.job_id AND job.run_id=stage.run_id AND job.state='SUCCEEDED'
+       JOIN analysis_runs run ON run.id=stage.run_id AND run.release_id=job.release_id
+         AND job.input_manifest_hash=stage.input_manifest_hash
+       JOIN analysis_releases release ON release.release_id=run.release_id
+       WHERE stage.run_id=$1 AND stage.job_type='RULE_EVALUATION'
+         AND stage.provider_profile_id=ANY($2::text[])`, [run.id, MATRIX_STEEL_COMPARISON_READ_PROFILES]);
+    const row = saved.rows[0];
+    const ruleSlot = row ? providerSlotForJob(row.release_json,"RULE_EVALUATION") : null;
+    const policy = matrixFullPolicyForProfile(ruleSlot?.profileId);
+    if (!row || !policy || saved.rows.length !== 1 || row.provider_profile_id !== policy.profileId
+      || row.content_hash.trim() !== sha256(canonicalJson(row.content_json))
+      || Number(row.byte_size) !== Buffer.byteLength(canonicalJson(row.content_json))
+      || canonicalJson((row.release_json.rules as Record<string, unknown>)?.matrixDefinitions)
+        !== canonicalJson(policy.definitions)) throw new Error("matrix stage integrity failure");
+    const execution = await this.validateMatrixStage(client, run.id, run.object_id,
+      row.input_manifest_hash.trim(), row.content_json, row.provider_config_hash.trim(), row.provider_profile_id,prepared);
+    if (!execution) throw new Error("matrix seal verification failed");
+    for (const result of execution.results) {
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,result.ruleId,result.ruleVersion,result.parameterCode,
+          JSON.stringify({key:result.entityKey}),result.comparisonVariant,result.executionStatus,
+          result.machineStatus,JSON.stringify(result)]);
+    }
+    const inventory=policy.inventoryComparisons ? buildInventoryComparisons(prepared!.package) : undefined;
+    const call=policy.callInventoryComparisons?buildCallInventoryComparisons(prepared!.callPackage):undefined;
+    const baseCoverage=inventory ? mergeInventoryCoverage(execution.coverage,inventory) : execution.coverage;
+    const rail=policy.railInventoryComparisons?buildRailInventoryComparisons(prepared!.railPackage):undefined;
+    const water=policy.waterNodeComparisons?buildWaterNodeComparisons(prepared!.waterPackage):undefined;
+    const lighting=policy.lightingTechnologyComparisons?buildLightingTechnologyComparisons(prepared!.lightingPackage):undefined;
+    const steel=policy.steelComparisons?buildSteelComparisons(prepared!.steelPackage):undefined;
+    const column=policy.columnPylonSectionComparisons?buildColumnPylonSectionComparisons(prepared!.columnPylonSectionPackage,prepared!.columnPylonSectionSnapshot):undefined;
+    const callCoverage=call?mergeCallInventoryCoverage(baseCoverage,call):baseCoverage;
+    const railCoverage=rail?mergeRailInventoryCoverage(callCoverage,rail):callCoverage;
+    const waterCoverage=water?mergeWaterNodeCoverage(railCoverage,water):railCoverage;
+    const lightingCoverage=lighting?mergeLightingTechnologyCoverage(waterCoverage,lighting):waterCoverage;
+    const steelCoverage=steel?mergeSteelComparisonCoverage(lightingCoverage,steel):lightingCoverage;
+    const coverage=column?mergeColumnPylonSectionCoverage(steelCoverage,column):steelCoverage;
+    for(const item of inventory?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify(item.kind==="SCOPED_COMPARISON"?{inventoryIdentity:item.identity}:{inventoryIdentity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of call?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({callInventoryIdentity:item.kind==="SCOPED_COMPARISON"?item.identity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of rail?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({railInventoryIdentity:item.kind==="SCOPED_COMPARISON"?item.identity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of water?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({waterNodeIdentity:item.kind==="SCOPED_COMPARISON"?item.identity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of lighting?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({lightingTechnologyIdentity:item.kind==="SCOPED_COMPARISON"?item.identity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of steel?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({steelComparisonIdentity:item.kind==="SCOPED_COMPARISON"?item.identity:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for(const item of column?.results??[]){
+      const candidate=item.kind==="SCOPED_COMPARISON"&&item.comparison.status==="CANDIDATE";
+      await client.query(`INSERT INTO rule_results
+        (id,api_id,run_id,rule_key,rule_version,parameter_code,entity_key,comparison_variant,
+         execution_status,machine_status,result_payload,evidence_fingerprint)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,'SUCCEEDED',$9,$10::jsonb,NULL)`,
+        [randomUUID(),`RSLT-${randomUUID()}`,run.id,item.ruleId,item.ruleVersion,item.parameterCode,
+          JSON.stringify({columnPylonSectionPairKey:item.kind==="SCOPED_COMPARISON"?item.pairKey:null}),
+          item.comparisonVariant,candidate?"CANDIDATE":"NOT_COMPARABLE",JSON.stringify(item)]);
+    }
+    for (const item of coverage) {
+      const parameter = this.parameters.find((p) => p.parameter_code === item.parameterCode);
+      if (!parameter) throw new Error("matrix catalog mapping missing");
+      await client.query(`INSERT INTO parameter_coverage
+        (run_id,parameter_id,parameter_code,parameter_name,execution_rollup,reason,atomic_summary)
+        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb)`, [run.id,parameter.parameter_id,
+          item.parameterCode,parameter.parameter_name,item.executionStatus,item.reason,JSON.stringify(item)]);
+    }
+    const identity = await client.query<{api_id:string}>("SELECT api_id FROM objects WHERE id=$1", [run.object_id]);
+    const inputSources=await client.query<{source_file_id:string;sha256:string;stages:string[]}>(`SELECT source.api_id AS source_file_id,item.blob_sha256 AS sha256,
+      array_agg(stage.stage ORDER BY stage.stage) AS stages FROM analysis_runs run
+      JOIN manifest_items item ON item.manifest_id=run.manifest_id JOIN source_files source ON source.id=item.source_file_id
+      JOIN source_file_stages stage ON stage.source_file_id=source.id WHERE run.id=$1 GROUP BY source.api_id,item.blob_sha256`,[run.id]);
+    const submissionIdentity=resolveMatrixSubmissionIdentity(identity.rows[0].api_id,inputSources.rows.map(s=>({sourceFileId:s.source_file_id,sha256:s.sha256.trim(),stages:s.stages})));
+    const submission = canonicalJson(this.matrixSubmission(execution, identity.rows[0].api_id,submissionIdentity,inventory,call,rail,water,lighting,steel,column));
+    const submissionHash = sha256(submission);
+    await client.query(`INSERT INTO machine_prediction_snapshots
+      (run_id,schema_version,execution_hash,submission_hash,submission_bytes,metadata)
+      VALUES ($1,'machine-predictions-v1',$2,$3,$4,$5::jsonb)`,
+      [run.id,row.content_hash.trim(),submissionHash,Buffer.from(submission),JSON.stringify({
+        officialIdsVerified:submissionIdentity.officialIdsVerified,mappingVersion:submissionIdentity.mappingVersion,
+        mappingHash:submissionIdentity.mappingHash,partial:true,
+        omittedResults:coverage.filter((c)=>c.executionStatus==="UNSUPPORTED").length,
+        scope:"SCOPED_TEXT_FACT_COMPARISONS",confidencePolicy:matrixConfidencePolicyForProfile(policy.profileId),
+        sourceIds:submissionIdentity.officialIdsVerified?"VERIFIED_PUBLIC_DATASET_IDS":"APPLICATION_IDS",
+        submissionPurpose:submissionIdentity.officialIdsVerified?"PARTIAL_MACHINE_OUTPUT":"DIAGNOSTIC_PARTIAL_MACHINE_OUTPUT"})]);
+    const stats = { ...blankStats(this.parameters.length),
+      unsupported: coverage.filter((c) => c.executionStatus === "UNSUPPORTED").length,
+      candidates: (column?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+(steel?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+(lighting?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+(water?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+(rail?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+(call?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0)+execution.results.filter((r) => r.machineStatus === "CANDIDATE").length+(inventory?.results.filter(r=>r.kind==="SCOPED_COMPARISON"&&r.comparison.status==="CANDIDATE").length??0),
+      clarification: execution.results.filter((r) => r.machineStatus === "CLARIFICATION_REQUIRED").length,
+      notComparable: (column?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status==="ABSTAIN").length??0)+(steel?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0)+(lighting?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0)+(water?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0)+(rail?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0)+(call?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0)+execution.results.filter((r) => ["NOT_COMPARABLE","MISSING_EVIDENCE"].includes(r.machineStatus)).length+(inventory?.results.filter(r=>r.kind!=="SCOPED_COMPARISON"||r.comparison.status!=="CANDIDATE").length??0) };
+    const updated = await client.query<{event_version:number|string}>(`UPDATE analysis_runs SET
+      run_state='PARTIAL',display_status='PARTIAL',progress=100,current_stage=$1,
+      stats=$2::jsonb,output_hash=$3,completed_at=now(),sealed_at=now(),event_version=event_version+1
+      WHERE id=$4 RETURNING event_version`, ["Общие правила исполнены; смотрите ограничения и наблюдения",
+        JSON.stringify(stats),sha256(canonicalJson({executionHash:row.content_hash.trim(),submissionHash})),run.id]);
+    await client.query("UPDATE objects SET display_status='PARTIAL',stats=$1::jsonb,updated_at=now() WHERE id=$2 AND EXISTS (SELECT 1 FROM inspections WHERE active_run_id=$3 AND object_id=$2)",
+      [JSON.stringify(stats),run.object_id,run.id]);
+    return Number(updated.rows[0].event_version);
+  }
+
+  private async loadMatrixFactOriginV13(client:PoolClient,objectId:string,checkId:string,sourceFileId:string|undefined,
+    operation:MatrixOriginOperationV13):Promise<MatrixFactOriginV13|null> {
+    this.assertMatrixOriginOperationV13(client,objectId,operation);
+    await operation.budget.runByCheck(checkId);
+    const scopes=(await client.query<MatrixStoredReadScope>(`SELECT run.id,run.object_id,object.api_id AS object_api_id,run.output_hash
+      FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+      JOIN analysis_stage_artifacts stage ON stage.run_id=run.id AND stage.job_type='RULE_EVALUATION'
+      JOIN analysis_jobs job ON job.id=stage.job_id AND job.run_id=run.id AND job.object_id=run.object_id
+        AND job.job_type=stage.job_type AND job.state='SUCCEEDED' AND job.release_id=run.release_id
+        AND job.input_manifest_hash=stage.input_manifest_hash
+      WHERE run.object_id=$1 AND run.api_id=$2 AND object.organization_id=$3
+        AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED')
+        AND stage.provider_profile_id=$4`,[objectId,checkId,this.organizationId,MATRIX_CONCRETE_WALL_V13_PROFILE])).rows;
+    if(scopes.length!==1)return null;const scope=scopes[0]!;
+    if(operation.activeRuns.has(scope.id))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+    let origin=operation.completedOrigins.get(scope.id);
+    if(!origin){
+      const full:MatrixStoredReadValue=await this.inventoryStoredReadScoped(client,checkId,scope,operation);
+      const base=full.prepared.concreteWallV13?.base;
+      if(!base)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      const artifacts=new Map<string,NonNullable<ReturnType<typeof prepareMatrixFactArtifact>>>();
+      for(const item of base.textArtifacts){
+        const prepared=prepareMatrixFactArtifact(item.artifact);
+        if(!prepared||artifacts.has(item.sourceFileId))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        artifacts.set(item.sourceFileId,prepared);
+      }
+      const authenticatedOrigin:MatrixFactOriginV13={execution:full.read.execution,contentHash:full.read.contentHash,artifacts,
+        references:[...full.prepared.references],fingerprint:full.fingerprint};
+      this.assertMatrixOriginOperationV13(client,objectId,operation);
+      operation.completedOrigins.set(scope.id,authenticatedOrigin);
+      origin=authenticatedOrigin;
+    }
+    return sourceFileId===undefined?origin:{...origin,
+      artifacts:new Map([...origin.artifacts].filter(([id])=>id===sourceFileId))};
+  }
+
+  private async loadMatrixFactOrigin(client:PoolClient,objectId:string,checkId:string,sourceFileId?:string,
+    operation?:MatrixOriginOperationV13):Promise<MatrixFactOriginV13|null> {
+    if(operation){
+      this.assertMatrixOriginOperationV13(client,objectId,operation);
+      await operation.budget.runByCheck(checkId);
+      const profiles=(await client.query<{profile_id:string}>(`SELECT stage.provider_profile_id AS profile_id
+        FROM analysis_runs run JOIN objects object ON object.id=run.object_id
+        JOIN analysis_stage_artifacts stage ON stage.run_id=run.id AND stage.job_type='RULE_EVALUATION'
+        WHERE run.object_id=$1 AND run.api_id=$2 AND object.organization_id=$3
+          AND run.sealed_at IS NOT NULL AND run.run_state IN ('PARTIAL','SUCCEEDED')`,
+        [objectId,checkId,this.organizationId])).rows;
+      if(profiles.length!==1)return null;
+      if(isConcreteWallProfileV13(profiles[0]!.profile_id))
+        return this.loadMatrixFactOriginV13(client,objectId,checkId,sourceFileId,operation);
+    }
+    // This reader is also used under the source-review write lock. Authenticate the
+    // immutable scalar origin in this transaction; never perform PDF I/O or call
+    // a public repository reader (which would open another transaction) here.
+    const saved=await client.query<{id:string;content_json:Record<string,unknown>;content_hash:string;
+      byte_size:number|string;input_manifest_hash:string;provider_profile_id:string;provider_config_hash:string;
+      schema_version:string;provider_kind:string;disposition:string;release_id:string;
+      release_json:Record<string,unknown>;release_hash:string;release_byte_size:number|string}>(
+      `SELECT run.id,stage.content_json,stage.content_hash,stage.byte_size,stage.input_manifest_hash,
+         stage.provider_profile_id,stage.provider_config_hash,stage.schema_version,stage.provider_kind,
+         stage.disposition,run.release_id,release.content_json AS release_json,
+         release.content_hash AS release_hash,release.byte_size AS release_byte_size FROM analysis_runs run
+       JOIN analysis_stage_artifacts stage ON stage.run_id=run.id AND stage.job_type='RULE_EVALUATION'
+         AND stage.provider_profile_id=ANY($3::text[])
+       JOIN analysis_jobs job ON job.id=stage.job_id AND job.run_id=run.id
+         AND job.object_id=run.object_id AND job.job_type=stage.job_type AND job.state='SUCCEEDED'
+         AND job.release_id=run.release_id AND job.input_manifest_hash=stage.input_manifest_hash
+       JOIN analysis_releases release ON release.release_id=run.release_id
+       WHERE run.object_id=$1 AND run.api_id=$2 AND run.sealed_at IS NOT NULL
+         AND run.run_state IN ('SUCCEEDED','PARTIAL')`,[objectId,checkId,MATRIX_STEEL_COMPARISON_READ_PROFILES]);
+    const row=saved.rows[0];
+    if(isConcreteWallProfileV13(row?.provider_profile_id))return null; // Dedicated source-address branch remains to be wired.
+    const policy=matrixFullPolicyForProfile(row?.provider_profile_id);
+    if(!row||saved.rows.length!==1||!policy)return null;
+    const canonical=canonicalJson(row.content_json),releaseCanonical=canonicalJson(row.release_json);
+    const slot=providerSlotForJob(row.release_json,"RULE_EVALUATION"),result=row.content_json;
+    const historical=MATRIX_READ_PROFILES.includes(row.provider_profile_id);
+    if(sha256(canonical)!==row.content_hash.trim()||Buffer.byteLength(canonical)!==Number(row.byte_size)
+      ||Number(row.byte_size)>8388608||sha256(releaseCanonical)!==row.release_hash.trim()
+      ||Buffer.byteLength(releaseCanonical)!==Number(row.release_byte_size)
+      ||row.release_json.releaseId!==row.release_id||row.schema_version!=="analysis-stage-result-v2"
+      ||row.provider_kind!=="RULE_ENGINE"||row.disposition!=="RULES_EVALUATED"
+      ||result.schemaVersion!==row.schema_version||result.jobType!=="RULE_EVALUATION"
+      ||result.inputManifestHash!==row.input_manifest_hash.trim()||result.providerKind!==row.provider_kind
+      ||result.providerProfileId!==row.provider_profile_id||result.providerConfigHash!==row.provider_config_hash.trim()
+      ||result.disposition!==row.disposition)return null;
+    if(!historical&&(slot?.status!=="CONFIGURED"||slot.providerKind!=="RULE_ENGINE"
+      ||slot.profileId!==policy.profileId||slot.configHash!==policy.configHash
+      ||slot.adapterVersion!==policy.adapterVersion||row.provider_config_hash.trim()!==policy.configHash
+      ||canonicalJson((row.release_json.rules as Record<string,unknown>)?.matrixDefinitions)!==canonicalJson(policy.definitions)))return null;
+    const inputs=await this.loadAuthenticatedZu127GenericInputs(client,row.id,objectId);
+    if(!inputs||inputs.inputManifestHash!==row.input_manifest_hash.trim())return null;
+    const artifacts=new Map<string,NonNullable<ReturnType<typeof prepareMatrixFactArtifact>>>();
+    for(const item of inputs.textArtifacts){
+      const prepared=prepareMatrixFactArtifact(item.artifact);if(!prepared)return null;
+      artifacts.set(item.sourceFileId,prepared);
+    }
+    // Historical addresses do not replay today's engine or qualify an old result.
+    // Their authority is the authenticated original text and frozen source stage.
+    // Only this finite v1-v4 set may take the historical branch; v5-v7 never fall back.
+    let execution:import("@inspector-ai/contracts").MatrixExecution|null;
+    if(historical){
+      const raw=result.execution;
+      if(!isRecord(raw)||raw.schemaVersion!=="matrix-execution-v1"||raw.objectId!==objectId
+        ||raw.inputManifestHash!==inputs.inputManifestHash||!Array.isArray(raw.observations))return null;
+      const ids=new Set<string>();
+      for(const fact of raw.observations){
+        if(!isRecord(fact)||typeof fact.id!=="string"||ids.has(fact.id))return null;
+        ids.add(fact.id);
+        const source=inputs.sourceFiles.find(item=>item.sourceFileId===fact.sourceFileId);
+        if(!source||fact.sourceSha256!==source.sha256
+          ||fact.stage!==(source.stages.length===1?source.stages[0]
+            :inputs.sourceDecisions[source.sourceFileId]?.pageStages[String(fact.pageNumber)]??"UNRESOLVED")
+          ||!artifacts.get(source.sourceFileId)?.deriveTarget(fact))return null;
+      }
+      execution=raw as unknown as import("@inspector-ai/contracts").MatrixExecution;
+    }else execution=validateMatrixExecution(result.execution,{objectId,inputManifestHash:inputs.inputManifestHash,
+      sources:inputs.sourceFiles.map(source=>({sourceFileId:source.sourceFileId,sha256:source.sha256,
+        stages:source.stages,review:inputs.sourceDecisions[source.sourceFileId]??null,
+        textArtifact:inputs.textArtifacts.find(item=>item.sourceFileId===source.sourceFileId)?.artifact??null}))});
+    if(!execution)return null;
+    if(sourceFileId!==undefined)for(const id of artifacts.keys())if(id!==sourceFileId)artifacts.delete(id);
+    return {execution,contentHash:row.content_hash.trim(),artifacts};
+  }
+
+  /** Full generic v13 proof plus original wall roles: semantic A, PDFs B, raw C. */
+  private async concreteWallFactTargetsV13(checkId:string,actor:AuthenticatedActor):Promise<{
+    handled:boolean;value?:import("@inspector-ai/contracts").MatrixFactTargetsRead;
+  }> {
+    try{return await withColumnPylonSectionIoBudget(async signal=>{
+      const installed=matrixConcreteWallInstalledIdentityV13();
+      const captured=await this.inventoryTransaction(true,signal,client=>captureSavedRead(client,async checked=>{
+        const scope=await this.inventoryReadScope(checked,checkId,actor);
+        if(!scope)return {handled:true as const};
+        const profiles=(await checked.query<{profile_id:string}>(`SELECT slot->>'profileId' AS profile_id
+          FROM analysis_runs run JOIN analysis_releases release ON release.release_id=run.release_id
+          CROSS JOIN LATERAL jsonb_array_elements(release.content_json->'providerSlots') slot
+          WHERE run.id=$1 AND run.object_id=$2 AND slot->>'stageJobType'='RULE_EVALUATION' LIMIT 2`,
+          [scope.id,scope.object_id])).rows;
+        if(profiles.length!==1)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        if(!isConcreteWallProfileV13(profiles[0]!.profile_id))return {handled:false as const};
+        if(installed===null)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const operation=this.matrixOriginOperationV13(checked,scope.object_id);
+        const original=await this.loadMatrixScalarOriginalV13(checked,scope.object_id,checkId,operation.budget);
+        if(!original||!isConcreteWallProfileV13(original.stage.provider_profile_id))
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const full:MatrixFactOriginV13|null=await this.loadMatrixFactOriginV13(checked,scope.object_id,checkId,undefined,operation);
+        if(!full||full.contentHash!==original.stage.content_hash||full.references===undefined)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+        const items:import("@inspector-ai/contracts").MatrixFactTargetsRead["items"]=[];
+        for(const fact of full.execution.observations){
+          if(fact.stage==="UNRESOLVED")continue;
+          const evidenceFragments=fact.evidenceFragments;
+          const reserved=isConcreteWallClaimV13({contexts:{}},fact)
+            ||fact.stage==="PD"&&fact.attribute==="CONCRETE_CLASS"&&Array.isArray(evidenceFragments)
+              &&isRecord(evidenceFragments[0])&&evidenceFragments[0].rawText==="стены -3го по +1";
+          const address=reserved?this.matrixScalarAddressV13(original,scope.object_id,fact.sourceFileId,fact,true):null;
+          if(reserved&&(!address||address.role===null))throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+          const derived=reserved?address?.target:full.artifacts.get(fact.sourceFileId)?.deriveTarget(fact);
+          if(!derived){if(reserved)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");continue;}
+          const {fragmentsHash,...target}=derived;
+          items.push({sourceFileId:fact.sourceFileId,
+            target:{...target,checkId,executionContentHash:original.stage.content_hash},
+            ...(fragmentsHash?{fragmentsHash}:{})});
+        }
+        const references=full.references;
+        return {handled:true as const,value:{checkId,executionContentHash:original.stage.content_hash,items},scope,references};
+      }));
+      const first=captured.value;
+      if(!("value" in first)||first.value===undefined||first.scope===undefined||first.references===undefined)
+        return {handled:first.handled};
+      const {value,scope:originalScope,references}=first;
+      if(!this.storage)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_INTEGRITY");
+      if(matrixConcreteWallInstalledIdentityV13()!==installed)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+      await verifyOriginalPdfSet({storage:this.storage,references,signal});
+      await this.inventoryTransaction(true,signal,async client=>{
+        const scope=await this.inventoryReadScope(client,checkId,actor);
+        if(!scope||scope.id!==originalScope.id||scope.object_id!==originalScope.object_id
+          ||scope.object_api_id!==originalScope.object_api_id||matrixConcreteWallInstalledIdentityV13()!==installed)
+          throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+        await captured.replay(client);
+      });
+      signal.throwIfAborted();
+      if(matrixConcreteWallInstalledIdentityV13()!==installed)throw new InventoryLoaderIntegrityError("INVENTORY_INPUT_CHANGED");
+      return {handled:true,value};
+    },{deadlineMilliseconds:55_000});}catch{return {handled:true};}
+  }
+
+  async getMatrixFactTargets(checkId:string,actor?:AuthenticatedActor):Promise<ScopedReadResult<import("@inspector-ai/contracts").MatrixFactTargetsRead>> {
+    if(actor&&this.hasReadScope(actor)){const wall=await this.concreteWallFactTargetsV13(checkId,actor);if(wall.handled)return wall.value;}
+    const check=await this.getCheck(checkId,actor);if(!check||check==="AUTH_REQUIRED")return check;
+    return this.transaction(async(client)=>{
+      const object=await client.query<{id:string}>("SELECT id FROM objects WHERE organization_id=$1 AND api_id=$2",[this.organizationId,check.objectId]);
+      if(!object.rows[0])return undefined;
+      const origin=await this.loadMatrixFactOrigin(client,object.rows[0].id,checkId);if(!origin)return undefined;
+      const items:import("@inspector-ai/contracts").MatrixFactTargetsRead["items"]=[];
+      for(const fact of origin.execution.observations){
+        if(fact.stage==="UNRESOLVED")continue;
+        const derived=origin.artifacts.get(fact.sourceFileId)?.deriveTarget(fact);if(!derived)continue;
+        const {fragmentsHash,...target}=derived;
+        items.push({sourceFileId:fact.sourceFileId,target:{...target,checkId,executionContentHash:origin.contentHash},
+          ...(fragmentsHash?{fragmentsHash}:{})});
+      }
+      return {checkId,executionContentHash:origin.contentHash,items};
+    });
+  }
+
+  async getMatrixExecution(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}): Promise<ScopedReadResult<MatrixExecutionRead>> {
+    const started=Date.now();
+    const profile=actor&&this.hasReadScope(actor)?await this.inventoryCheckProfile(checkId,options):undefined;
+    if(actor&&profile)
+      return (await this.verifiedInventoryRead(checkId,actor,{...options,deadlineMilliseconds:Math.max(1,(profile===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(profile)?55_000:20_000)-(Date.now()-started))},profile))?.read;
+    const check = await this.getCheck(checkId, actor);
+    if (check === "AUTH_REQUIRED" || !check) return check;
+    const result = await this.readQuery<{content_json:Record<string,unknown>;content_hash:string;provider_profile_id:string;
+      submission_hash:string|null;metadata:Record<string,unknown>|null}>(`SELECT stage.content_json,
+        stage.content_hash,stage.provider_profile_id,snapshot.submission_hash,snapshot.metadata
+      FROM analysis_runs run JOIN analysis_stage_artifacts stage ON stage.run_id=run.id
+        AND stage.job_type='RULE_EVALUATION' AND stage.provider_profile_id=ANY($2::text[])
+      LEFT JOIN machine_prediction_snapshots snapshot ON snapshot.run_id=run.id
+      WHERE run.api_id=$1`, [checkId,MATRIX_READ_PROFILES]);
+    const saved = result.rows[0];
+    if (!saved || result.rows.length !== 1 || saved.content_hash.trim() !== sha256(canonicalJson(saved.content_json))) return undefined;
+    const execution = saved.content_json.execution as unknown as import("@inspector-ai/contracts").MatrixExecution;
+    const policy = matrixPolicyForProfile(saved.provider_profile_id);
+    if (!policy || !execution || execution.schemaVersion !== "matrix-execution-v1") return undefined;
+    const constraints = policy.projectConstraints ? saved.content_json.projectConstraints : undefined;
+    const declarations = policy.sourceDeclarations ? saved.content_json.sourceDeclarations : undefined;
+    if ((!policy.projectConstraints && Object.hasOwn(saved.content_json,"projectConstraints"))
+      || (!policy.sourceDeclarations && Object.hasOwn(saved.content_json,"sourceDeclarations"))) return undefined;
+    if (policy.projectConstraints && (!isRecord(constraints)
+      || constraints.schemaVersion !== "matrix-project-constraints-v1" || constraints.purpose !== "EVIDENCE_ONLY"
+      || constraints.objectId !== execution.objectId || constraints.inputManifestHash !== execution.inputManifestHash
+      || !Array.isArray(constraints.constraints))) return undefined;
+    if (policy.sourceDeclarations && (!isRecord(declarations)
+      || declarations.schemaVersion !== policy.sourceDeclarationsSchemaVersion
+      || declarations.extractorVersion !== policy.sourceDeclarationsSchemaVersion || declarations.purpose !== "EVIDENCE_ONLY"
+      || declarations.objectId !== execution.objectId || declarations.inputManifestHash !== execution.inputManifestHash
+      || !Array.isArray(declarations.declarations)
+      || declarations.declarations.some(item => !isRecord(item) || (item.kind !== "SOURCE_AUTHORED_STEEL_DECLARATION"
+        && (policy.sourceDeclarationsSchemaVersion !== "matrix-source-declarations-v2" || item.kind !== "SOURCE_AUTHORED_FIRE_RESISTANCE_DECLARATION"))))) return undefined;
+    return { checkId,contentHash:saved.content_hash.trim(),execution,presentation:matrixPresentation(execution),
+      ...(constraints ? {projectConstraints: constraints as unknown as import("@inspector-ai/contracts").MatrixProjectConstraints} : {}),
+      ...(declarations ? {sourceDeclarations: declarations as unknown as import("@inspector-ai/contracts").MatrixSourceDeclarationsRead} : {}),
+      submission:saved.submission_hash ? {contentHash:saved.submission_hash.trim(),
+        officialIdsVerified:saved.metadata?.officialIdsVerified===true,mappingVersion:String(saved.metadata?.mappingVersion??"matrix-code-mapping-v1"),
+        partial:true,omittedResults:Number(saved.metadata?.omittedResults ?? 0)} : null };
+  }
+
   async getSubmission(
     checkId: string,
-    actor?: AuthenticatedActor,
+    actor?: AuthenticatedActor, options?:{signal?:AbortSignal},
   ): Promise<SubmissionResult | "AUTH_REQUIRED"> {
+    const started=Date.now();
+    const profile=actor&&this.hasReadScope(actor)?await this.inventoryCheckProfile(checkId,options):undefined;
+    if(actor&&profile)
+      return (await this.verifiedInventoryRead(checkId,actor,{...options,deadlineMilliseconds:Math.max(1,(profile===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(profile)?55_000:20_000)-(Date.now()-started))},profile))?.submission;
     const check = await this.getCheck(checkId, actor);
     if (check === "AUTH_REQUIRED") return check;
     if (!check) return undefined;
-    return "INCOMPLETE_ANALYSIS";
+    const snapshot = await this.readQuery<{submission_hash:string;submission_bytes:Buffer}>(
+      `SELECT snapshot.submission_hash,snapshot.submission_bytes FROM machine_prediction_snapshots snapshot
+       JOIN analysis_runs run ON run.id=snapshot.run_id WHERE run.api_id=$1`, [checkId]);
+    const saved = snapshot.rows[0];
+    if (!saved) return "INCOMPLETE_ANALYSIS";
+    if (sha256(saved.submission_bytes) !== saved.submission_hash.trim()) throw new Error("machine submission integrity failure");
+    return JSON.parse(saved.submission_bytes.toString("utf8")) as import("./repository.js").SubmissionExport;
   }
 
   async getParameters(): Promise<ParameterCatalogItem[]> {
@@ -11772,10 +14919,13 @@ export class PostgresInspectionRepository implements InspectionRepository {
 
   async getCoverage(
     checkId: string,
-    actor?: AuthenticatedActor,
+    actor?: AuthenticatedActor, options?:{signal?:AbortSignal},
   ): Promise<ScopedReadResult<ParameterCoverageItem[]>> {
     if (!actor) return "AUTH_REQUIRED";
     if (!this.hasReadScope(actor)) return undefined;
+    const started=Date.now();
+    const profile=await this.inventoryCheckProfile(checkId,options);
+    if(profile)return (await this.verifiedInventoryRead(checkId,actor,{...options,deadlineMilliseconds:Math.max(1,(profile===MATRIX_COLUMN_PYLON_SECTION_V12_PROFILE||isConcreteWallProfileV13(profile)?55_000:20_000)-(Date.now()-started))},profile))?.coverage;
     const run = await this.readQuery<{ id: string }>(
       `SELECT run.id
        FROM analysis_runs run
@@ -11797,10 +14947,11 @@ export class PostgresInspectionRepository implements InspectionRepository {
       parameter_id: number;
       parameter_code: string;
       parameter_name: string;
-      execution_rollup: "UNSUPPORTED" | "PARTIAL";
+      execution_rollup: ParameterCoverageItem["executionStatus"];
+      atomic_summary: ParameterCoverageItem["atomic"];
       reason: string;
     }>(
-      `SELECT parameter_id, parameter_code, parameter_name, execution_rollup, reason
+      `SELECT parameter_id, parameter_code, parameter_name, execution_rollup, reason, atomic_summary
        FROM parameter_coverage
        WHERE run_id = $1
        ORDER BY parameter_id`,
@@ -11812,6 +14963,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
       parameterName: item.parameter_name,
       executionStatus: item.execution_rollup,
       reason: item.reason,
+      ...(item.atomic_summary ? { atomic: item.atomic_summary } : {}),
     }));
   }
 
@@ -12033,7 +15185,7 @@ export class PostgresInspectionRepository implements InspectionRepository {
 
   private async readQuery<Row extends QueryResultRow = QueryResultRow>(
     text: string,
-    values: Array<string | number | null> = [],
+    values: Array<string | number | string[] | null> = [],
   ): Promise<QueryResult<Row>> {
     for (let attempt = 0; ; attempt += 1) {
       try {

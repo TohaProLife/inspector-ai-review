@@ -1,0 +1,21 @@
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {describe,expect,it} from 'vitest';
+import {reconstructLightingTechnologySource,lightingTechnologyDeclarationContentHash} from '../src/matrix-lighting-technology-source.js';
+const root=new URL('../../../fixtures/matrix-lighting-technology-source-v1/',import.meta.url);
+const read=(name:string,sha:string)=>{const b=readFileSync(new URL(name,root));expect(createHash('sha256').update(b).digest('hex')).toBe(sha);return JSON.parse(b.toString());};
+const core=read('research-authored-goldens.json','e5340b5bd776432af6349436387298998df2d0da44b087932c681b30971be59a').cases;
+const cases=read('research-portable-boundary-goldens.json','6da10ec64f27ba107bce91ca6677308e8cc34103e3c618d62948f3bc5792b71f').cases;
+const base=()=>structuredClone(core[0].input);
+const invalid=(reasonCode='INVALID_INPUT')=>({schemaVersion:'matrix-zu130-lighting-technology-source-result-v1',status:'ABSTAIN',reasonCode});
+const freeze=(v:any):any=>{if(v&&typeof v==='object'){Object.values(v).forEach(freeze);Object.freeze(v);}return v;};
+describe('independent source-only lighting hostile portable boundary',()=>{
+ for(const c of cases)it(c.name,()=>{const input=structuredClone(c.input),before=JSON.stringify(input);const actual=reconstructLightingTechnologySource(freeze(input));expect(actual).toEqual(c.expected);expect(JSON.stringify(input)).toBe(before);if(actual.status==='RECONSTRUCTED')expect(lightingTechnologyDeclarationContentHash(actual.declaration)).toBe(c.expectedDeclarationContentHash);});
+ for(const[name,value]of [['undefined',undefined],['float',1.5],['NaN',NaN],['infinite',Infinity],['unsafe',Number.MAX_SAFE_INTEGER+1],['bigint',1n],['symbol',Symbol('x')],['function',()=>0],['date',new Date(0)],['null prototype',Object.create(null)],['surrogate','\ud800']]as const)it(`native ${name}`,()=>expect(reconstructLightingTechnologySource(value)).toEqual(invalid()));
+ it('rejects getters, proxies and toJSON without callbacks including hash helper',()=>{let calls=0;const trap=()=>{calls++;throw Error('forbidden callback');};for(const value of [Object.defineProperty(base(),'selection',{enumerable:true,get:trap}),new Proxy(base(),{get:trap,ownKeys:trap,getPrototypeOf:trap}),Object.assign(base(),{toJSON:trap})]){expect(reconstructLightingTechnologySource(value)).toEqual(invalid());expect(()=>lightingTechnologyDeclarationContentHash(value)).toThrow();}expect(calls).toBe(0);});
+ it('rejects sparse/accessor arrays, symbol/nonenumerable keys and cycles',()=>{let calls=0;const b=base();const sparse=base();delete sparse.selection.fragments[0];const acc=base();Object.defineProperty(acc.selection.fragments,'0',{enumerable:true,get:()=>{calls++;return b.selection.fragments[0];}});const cycle:any=base();cycle.self=cycle;for(const v of [sparse,acc,cycle,Object.assign(base(),{[Symbol('x')]:1}),Object.defineProperty(base(),'hidden',{value:1})])expect(reconstructLightingTechnologySource(v)).toEqual(invalid());expect(calls).toBe(0);});
+ it('reports one string and container resource limits',()=>{expect(reconstructLightingTechnologySource('x'.repeat(2_000_001))).toEqual(invalid('INPUT_LIMIT'));expect(reconstructLightingTechnologySource(new Array(32769).fill(null))).toEqual(invalid('INPUT_LIMIT'));});
+ it('reports depth resource limit before schema access',()=>{let v:any=null;for(let i=0;i<66;i++)v=[v];expect(reconstructLightingTechnologySource(v)).toEqual(invalid('INPUT_LIMIT'));});
+ it('returns detached output and preserves null probability with no rule fields',()=>{const input=base(),before=JSON.stringify(input),out=reconstructLightingTechnologySource(input);expect(out.status).toBe('RECONSTRUCTED');if(out.status!=='RECONSTRUCTED')throw Error('fixture');expect(out.declaration.calibratedProbability).toBeNull();expect(out.declaration).not.toHaveProperty('ruleId');expect(out.declaration).not.toHaveProperty('entityKey');out.declaration.primaryFragments[0].rawText='view edit';out.declaration.regionBoxMilliPoints[0]=1;expect(JSON.stringify(input)).toBe(before);});
+ it('hash helper rejects nonportable native values',()=>{for(const v of [NaN,1.5,1n,'\ud800',new Date(0)])expect(()=>lightingTechnologyDeclarationContentHash(v)).toThrow();});
+});

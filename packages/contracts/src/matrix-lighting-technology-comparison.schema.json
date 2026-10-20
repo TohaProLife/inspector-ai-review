@@ -1,0 +1,733 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:matrix-lighting-technology-comparison-v1",
+  "title": "Pure directed ZU130 comparison of reviewed original-backed named lighting positions",
+  "$ref": "#/definitions/result",
+  "definitions": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityKey",
+        "buildingKey",
+        "systemKey",
+        "positionKey",
+        "componentRole"
+      ],
+      "properties": {
+        "entityKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "buildingKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "systemKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "positionKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "componentRole": {
+          "const": "LUMINAIRE_LIGHT_SOURCE"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkId",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactHash",
+        "declarationContentHash"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textStageContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textArtifactHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "declarationContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      }
+    },
+    "positionMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sourcePositionLabel",
+        "assertion"
+      ],
+      "properties": {
+        "kind": {
+          "const": "HUMAN_REVIEWED_LIGHTING_POSITION_MAPPING"
+        },
+        "sourcePositionLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "assertion": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_ASSERTED_SAME_LUMINAIRE_LIGHT_SOURCE_POSITION"
+          ]
+        }
+      }
+    },
+    "claimRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "selection",
+        "identity",
+        "positionMapping",
+        "reference"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "selection": {
+          "$ref": "matrix-lighting-technology-source-v3.schema.json#/definitions/selection"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "positionMapping": {
+          "$ref": "#/definitions/positionMapping"
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 1000
+        }
+      }
+    },
+    "claimDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "selection",
+        "identity",
+        "positionMapping",
+        "reference",
+        "declarationSnapshot"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "selection": {
+          "$ref": "matrix-lighting-technology-source-v3.schema.json#/definitions/selection"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "positionMapping": {
+          "$ref": "#/definitions/positionMapping"
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 1000
+        },
+        "declarationSnapshot": {
+          "$ref": "matrix-lighting-technology-source-v3.schema.json#/definitions/declaration"
+        }
+      }
+    },
+    "scopeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "claims"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-zu130-lighting-technology-review-v1"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/claimRequest"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        }
+      }
+    },
+    "scopeDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "claims"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-zu130-lighting-technology-review-v1"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/claimDecision"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        }
+      }
+    },
+    "reviewPointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decisionId",
+        "contentHash"
+      ],
+      "properties": {
+        "decisionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decisionId",
+        "contentHash",
+        "objectId",
+        "sourceFileId",
+        "sourceSha256",
+        "actorId",
+        "revisionStatus",
+        "approvalStatus",
+        "sectionCode",
+        "linkGroupId",
+        "pageStages",
+        "lightingTechnologyScope"
+      ],
+      "properties": {
+        "decisionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "actorId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revisionStatus": {
+          "enum": [
+            "CURRENT",
+            "SUPERSEDED",
+            "UNKNOWN"
+          ]
+        },
+        "approvalStatus": {
+          "enum": [
+            "APPROVED",
+            "UNAPPROVED",
+            "UNKNOWN"
+          ]
+        },
+        "sectionCode": {
+          "anyOf": [
+            {
+              "enum": [
+                "PZ",
+                "SPZU",
+                "AR",
+                "KR",
+                "IOS1",
+                "IOS2",
+                "IOS3",
+                "IOS4",
+                "IOS5",
+                "POS",
+                "POD",
+                "OOS",
+                "PPM",
+                "ODI",
+                "ZU",
+                "SM",
+                "EOM",
+                "GP",
+                "GSV",
+                "KJ",
+                "KM",
+                "NVK",
+                "OV",
+                "PP",
+                "PPR",
+                "SS",
+                "VK"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "linkGroupId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageStages": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "lightingTechnologyScope": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/scopeDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "stages",
+        "reviewSnapshot",
+        "review"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "PD",
+              "RD",
+              "ID",
+              "UNRESOLVED"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "reviewSnapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reviewPointer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/review"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkId",
+        "objectId",
+        "sourceFileId",
+        "sourceSha256",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactHash",
+        "textArtifact"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textStageContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textArtifactHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "textArtifact": {
+          "$ref": "document-text-v3.schema.json#/definitions/artifact"
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "identity",
+        "sources",
+        "origins"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-zu130-lighting-technology-comparison-input-v1"
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "inputManifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/source"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/origin"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "reviewDecisionId",
+        "reviewContentHash",
+        "declarationContentHash"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reviewDecisionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "reviewContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "declarationContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      }
+    },
+    "result": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "reasonCode",
+            "calibratedProbability"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-zu130-lighting-technology-comparison-v1"
+            },
+            "status": {
+              "const": "ABSTAIN"
+            },
+            "reasonCode": {
+              "enum": [
+                "INVALID_INPUT",
+                "INPUT_LIMIT",
+                "SOURCE_PROVENANCE_UNVERIFIED",
+                "DECLARATION_RECONSTRUCTION_UNVERIFIED",
+                "SOURCE_STAGE_UNVERIFIED",
+                "POSITION_IDENTITY_CONFLICT",
+                "AMBIGUOUS_DECLARATION_SCOPE",
+                "MATCHED_DECLARATION_PAIR_UNVERIFIED",
+                "SOURCE_REVIEW_UNVERIFIED",
+                "SOURCE_SECTION_UNVERIFIED",
+                "LINK_SCOPE_UNVERIFIED",
+                "NAMED_POSITION_UNVERIFIED",
+                "POSITION_MAPPING_UNVERIFIED",
+                "DIRECTED_TRANSITION_UNSUPPORTED"
+              ]
+            },
+            "calibratedProbability": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "ruleId",
+            "ruleVersion",
+            "parameterCode",
+            "reasonCode",
+            "calibratedProbability",
+            "comparisonScope",
+            "identity",
+            "expected",
+            "actual",
+            "expectedTechnology",
+            "actualTechnology"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-zu130-lighting-technology-comparison-v1"
+            },
+            "status": {
+              "const": "CANDIDATE"
+            },
+            "ruleId": {
+              "const": "matrix-zu-130-declared_led_technology_replacement"
+            },
+            "ruleVersion": {
+              "const": "1"
+            },
+            "parameterCode": {
+              "const": "ZU-130"
+            },
+            "reasonCode": {
+              "const": "LED_REPLACED_BY_FLUORESCENT_OR_INCANDESCENT"
+            },
+            "calibratedProbability": {
+              "type": "null"
+            },
+            "comparisonScope": {
+              "const": "REVIEWED_NAMED_LUMINAIRE_LIGHT_SOURCE_POSITION_ONLY"
+            },
+            "identity": {
+              "$ref": "#/definitions/identity"
+            },
+            "expected": {
+              "$ref": "#/definitions/reference"
+            },
+            "actual": {
+              "$ref": "#/definitions/reference"
+            },
+            "expectedTechnology": {
+              "const": "LED"
+            },
+            "actualTechnology": {
+              "enum": [
+                "FLUORESCENT",
+                "INCANDESCENT"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-local-ref-allowlist": [
+    "document-text-v3.schema.json",
+    "matrix-lighting-technology-source-v3.schema.json"
+  ],
+  "x-semantic-contract": {
+    "scope": "Pure DTO consistency comparator/review-scope staging; database actor authorization, immutable manifest membership, sealed historical origin authentication and actual original PDF bytes remain repository loader responsibility. No claim of authentication from a caller-supplied hash.",
+    "native": "Descriptor/exact-builtin guard before any property read/callback. Existing whole-input limits8M serialized UTF8 including escaping/punctuation,200knodes including keys,depth64,container32768,string2M codepoints. No callbacks/proxies/cycles/holes/customserializers/surrogates/floats/unsafe/nonfinite; violations INVALID_INPUT, limits INPUT_LIMIT. No truncation.",
+    "collections": "sources<=64, origins<=128, claims<=16 per source and<=128 total. Distinct source IDs, distinct origin(sourceID,checkID), unique source stages. Every non-null review has paired non-null snapshot pointer. Empty scope allowed but unbound.",
+    "keys": "Frozen lighting clean scalar key:1..200codepoints, no leading/trailing fixed Python whitespace or U0000..0008,U000A..001F,U2028,U2029,U+FFFD. CheckID/link120. Reference8..1000. Position literal exact source grammar token1..80.",
+    "pageStages": "Canonical positive decimal safe-integer page keys1..16digits, within every retained original pageCount for that source; same stage semantics as full-v3 source consumer. Source stages must be exactly one PD or RD for each retained claim; every non-UNRESOLVED page override equals that stage. Effective selected stage must equal it; no inference.",
+    "origins": "Validate EVERY retained origin before selecting requested identity, including unclaimed/unrelated. Exact source/object association; full readDocumentTextV3Artifact on original envelope, no facade. inputSHA/sourceID exact; textArtifactHash equals whole domain v3 content hash; textStageContentHash equals SHA256(portable canonical FULL artifact bytes). All3recorded v3 traversal profiles retained. Origins can belong to earlier source-audit run manifests; do not force origin manifest hash equal current comparison manifest, loader proves source membership.",
+    "claims": "Validate EVERY retained claim and review association before requested scope selection. Review source/object/hash/decision/content exact pointer equality. Each target resolves exactly one origin(sourceFileId,checkId), all3 target hashes(manifest/stage/artifact) match origin. declarationSnapshot source/SHA/artifact/profile exact rebuilt output. Reconstruct full original using source stage, review pageStages, exact selection and compare entire declaration + standalone domain declarationContentHash. Stale/malformed output cannot be ignored because unrelated.",
+    "selection": "Collect all reconstructed claims where entityKey equals requested entityKey OR buildingKey/systemKey/positionKey all equal requested identity tuple. Any selected differing full identity => POSITION_IDENTITY_CONFLICT. Per stage repeated declaration hash => INVALID_INPUT; >1PD or >1RD => AMBIGUOUS_DECLARATION_SCOPE; exactly1PD+1RD and different sourceFileIds AND different original sourceSha256 required, else MATCHED_DECLARATION_PAIR_UNVERIFIED.",
+    "eligibility": "Selected pair review revisionCURRENT and approvalAPPROVED. PD section ZU or IOS1; RD section IOS1 or EOM. Both same nonempty linkGroupId. Both source-authored NAMED_POSITION_LITERAL and nonnull positionLabel; group declaration remains NAMED_POSITION_UNVERIFIED. Explicit HUMAN_ASSERTED_SAME_LUMINAIRE_LIGHT_SOURCE_POSITION and sourcePositionLabel exactly original literal on each side. Claim identity is the human-reviewed same building/system/position/component mapping; matching literal L1 or arbitrary entityKey alone does not satisfy it. No completeness assertion for a positive substitution. No independent approved-change requirement invented from trigger. Reuploading identical PDF bytes as separate PD/RD IDs is not a replacement: same original SHA pair fails MATCHED_DECLARATION_PAIR_UNVERIFIED at gate10, before review/predicate.",
+    "predicate": "Only PD LED→RD FLUORESCENT or INCANDESCENT yields CANDIDATE. LED→LED, reverse pairs, other pairs all DIRECTED_TRANSITION_UNSUPPORTED; do not emit successful whole-parameter negative or inferred energy-efficiency rank. Source declared visibility/authority remain unverified in snapshots; no numerical probability is fabricated.",
+    "gateOrder": [
+      "1 native and total collection limits",
+      "2 exact input/collections DTO shapes",
+      "3 uniqueness/source/review/target associations",
+      "4 all original envelopes and original hashes + pageStages actual bounds",
+      "5 every claim source-stage consistency",
+      "6 every claim full-source reconstruction and declaration hash",
+      "7 selected identity conflicts",
+      "8 per-stage repeated declaration hashes",
+      "9 per-stage ambiguity",
+      "10 exactly one different-source PD/RD pair",
+      "11 current/approved selected reviews",
+      "12 selected electrical sections",
+      "13 same nonempty link scope",
+      "14 named source positions on both sides",
+      "15 exact explicit position mappings",
+      "16 directed pair predicate"
+    ],
+    "scopeHelpers": "validateLightingTechnologyScopeRequest returns detached exact staging request or null, validates limits/shapes/unique target declaration hashes; does not authenticate origin. projectLightingTechnologyScopeDecision returns detached request or null after standalone declaration DTO hash/source/SHA/textArtifactHash target consistency and selection equals source pageNumber+original sourcePath/raw of all primaryFragments; all claims in one decision same source ID/SHA. Does not reconstruct a fake v3 artifact or authenticate original.",
+    "compatibility": "NEW pure TS/PY modules and canonical/types only. Existing producer/source readers/v1..v8 profiles/registry/runtime/results unchanged. No coverage increase until separately versioned execution/admission/runtime. Real F0161 stays UNBOUND, no approved genuine RD pair exists.",
+    "returns": "ABSTAIN exact schema/status/reasonCode/calibratedProbability:null; CANDIDATE exact schema literal rule/scope fields, identity detached, source/review/declaration hash references and literal expected/actual technologies. No WARNING/ERROR at unknown probability."
+  },
+  "x-exports": {
+    "TS": [
+      "compareZu130LightingTechnologies",
+      "validateLightingTechnologyScopeRequest",
+      "projectLightingTechnologyScopeDecision"
+    ],
+    "Python": [
+      "compare_zu130_lighting_technologies",
+      "validate_lighting_technology_scope_request",
+      "project_lighting_technology_scope_decision"
+    ]
+  }
+}

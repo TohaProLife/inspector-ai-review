@@ -12,7 +12,7 @@ from typing import Any
 
 from .text_layer import _download_source, _source_metadata
 from .vector_proposals import scan_pdf
-from .visual_vlm import (CROP_MAX_EDGE_PX, MAX_OBSERVATIONS, METHOD_ID,
+from .visual_vlm import (CROP_MAX_EDGE_PX, DISPLAY_CROP_METHOD_ID, MAX_OBSERVATIONS, METHOD_ID,
                          MODEL_ID, MODEL_WEIGHTS_SHA256, MODEL_PROJECTOR_SHA256,
                          PROMPT_SHA256, SERVER_METHOD_ID, SERVER_MODEL_ID, SERVER_MODEL_REVISION,
                          SERVER_MODEL_LOCK_SHA256, SERVER_MODEL_SHARDS, observe_proposals)
@@ -44,6 +44,32 @@ PROFILE_V6 = {**PROFILE_V4, "schemaVersion": "visual-proposal-profile-v6",
               "vlmPromptSha256": PROMPT_SHA256,
               "maxVlmObservationsPerSource": MAX_OBSERVATIONS,
               "vlmCropMaxEdgePx": CROP_MAX_EDGE_PX}
+PROFILE_V7_SAMPLE = {**PROFILE_V5, "schemaVersion": "visual-proposal-profile-v7",
+    "contextMethodId": "metadata-outline-page-signals-v2", "maxContextPages": 10000,
+    "analysisMode": "SAMPLE", "vlmCropMaxEdgePx": 2048}
+PROFILE_V7_FULL = {**PROFILE_V7_SAMPLE, "analysisMode": "FULL", "vlmMethodId": "all-saved-proposals-v1",
+    "maxPagesPerSource": 10000, "maxProposalsPerSource": 100000,
+    "maxVlmObservationsPerSource": 100000}
+PROFILE_V8_SAMPLE = {**PROFILE_V7_SAMPLE, "schemaVersion": "visual-proposal-profile-v8",
+    "vlmCropMethodId": DISPLAY_CROP_METHOD_ID}
+PROFILE_V8_FULL = {**PROFILE_V7_FULL, "schemaVersion": "visual-proposal-profile-v8",
+    "vlmCropMethodId": DISPLAY_CROP_METHOD_ID}
+# Server model/provenance are immutable V6 pins; expanded scope and displayed
+# crops have their own release rather than changing any V1-V8 contract.
+PROFILE_V9_SAMPLE = {**PROFILE_V6, "schemaVersion": "visual-proposal-profile-v9",
+    "contextMethodId": "metadata-outline-page-signals-v2", "maxContextPages": 10000,
+    "analysisMode": "SAMPLE", "vlmCropMaxEdgePx": 2048,
+    "vlmCropMethodId": DISPLAY_CROP_METHOD_ID}
+PROFILE_V9_FULL = {**PROFILE_V9_SAMPLE, "analysisMode": "FULL",
+    "vlmMethodId": "all-saved-proposals-server-nonnegative-v1",
+    "maxPagesPerSource": 10000, "maxProposalsPerSource": 100000,
+    "maxVlmObservationsPerSource": 100000}
+PROFILE_ID_V9_SAMPLE = "red-vector-proposals-v9-sample"
+PROFILE_ID_V9_FULL = "red-vector-proposals-v9-full"
+PROFILE_ID_V8_SAMPLE = "red-vector-proposals-v8-sample"
+PROFILE_ID_V8_FULL = "red-vector-proposals-v8-full"
+PROFILE_ID_V7_SAMPLE = "red-vector-proposals-v7-sample"
+PROFILE_ID_V7_FULL = "red-vector-proposals-v7-full"
 PROFILE_ID_V1 = "red-vector-proposals-v1"
 PROFILE_ID_V2 = "red-vector-proposals-v2"
 PROFILE_ID_V3 = "red-vector-proposals-v3"
@@ -64,11 +90,23 @@ PROFILE_HASH_V3 = _profile_hash(PROFILE_V3)
 PROFILE_HASH_V4 = _profile_hash(PROFILE_V4)
 PROFILE_HASH_V5 = _profile_hash(PROFILE_V5)
 PROFILE_HASH_V6 = _profile_hash(PROFILE_V6)
+PROFILE_HASH_V7_SAMPLE = _profile_hash(PROFILE_V7_SAMPLE)
+PROFILE_HASH_V7_FULL = _profile_hash(PROFILE_V7_FULL)
+PROFILE_HASH_V8_SAMPLE = _profile_hash(PROFILE_V8_SAMPLE)
+PROFILE_HASH_V8_FULL = _profile_hash(PROFILE_V8_FULL)
+PROFILE_HASH_V9_SAMPLE = _profile_hash(PROFILE_V9_SAMPLE)
+PROFILE_HASH_V9_FULL = _profile_hash(PROFILE_V9_FULL)
 PROFILE = PROFILE_V4
 PROFILE_ID = PROFILE_ID_V4
 PROFILE_HASH = PROFILE_HASH_V4
 
 _PROFILES = {
+    PROFILE_ID_V9_SAMPLE: (PROFILE_V9_SAMPLE, PROFILE_HASH_V9_SAMPLE, "9", "v9"),
+    PROFILE_ID_V9_FULL: (PROFILE_V9_FULL, PROFILE_HASH_V9_FULL, "9", "v9"),
+    PROFILE_ID_V8_SAMPLE: (PROFILE_V8_SAMPLE, PROFILE_HASH_V8_SAMPLE, "8", "v8"),
+    PROFILE_ID_V8_FULL: (PROFILE_V8_FULL, PROFILE_HASH_V8_FULL, "8", "v8"),
+    PROFILE_ID_V7_SAMPLE: (PROFILE_V7_SAMPLE, PROFILE_HASH_V7_SAMPLE, "7", "v7"),
+    PROFILE_ID_V7_FULL: (PROFILE_V7_FULL, PROFILE_HASH_V7_FULL, "7", "v7"),
     PROFILE_ID_V1: (PROFILE_V1, PROFILE_HASH_V1, "1", "v1"),
     PROFILE_ID_V2: (PROFILE_V2, PROFILE_HASH_V2, "2", "v2"),
     PROFILE_ID_V3: (PROFILE_V3, PROFILE_HASH_V3, "3", "v3"),
@@ -120,6 +158,9 @@ class VisualProposalAdapter:
         sources.sort(key=lambda item: item[0])
 
         scanned = []
+        progress = {"mode": selected_profile.get("analysisMode", "SAMPLE"), "documentCount": len(sources),
+            "completedDocuments": 0, "scannedPages": 0, "skippedPages": 0,
+            "eligible": 0, "selected": 0, "processed": 0, "failed": 0}
         with tempfile.TemporaryDirectory(prefix="inspector-visual-proposals-") as directory:
             for index, (source_id, source_sha256, byte_size, download_path) in enumerate(sources):
                 path = Path(directory) / f"source-{index}.pdf"
@@ -128,12 +169,35 @@ class VisualProposalAdapter:
                     path, source_id, source_sha256,
                     max_pages=selected_profile["maxPagesPerSource"],
                     max_proposals=selected_profile["maxProposalsPerSource"],
-                    profile_version=profile_version,
+                    profile_version="v7" if profile_version in {"v8", "v9"} else profile_version,
                 )
-                if profile_version in {"v5", "v6"}:
+                if profile_version in {"v7", "v8", "v9"}:
+                    if selected_profile["analysisMode"] == "FULL" and (source_result.get("skippedPageCount", 0)
+                            or source_result["unretainedProposalCount"]):
+                        raise ValueError("FULL_ANALYSIS_LIMIT_EXCEEDED: no partial result accepted; split PDF into smaller sources")
+                    count = len(source_result["proposals"])
+                    progress["scannedPages"] += source_result["scannedPageCount"]
+                    progress["skippedPages"] += source_result.get("skippedPageCount", 0)
+                    progress["eligible"] += count + source_result["unretainedProposalCount"]
+                    progress["selected"] += count if selected_profile["analysisMode"] == "FULL" else min(2, count)
+                    before_processed, before_failed = progress["processed"], progress["failed"]
+                    attempt["visualProgress"] = dict(progress)
+                    def report(processed, failed):
+                        progress["processed"] = before_processed + processed
+                        progress["failed"] = before_failed + failed
+                        attempt["visualProgress"] = dict(progress)
+                if profile_version in {"v5", "v6", "v7", "v8", "v9"}:
                     source_result["vlm"] = observe_proposals(
-                        path, source_result, os.environ.get("VISUAL_VLM_BASE_URL"), profile_version,
+                        path, source_result, os.environ.get("VISUAL_VLM_BASE_URL"),
+                        "v6" if profile_version == "v9" else "v5" if profile_version in {"v7", "v8"} else profile_version,
+                        **({"mode": selected_profile["analysisMode"], "max_edge": 2048, "progress": report,
+                            "cache_namespace": profile_hash} if profile_version in {"v7", "v8", "v9"} else {}),
+                        **({"crop_method_id": selected_profile["vlmCropMethodId"]} if profile_version in {"v8", "v9"} else {}),
                     )
+                    if profile_version == "v9":
+                        source_result["vlm"]["methodId"] = selected_profile["vlmMethodId"]
+                progress["completedDocuments"] += 1
+                if profile_version in {"v7", "v8", "v9"}: attempt["visualProgress"] = dict(progress)
                 scanned.append(source_result)
                 path.unlink()
 

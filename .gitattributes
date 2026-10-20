@@ -2,3 +2,19 @@
 *.json text eol=lf
 *.jsonl text eol=lf
 *.sh text eol=lf
+
+# Preserve the pinned schema bytes; its source uses CRLF.
+scripts/schemas/machine-submission-v1.schema.json -text whitespace=cr-at-eol
+# CSV writers use CRLF; spaces before the line ending are still checked.
+*.csv whitespace=cr-at-eol
+
+# PDF xref tables contain significant spaces; preserve and diff as binary.
+*.pdf binary
+
+# Preserve exact pinned public schema and V13 runtime bytes.
+datasets/reference_methodology/hackathon_gold_20260811/УЧАСТНИКАМ_БЕЗ_ОТВЕТОВ/data/submission_schema.json -text whitespace=cr-at-eol
+apps/api/src/matrix-concrete-wall-retained-pair-v13.ts whitespace=-blank-at-eof
+apps/api/src/matrix-execution-v13.ts whitespace=-blank-at-eof
+
+# Runtime source hashes must survive Windows checkouts byte-for-byte.
+services/worker/inspector_worker/*.py -text

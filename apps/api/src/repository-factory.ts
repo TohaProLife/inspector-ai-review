@@ -1,3 +1,4 @@
+import { createObjectStorageFromEnv } from "./storage.js";
 import type {
   BinaryUploadRecord,
   CheckRun,
@@ -56,6 +57,8 @@ import type {
   SourceFileContent,
   RegisteredIngestedDocumentFile,
   ProtocolCanonicalArtifactContent,
+  ProtocolRenderedArtifactKey,
+  ProtocolRenderedArtifactContent,
   ReviewDecisionCommand,
   ReviewDecisionCommandResult,
   ReviewFindingResult,
@@ -80,6 +83,25 @@ export class RoutedInspectionRepository implements InspectionRepository {
 
   async close(): Promise<void> {
     await this.normal.close();
+  }
+
+  recordSteelApplicabilityReviewCommand(objectId:string,input:import("@inspector-ai/contracts").SteelApplicabilityReviewInput,command:AuditedMutationCommand){
+    return this.normal.recordSteelApplicabilityReviewCommand(objectId,input,command);
+  }
+  getSteelApplicabilityReviews(objectId:string,actor:AuthenticatedActor){
+    return this.normal.getSteelApplicabilityReviews(objectId,actor);
+  }
+  recordColumnPylonSectionV2ReviewCommand(objectId:string,input:import("@inspector-ai/contracts").ColumnPylonSectionV2Request,command:AuditedMutationCommand){
+    return this.normal.recordColumnPylonSectionV2ReviewCommand(objectId,input,command);
+  }
+  getColumnPylonSectionV2Reviews(objectId:string,actor:AuthenticatedActor){
+    return this.normal.getColumnPylonSectionV2Reviews(objectId,actor);
+  }
+  getColumnPylonSectionV2Source(checkId:string,sourceFileId:string,actor:AuthenticatedActor){
+    return this.normal.getColumnPylonSectionV2Source(checkId,sourceFileId,actor);
+  }
+  previewColumnPylonSectionV2Comparison(objectId:string,reviewDecisionId:string,actor:AuthenticatedActor){
+    return this.normal.previewColumnPylonSectionV2Comparison(objectId,reviewDecisionId,actor);
   }
 
   recordSourceReviewCommand(
@@ -128,6 +150,31 @@ export class RoutedInspectionRepository implements InspectionRepository {
     return this.normal.getJobTextArtifact(jobId, sourceFileId, input);
   }
 
+  getJobReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobRailReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobRailReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobColumnPylonSectionReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobColumnPylonSectionReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobConcreteWallReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobConcreteWallReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobSteelReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobSteelReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobLightingTechnologyReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobLightingTechnologyReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobWaterNodeReviewedInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobWaterNodeReviewedInventoryComparisonInputs(jobId,input,options);
+  }
+  getJobInventoryComparisonInputs(jobId:string,input:JobAttemptInput,options?:{signal?:AbortSignal}) {
+    return this.normal.getJobInventoryComparisonInputs(jobId,input,options);
+  }
+
   getJobOcrLayoutArtifact(jobId: string, input: JobAttemptInput): Promise<JobOcrLayoutArtifactResult> {
     return this.normal.getJobOcrLayoutArtifact(jobId, input);
   }
@@ -136,8 +183,8 @@ export class RoutedInspectionRepository implements InspectionRepository {
     return this.normal.heartbeatJob(jobId, input);
   }
 
-  completeJob(jobId: string, input: JobCompleteInput): Promise<JobCompleteResult> {
-    return this.normal.completeJob(jobId, input);
+  completeJob(jobId: string, input: JobCompleteInput, options?:{signal?:AbortSignal;sourceAuditProfileVersion?:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" | "SOURCE_AUDIT_V4_FULL_SOURCE_V1"}): Promise<JobCompleteResult> {
+    return this.normal.completeJob(jobId, input, options);
   }
 
   failJob(jobId: string, input: JobFailInput): Promise<JobFailResult> {
@@ -198,6 +245,8 @@ export class RoutedInspectionRepository implements InspectionRepository {
     return this.normal.registerIngestedFilesCommand(objectId, files, command);
   }
 
+  listObjectChecks(objectId: string, actor: AuthenticatedActor) { return this.normal.listObjectChecks(objectId, actor); }
+
   async getUpload(id: string, actor?: AuthenticatedActor): Promise<ScopedReadResult<BinaryUploadRecord>> {
     return this.demo.getUpload(id) ?? await this.normal.getUpload(id, actor);
   }
@@ -210,12 +259,14 @@ export class RoutedInspectionRepository implements InspectionRepository {
   async startCheckCommand(
     objectId: string,
     command: AuditedMutationCommand,
+    options?: { analysisMode: "SAMPLE" | "FULL"; sourceAuditV3?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3: true; analysisMode?: never; sourceAuditV3Large?: never; sourceAuditV4Full?: never } | { sourceAuditV3Large: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV4Full?: never } | { sourceAuditV4Full: true; analysisMode?: never; sourceAuditV3?: never; sourceAuditV3Large?: never },
   ): Promise<AuditedMutationCommandResult<CheckRun>> {
     if (this.demo.getObject(objectId)) {
+      if(options?.sourceAuditV3 || options?.sourceAuditV3Large || options?.sourceAuditV4Full)return {kind:"invalid_state",code:"SOURCE_AUDIT_NORMAL_ONLY",message:"Аудит исходников доступен для загруженного объекта"};
       const value = this.demo.startCheck(objectId);
       return value ? { kind: "success", value, replayed: false } : { kind: "not_found" };
     }
-    return this.normal.startCheckCommand(objectId, command);
+    return this.normal.startCheckCommand(objectId, command, options);
   }
 
   async completeCheck(checkId: string): Promise<CheckRun | undefined> {
@@ -230,6 +281,97 @@ export class RoutedInspectionRepository implements InspectionRepository {
   async getFindings(checkId: string, actor?: AuthenticatedActor): Promise<ScopedReadResult<Finding[]>> {
     if (this.demo.getCheck(checkId)) return this.demo.getFindings(checkId);
     return this.normal.getFindings(checkId, actor);
+  }
+
+  async getMatrixFactTargets(checkId: string, actor?: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getMatrixFactTargets(checkId, actor);
+  }
+
+  async getMatrixExecution(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getMatrixExecution(checkId, actor, options);
+  }
+
+  async getMatrixCallInventorySourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getMatrixCallInventorySourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixCallInventorySource(checkId:string,sourceFileId:string,selection:import('@inspector-ai/contracts').MatrixCallInventorySelection,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.previewMatrixCallInventorySource(checkId,sourceFileId,selection,actor);
+  }
+  async getMatrixWaterNodeSourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getMatrixWaterNodeSourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixWaterNodeSource(checkId:string,sourceFileId:string,selection:import('@inspector-ai/contracts').MatrixWaterNodeInventorySelection,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.previewMatrixWaterNodeSource(checkId,sourceFileId,selection,actor);
+  }
+  async getMatrixRailInventorySourcePages(checkId:string,sourceFileId:string,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getMatrixRailInventorySourcePages(checkId,sourceFileId,actor);
+  }
+  async previewMatrixRailInventorySource(checkId:string,sourceFileId:string,selection:import('@inspector-ai/contracts').MatrixRailInventorySelection,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.previewMatrixRailInventorySource(checkId,sourceFileId,selection,actor);
+  }
+  async getDocumentTextV3Source(checkId: string, sourceFileId: string, actor: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getDocumentTextV3Source(checkId, sourceFileId, actor);
+  }
+  async getSourceOcrImports(checkId:string,actor?:AuthenticatedActor) {
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getSourceOcrImports(checkId,actor);
+  }
+  async importSourceOcrCommand(checkId:string,sourceFileId:string,input:import("@inspector-ai/contracts").SourceOcrImportBundle,command:AuditedMutationCommand) {
+    return this.normal.importSourceOcrCommand(checkId,sourceFileId,input,command);
+  }
+  async reviewSourceOcrCommand(checkId:string,input:import("@inspector-ai/contracts").SourceOcrReviewInput,command:AuditedMutationCommand) {
+    return this.normal.reviewSourceOcrCommand(checkId,input,command);
+  }
+
+  async getNativeAirflowComparisons(checkId:string,actor?:AuthenticatedActor) {
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getNativeAirflowComparisons(checkId,actor);
+  }
+
+  async compareNativeAirflowCommand(checkId:string,input:import("@inspector-ai/contracts").NativeAirflowCompareInput,command:AuditedMutationCommand) {
+    return this.normal.compareNativeAirflowCommand(checkId,input,command);
+  }
+
+  async getNativeCapacityComparisons(checkId:string,actor?:AuthenticatedActor) {
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.getNativeCapacityComparisons(checkId,actor);
+  }
+
+  async compareNativeCapacityCommand(checkId:string,input:import("@inspector-ai/contracts").NativeCapacityCompareInput,command:AuditedMutationCommand) {
+    return this.normal.compareNativeCapacityCommand(checkId,input,command);
+  }
+
+  async getDocumentTextV4FullSource(checkId: string, sourceFileId: string, actor: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getDocumentTextV4FullSource(checkId, sourceFileId, actor);
+  }
+  async getDocumentTextV3LargeSource(checkId: string, sourceFileId: string, actor: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getDocumentTextV3LargeSource(checkId, sourceFileId, actor);
+  }
+  async previewMatrixLightingTechnologySource(checkId:string,sourceFileId:string,selection:import('@inspector-ai/contracts').LightingTechnologyV3Selection,actor:AuthenticatedActor){
+    if(this.demo.getCheck(checkId))return undefined;
+    return this.normal.previewMatrixLightingTechnologySource(checkId,sourceFileId,selection,actor);
+  }
+
+  async getMatrixInventorySourcePages(checkId: string, sourceFileId: string, actor: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.getMatrixInventorySourcePages(checkId, sourceFileId, actor);
+  }
+
+  async previewMatrixInventorySource(checkId: string, sourceFileId: string,
+    selection: import("@inspector-ai/contracts").MatrixInventorySelection, actor: AuthenticatedActor) {
+    if (this.demo.getCheck(checkId)) return undefined;
+    return this.normal.previewMatrixInventorySource(checkId, sourceFileId, selection, actor);
   }
 
   async getPilotResults(
@@ -524,9 +666,19 @@ export class RoutedInspectionRepository implements InspectionRepository {
     return this.normal.getCanonicalProtocolArtifact(id, actor);
   }
 
-  async getSubmission(checkId: string, actor?: AuthenticatedActor): Promise<SubmissionResult | "AUTH_REQUIRED"> {
+  async getRenderedProtocolArtifact(key: ProtocolRenderedArtifactKey, actor?: AuthenticatedActor): Promise<ScopedReadResult<ProtocolRenderedArtifactContent>> {
+    if (this.demo.getProtocol(key.protocolId)) return this.demo.getRenderedProtocolArtifact(key);
+    return this.normal.getRenderedProtocolArtifact(key, actor);
+  }
+
+  async saveRenderedProtocolArtifact(content: ProtocolRenderedArtifactContent, actor?: AuthenticatedActor): Promise<ScopedReadResult<ProtocolRenderedArtifactContent>> {
+    if (this.demo.getProtocol(content.protocolId)) return this.demo.saveRenderedProtocolArtifact(content);
+    return this.normal.saveRenderedProtocolArtifact(content, actor);
+  }
+
+  async getSubmission(checkId: string, actor?: AuthenticatedActor, options?:{signal?:AbortSignal}): Promise<SubmissionResult | "AUTH_REQUIRED"> {
     if (this.demo.getCheck(checkId)) return this.demo.getSubmission(checkId);
-    return this.normal.getSubmission(checkId, actor);
+    return this.normal.getSubmission(checkId, actor, options);
   }
 
   async getParameters(): Promise<ParameterCatalogItem[]> {
@@ -535,10 +687,10 @@ export class RoutedInspectionRepository implements InspectionRepository {
 
   async getCoverage(
     checkId: string,
-    actor?: AuthenticatedActor,
+    actor?: AuthenticatedActor, options?:{signal?:AbortSignal},
   ): Promise<ScopedReadResult<ParameterCoverageItem[]>> {
     if (this.demo.getCheck(checkId)) return this.demo.getCoverage(checkId);
-    return this.normal.getCoverage(checkId, actor);
+    return this.normal.getCoverage(checkId, actor, options);
   }
 }
 
@@ -556,11 +708,11 @@ export async function createInspectionRepositoryFromEnv(
   }
   if (!connectionString) return demo;
   const profile = environment.INSPECTOR_ANALYSIS_PROFILE ?? "SCAFFOLD";
-  if (profile !== "SCAFFOLD" && profile !== "PILOT_PZ002" && profile !== "PILOT_PZ002_PZ017") {
+  if (profile !== "SCAFFOLD" && profile !== "PILOT_PZ002" && profile !== "PILOT_PZ002_PZ017" && profile !== "MATRIX_V1" && profile !== "SOURCE_AUDIT_V3") {
     throw new Error(`Unsupported INSPECTOR_ANALYSIS_PROFILE: ${profile}`);
   }
   const visualProfile = environment.INSPECTOR_VISUAL_PROFILE ?? "V4";
-  if (visualProfile !== "V4" && visualProfile !== "V5" && visualProfile !== "V6") {
+  if (visualProfile !== "V4" && visualProfile !== "V5" && visualProfile !== "V6" && visualProfile !== "V7_SAMPLE" && visualProfile !== "V7_FULL" && visualProfile !== "V8_SAMPLE" && visualProfile !== "V8_FULL" && visualProfile !== "V9_SAMPLE" && visualProfile !== "V9_FULL") {
     throw new Error(`Unsupported INSPECTOR_VISUAL_PROFILE: ${visualProfile}`);
   }
 
@@ -571,6 +723,7 @@ export async function createInspectionRepositoryFromEnv(
     organizationName: environment.INSPECTOR_ORGANIZATION_NAME,
     analysisProfile: profile,
     visualProfile,
+    storage:createObjectStorageFromEnv(),
   });
   return new RoutedInspectionRepository(demo, normal);
 }

@@ -1,0 +1,15 @@
+import { expect,it } from 'vitest';
+import { readDocumentTextV3Artifact,documentTextV3ContentHash } from '../src/document-text-v3.js';
+const fail=(value:unknown,reasonCode='INPUT_LIMIT')=>{expect(readDocumentTextV3Artifact(value)).toEqual({status:'ABSTAIN',reasonCode});expect(()=>documentTextV3ContentHash(value)).toThrow();};
+const nested=(depth:number,end:unknown=null)=>{let v=end;for(let i=0;i<depth;i++)v=[v];return v;};
+const pair=(a:unknown,b:unknown)=>{fail(a,'INVALID_TEXT_ARTIFACT');fail(b);};
+it('exact native depth64/65',()=>pair(nested(64),nested(65)));
+it('object keys contribute depth',()=>pair(nested(63,{x:null}),nested(64,{x:null})));
+it('200000 nodes counts object keys, not array indexes',()=>{const a:unknown[]=[...Array.from({length:4},()=>Object.fromEntries(Array.from({length:24999},(_,i)=>[`k${i}`,null]))),[null,null]];pair(a,[...a,null]);});
+it('8000000 full serialized ASCII bytes include punctuation',()=>{const a=['X'.repeat(2000000),'X'.repeat(2000000),'X'.repeat(2000000),'X'.repeat(1999987)];const b=[...a];b[3]+='X';expect(Buffer.byteLength(JSON.stringify(a),'utf8')).toBe(8000000);expect(Buffer.byteLength(JSON.stringify(b),'utf8')).toBe(8000001);pair(a,b);});
+it('8000000 full serialized bytes include control escaping',()=>{const a=['\0'.repeat(1333332)+'AAAA'],b=[a[0]+'A'];expect(Buffer.byteLength(JSON.stringify(a),'utf8')).toBe(8000000);expect(Buffer.byteLength(JSON.stringify(b),'utf8')).toBe(8000001);pair(a,b);});
+it('UTF8 exact byte bound differs from UTF16/codepoint count',()=>{const a=['😀'.repeat(1999999)],b=[a[0]+'A'];expect(Buffer.byteLength(JSON.stringify(a),'utf8')).toBe(8000000);expect(Buffer.byteLength(JSON.stringify(b),'utf8')).toBe(8000001);pair(a,b);});
+for(const pageCount of [513,'malformed'])it(`actual513 pages preempts DTO ${pageCount}`,()=>fail({pageCount,pages:Array.from({length:513},()=>null)}));
+it('nonenumerable data rejected',()=>{const a={};Object.defineProperty(a,'hidden',{value:1});fail(a,'INVALID_INPUT');});
+it('symbol accessor rejected without calling',()=>{let calls=0;const a={};Object.defineProperty(a,Symbol('x'),{get(){calls++;throw Error('TRAP');}});fail(a,'INVALID_INPUT');expect(calls).toBe(0);});
+it('sparse arrays rejected',()=>{const a:unknown[]=[];a.length=1;fail(a,'INVALID_INPUT');});

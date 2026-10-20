@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "document-text-v3-resource-policy.schema.json",
+  "title": "Explicit complete document-text-v3 large-source reader result",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "resourcePolicyVersion", "contentHash"],
+      "properties": {
+        "status": {"const": "VALID"},
+        "resourcePolicyVersion": {"const": "document-text-v3-large-source-bounds-v1"},
+        "contentHash": {"type": "string", "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "resourcePolicyVersion", "reasonCode"],
+      "properties": {
+        "status": {"const": "ABSTAIN"},
+        "resourcePolicyVersion": {"const": "document-text-v3-large-source-bounds-v1"},
+        "reasonCode": {"enum": ["INVALID_INPUT", "INPUT_LIMIT", "INVALID_TEXT_ARTIFACT"]}
+      }
+    }
+  ],
+  "x-policies": {
+    "document-text-v3-standard-bounds-v1": {"canonicalUtf8Bytes": 8000000, "nativeNodesIncludingKeys": 200000},
+    "document-text-v3-large-source-bounds-v1": {"canonicalUtf8Bytes": 32000000, "nativeNodesIncludingKeys": 1400000}
+  },
+  "x-common-limits": {
+    "nativeDepth": 64,
+    "containerItems": 32768,
+    "stringCodepoints": 2000000,
+    "pages": 512,
+    "wholeLocatedAndUnlocatedRecords": 100000
+  },
+  "x-exports": {
+    "TS": [
+      "readDocumentTextV3LargeArtifact(value:unknown):DocumentTextV3LargeReadResult",
+      "documentTextV3LargeContentHash(value:unknown):string"
+    ],
+    "Python": [
+      "read_document_text_v3_large_artifact(value:Any)->dict",
+      "document_text_v3_large_content_hash(value:Any)->str",
+      "extract_pdf_text_artifact_v3_large(path,source_file_id,input_sha256,*,traversal_policy_version=STANDARD_TRAVERSAL)->dict"
+    ]
+  },
+  "x-semantic-contract": {
+    "wholeInput": "Both readers cover the COMPLETE original document-text-v3 envelope. No page facades, slicing, truncation, hidden normalization, virtual origins or approval inference. Every page/record, including unrelated/unlocated records, remains in semantic validation and content hash.",
+    "compatibility": "Existing default native guard, read/hash and producer entry points retain exact standard bounds and results. No automatic large fallback. Large entry points require an explicit call and identify the selected finite policy. Private shared validation selects only the two exact policies; arbitrary custom budgets are not accepted.",
+    "native": "Exact builtins/plain own data JSON only, descriptor-first TypeScript. Reject proxy/getter/toJSON/custom iteration/cycle/hole/symbol/non-enumerable/float/unsafe/nonfinite/surrogate. Canonical byte budget includes JSON punctuation and escaping. Resource limit rejection precedes semantic malformed structure as in the frozen standard reader.",
+    "semantics": "All frozen v3 schema, source/profile/quality/native decimal geometry/path/record/quantization checks remain shared and unchanged. The old document-text-v3.schema.json describes the standard entry points; its old limits remain authoritative for those operations. This artifact authorizes larger complete input admission solely for the named new operations.",
+    "contentHash": "Same document-text-v3-content-v1 domain and codepoint-sorted canonical complete artifact. A resource policy is a reader admission condition, not part of source content; an artifact admitted by both readers has exactly the same content hash. Hash helper validates the complete artifact before returning a hash.",
+    "profile": "Producer implementation bytes are part of extractorProfile.documentTextV3SourceSha256 and profile hash. Changing shared producer code creates a new profile identity even if line grouping/geometry is unchanged. Future runtime admission must pin that actual new release; T76 does not enable any large profile or rewrite old historical profile/artifact values.",
+    "producer": "New large producer shares original extraction code, exact SHA-before-read, traversal, limits per page, raw/native geometry and final full validation, changing only the selected whole serialized-byte/node resource bounds. Existing three traversal policies and their meaning remain unchanged. No arbitrary callback or policy hook. Standard producer signature/defaults remain unchanged.",
+    "errors": "Large read always includes resourcePolicyVersion. INVALID_INPUT for invalid native JSON, INPUT_LIMIT for whole finite bound violation, INVALID_TEXT_ARTIFACT for a native but semantically invalid full envelope. Native guard failures must not invoke user callbacks. Hash/producer fail explicitly on refusal; no partial return.",
+    "scope": "Capacity only. No completeness/visibility/authority/eligibility/physical mapping/rectangle/area/comparison/confidence/coverage claim. No durable release or HTTP/UI integration in this packet."
+  }
+}

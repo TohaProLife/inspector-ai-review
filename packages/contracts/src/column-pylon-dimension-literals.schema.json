@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "column-pylon-dimension-literals.schema.json",
+  "title": "Complete-source column/pylon raw dimension literals; no structural authority",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "resourcePolicyVersion",
+        "status",
+        "sourceFileId",
+        "inputSha256",
+        "sourceArtifactContentHash",
+        "extractorProfile",
+        "extractorProfileHash",
+        "literals",
+        "excludedPages"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "column-pylon-dimension-literals-v1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v3-large-source-bounds-v1"
+        },
+        "status": {
+          "const": "SOURCE_LITERALS"
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
+        },
+        "sourceArtifactContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
+        },
+        "extractorProfile": {
+          "$ref": "document-text-v3.schema.json#/definitions/extractorProfile"
+        },
+        "extractorProfileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
+        },
+        "literals": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/literal"
+          }
+        },
+        "excludedPages": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pageNumber",
+              "reasonCode"
+            ],
+            "properties": {
+              "pageNumber": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 512
+              },
+              "reasonCode": {
+                "enum": [
+                  "PAGE_NOT_CANDIDATE",
+                  "UNLOCATED_RECORDS"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "resourcePolicyVersion",
+        "status",
+        "reasonCode"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "column-pylon-dimension-literals-v1"
+        },
+        "resourcePolicyVersion": {
+          "const": "document-text-v3-large-source-bounds-v1"
+        },
+        "status": {
+          "const": "ABSTAIN"
+        },
+        "reasonCode": {
+          "enum": [
+            "INVALID_INPUT",
+            "INPUT_LIMIT",
+            "INVALID_TEXT_ARTIFACT"
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "literal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "sourcePath",
+        "rawText",
+        "nativeBoxPointStrings",
+        "bboxMilliPoints",
+        "pageFrame",
+        "usedTextRangeCodePoints",
+        "tokens",
+        "sourceOnly",
+        "calibratedProbability",
+        "rectangleStatus",
+        "grossSectionStatus",
+        "physicalMemberStatus",
+        "applicabilityStatus",
+        "renderedVisibilityStatus"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "sourcePath": {
+          "$ref": "document-text-v3.schema.json#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "document-text-v3.schema.json#/definitions/nativeBox"
+        },
+        "bboxMilliPoints": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "pageFrame": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "widthMilliPoints",
+            "heightMilliPoints",
+            "nativeFrame"
+          ],
+          "properties": {
+            "widthMilliPoints": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "heightMilliPoints": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "nativeFrame": {
+              "$ref": "document-text-v3.schema.json#/definitions/nativeFrame"
+            }
+          }
+        },
+        "usedTextRangeCodePoints": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8192
+          }
+        },
+        "tokens": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "first",
+            "second",
+            "unit",
+            "level",
+            "scope"
+          ],
+          "properties": {
+            "kind": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "enum": [
+                    "Колонна",
+                    "Пилон"
+                  ]
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            },
+            "first": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,8}$(?![\\s\\S])"
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            },
+            "second": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,8}$(?![\\s\\S])"
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            },
+            "unit": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "const": "мм"
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            },
+            "level": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "type": "string",
+                  "pattern": "^[+-]?(?:0|[1-9][0-9]{0,3})$(?![\\s\\S])"
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "raw",
+                "rangeCodePoints"
+              ],
+              "properties": {
+                "raw": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "rangeCodePoints": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 8192
+                  }
+                }
+              }
+            }
+          }
+        },
+        "sourceOnly": {
+          "const": true
+        },
+        "calibratedProbability": {
+          "type": "null"
+        },
+        "rectangleStatus": {
+          "const": "UNVERIFIED"
+        },
+        "grossSectionStatus": {
+          "const": "UNVERIFIED"
+        },
+        "physicalMemberStatus": {
+          "const": "UNVERIFIED"
+        },
+        "applicabilityStatus": {
+          "const": "UNVERIFIED"
+        },
+        "renderedVisibilityStatus": {
+          "const": "UNVERIFIED"
+        }
+      }
+    }
+  },
+  "x-input": "One complete original document-text-v3 artifact; explicit large policy before any source access. No outer DTO, page facade, metadata or custom budget.",
+  "x-exports": {
+    "TS": "extractColumnPylonDimensionLiterals(value:unknown):ColumnPylonDimensionLiteralsResult",
+    "Python": "extract_column_pylon_dimension_literals(value:object)->dict"
+  },
+  "x-semantic-contract": "# T77 proposed contract: complete-source column/pylon dimension literals\n\nDESIGN ONLY. T76 actual capacity acceptance is a prerequisite for production implementation. Existing T75 frozen files remain unchanged. Independent evidence and review precede code/tests. No new external dependency.\n\n## One operation and one input\n\nTS `extractColumnPylonDimensionLiterals(value: unknown)` / Python `extract_column_pylon_dimension_literals(value: object)` accepts exactly one COMPLETE document-text-v3 artifact, without an outer DTO or optional budget/selection/metadata. It calls the explicit T76 large reader before accessing any selected page or text. Its result retains the large policy, complete source content hash, original source ID/SHA, full extractor profile and profile hash. It never changes source content or profile, approves a release, or admits an HTTP request.\n\nThe extractor returns ALL supported literals in original page/located-record order. Equal values/raw at distinct original paths remain separate. No first/minimum/sorting/deduplication/pairing. More than128 supported literals refuses the entire result with INPUT_LIMIT; no partial prefix.\n\n## Exact literal language\n\nRemove at most one final U000A LF and then only U0020 SPACE at both edges. Preserve full original raw unchanged. Whole remaining view must match:\n\n`(Колонна|Пилон) ([1-9][0-9]{0,8})х([1-9][0-9]{0,8})(мм) ([+-]?(?:0|[1-9][0-9]{0,3})) этаж \\[scope\\]`\n\n`х` is Cyrillic U0445. Every shown separator is exactly one ASCII SPACE. Scope has1..200 Unicode codepoints, no leading/trailing U0020 SPACE, brackets, C0/C1 controls, U2028/U2029 or UFFFD. It must contain at least one codepoint outside this exact frozen whitespace set: U0009..U000D, U001C..U0020, U0085, U00A0, U1680, U2000..U200A, U2028, U2029, U202F, U205F, U3000. Never use host trim/Unicode whitespace classes. Internal NBSP/astral characters otherwise survive unchanged. No Unicode normalization/casefold/glyph join. Complete raw over8192 codepoints is unsupported language and SKIPPED, not a whole-source resource refusal. These are finite literal-language bounds, not engineering bounds. Signed0/+0/-0 are retained as literal labels; no numeric floor/elevation interpretation. Dimensions are canonical positive decimal STRINGS, FIRST/SECOND in source order, never width/depth or sorted sides.\n\nAccept only originally located lines on pages whose exact validated quality is TEXT_LAYER_CANDIDATE and whose original unlocatedLines is empty. Every other page stays fully validated/hashed and is listed in excludedPages with pageNumber and finite reason PAGE_NOT_CANDIDATE or UNLOCATED_RECORDS (unlocated precedence). Unsupported raw language produces no literal and carries no absence/completeness meaning. No lines joined across records/pages.\n\n## Output\n\nShared envelope: schemaVersion `column-pylon-dimension-literals-v1`; status SOURCE_LITERALS, sourceFileId/inputSha256/sourceArtifactContentHash, resourcePolicyVersion (fixed large), exact extractorProfile/extractorProfileHash; literals array0..128; excludedPages in page order. Any invalid whole source returns ABSTAIN with same schema/policy and its INVALID_INPUT, INPUT_LIMIT or INVALID_TEXT_ARTIFACT reason, no partial source/literals.\n\nEach literal keeps pageNumber/full sourcePath, full rawText, original nativeBoxPointStrings+bboxMilliPoints, complete page frame (width/height/nativeFrame), usedTextRangeCodePoints and six token objects {raw,rangeCodePoints}: kind,first,second,unit,level,scope. Ranges are half-open Unicode CODEPOINT offsets into original raw. Scope excludes brackets; used range includes brackets. No source text reconstructed from tokens. Dimension values/level/scope are represented solely by these exact raw tokens; no duplicated normalized value that could disagree.\n\nEach literal has sourceOnly:true, calibratedProbability:null and explicit statuses rectangleStatus/grossSectionStatus/physicalMemberStatus/applicabilityStatus/renderedVisibilityStatus all UNVERIFIED. No area, structural conclusion, warning/error severity, review/approval, real-pair, parameter coverage or normative claim. No new hash helper or invented member ID. Later selectors must use full source hash+page+sourcePath+exact raw and complete original; selection does not create physical identity.\n\nAn empty literals array means only no supported language on eligible pages; it never means no columns/pylons, equal/no-difference, negative scope, complete audit or successful KR060 comparison. No runtime, HTTP/UI, migrations, registry/atomic rules, H100/browser/DOM in this packet.\n\n## Independent evidence and acceptance\n\nPreserved old diagnostic captures are currently REJECTED by standard policy. They contain six exact F0106 p66 literals and zero F0141 literals across full documents. After T76 acceptance, both full bodies must be admitted explicitly, with their unchanged historical profiles. Actual new producer full bodies must yield the same six/zero raw/path/frame/ranges despite the explicit new producer profile identity. These checks confer no rendered/member authority.\n\nBefore production: freeze schema, derived types, independent full-body goldens, all six original expected fragments, synthetic complete-artifact language/finite/native/refusal cases. Execute missing-export RED and retain it. Implement shared limits/ranges semantics in TS/Python, exact output equality to independent goldens, malformed unrelated last-page refusal, all-match/order/no-dedup, astral scope codepoint offsets, raw edge/LF refusal, page-quality/unlocated behavior,129matches all-or-nothing. Then neighbor tests/typecheck/build and actual installed wheel/sdist proof. Coverage remains61 parameters/69 partial atoms/71 unsupported; qualified real pairs remain0.\n",
+  "x-contract-proposal-sha256": "46078442ddfc198e28ad99132178fe68079927d84a3e87012351dd1c9c61bdcc",
+  "x-required-capacity-policy-sha256": "217ca89c4ce4cbf887fcdf537d4e0c65d6e6da047fd21fd84baacd49d53a2045"
+}

@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { canonicalJson, sha256 } from "./canonical-json.js";
+import type { AuthenticatedActor } from "./identity.js";
 import type {
   CheckRun,
   CheckStats,
@@ -22,6 +24,9 @@ import type {
   ReviewDecisionCommandResult,
   ReviewFindingResult,
   SubmissionExport,
+  ProtocolRenderedArtifactKey,
+  ProtocolRenderedArtifactContent,
+  ScopedReadResult,
 } from "./repository.js";
 
 export type { SubmissionExport } from "./repository.js";
@@ -122,6 +127,7 @@ export class InspectorStore implements InspectionRepository {
   private readonly findingVersions = new Map<string, number>();
   private readonly protocols = new Map<string, ProtocolVersion[]>();
   private readonly protocolExports = new Map<string, ProtocolExport>();
+  private readonly renderedProtocolArtifacts = new Map<string, ProtocolRenderedArtifactContent>();
   private readonly uploads = new Map<string, BinaryUploadRecord>();
   private readonly ingestedFileStages = new Map<string, Map<string, Set<IngestedDocumentFile["stage"]>>>();
   private readonly findingTemplates: Finding[];
@@ -459,6 +465,40 @@ export class InspectorStore implements InspectionRepository {
   getProtocolExport(id: string): ProtocolExport | undefined {
     const exported = this.protocolExports.get(id);
     return exported ? structuredClone(exported) : undefined;
+  }
+
+  private protocolRenderCacheKey(key: ProtocolRenderedArtifactKey): string | undefined {
+    if (typeof key?.protocolId !== "string" || key.protocolId.length === 0 || key.protocolId.length > 200
+      || !["pdf", "docx", "xml"].includes(key.format)
+      || typeof key.templateVersion !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(key.templateVersion)
+      || typeof key.snapshotHash !== "string" || !/^[a-f0-9]{64}$/.test(key.snapshotHash)) return undefined;
+    const snapshot = this.protocolExports.get(key.protocolId);
+    // This demo store has no NORMAL tenant/membership authority.
+    if (!snapshot || this.checks.get(snapshot.protocol.checkId)?.mode !== "DEMO_SEED"
+      || sha256(canonicalJson(snapshot)) !== key.snapshotHash) return undefined;
+    return JSON.stringify([key.protocolId, key.format, key.templateVersion, key.snapshotHash]);
+  }
+
+  getRenderedProtocolArtifact(key: ProtocolRenderedArtifactKey,
+    actor?: AuthenticatedActor): ScopedReadResult<ProtocolRenderedArtifactContent> {
+    const snapshot = this.protocolExports.get(key?.protocolId);
+    if (snapshot && this.checks.get(snapshot.protocol.checkId)?.mode !== "DEMO_SEED") return actor ? undefined : "AUTH_REQUIRED";
+    const cacheKey = this.protocolRenderCacheKey(key);
+    const content = cacheKey ? this.renderedProtocolArtifacts.get(cacheKey) : undefined;
+    return content ? { ...content, bytes: Buffer.from(content.bytes) } : undefined;
+  }
+
+  saveRenderedProtocolArtifact(content: ProtocolRenderedArtifactContent,
+    actor?: AuthenticatedActor): ScopedReadResult<ProtocolRenderedArtifactContent> {
+    const snapshot = this.protocolExports.get(content?.protocolId);
+    if (snapshot && this.checks.get(snapshot.protocol.checkId)?.mode !== "DEMO_SEED") return actor ? undefined : "AUTH_REQUIRED";
+    const cacheKey = this.protocolRenderCacheKey(content);
+    const mediaTypes = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xml: "application/xml" };
+    if (!cacheKey || !Buffer.isBuffer(content.bytes) || content.bytes.length === 0 || content.bytes.length > 16777216
+      || content.mediaType !== mediaTypes[content.format] || sha256(content.bytes) !== content.contentHash) return undefined;
+    const winner = this.renderedProtocolArtifacts.get(cacheKey) ?? { ...content, bytes: Buffer.from(content.bytes) };
+    this.renderedProtocolArtifacts.set(cacheKey, winner);
+    return { ...winner, bytes: Buffer.from(winner.bytes) };
   }
 
   getSubmission(checkId: string): SubmissionExport | "PENDING_DECISIONS" | "INCOMPLETE_ANALYSIS" | undefined {

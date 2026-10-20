@@ -1,0 +1,112 @@
+{
+  "authority": "Hand-authored raw boundary data, not a valid engineering stage or complete semantic oracle. Independent SHA/canonical expected computed with Python stdlib before DUT code.",
+  "profile": "matrix-text-facts-column-pylon-section-v12",
+  "scope": {
+    "id": "manual-run",
+    "object_id": "manual-object",
+    "object_api_id": "OBJ-MANUAL",
+    "output_hash": "e81cc49aea47b77b83ddae1cbbdd60354d085b9732bb113e3a8f041d51ba447c"
+  },
+  "prepared": {
+    "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "run": {
+      "inputManifestHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "references": [],
+    "release": {
+      "providerSlots": [
+        {
+          "stageJobType": "RULE_EVALUATION",
+          "status": "CONFIGURED",
+          "providerKind": "RULE_ENGINE",
+          "profileId": "matrix-text-facts-column-pylon-section-v12",
+          "adapterVersion": "12",
+          "configHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      ]
+    }
+  },
+  "stageRows": [
+    {
+      "content_json": {
+        "execution": {
+          "results": []
+        },
+        "outputCount": 0,
+        "legacyFraction": 0.25,
+        "schemaVersion": "analysis-stage-result-v2",
+        "jobType": "RULE_EVALUATION",
+        "disposition": "RULES_EVALUATED",
+        "inputManifestHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "providerKind": "RULE_ENGINE",
+        "providerProfileId": "matrix-text-facts-column-pylon-section-v12",
+        "providerConfigHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "content_hash": "b49a99cf7b871738d4cf4209d6fed4731cc965af97b8fde98c1168eda3da8e57",
+      "byte_size": 438,
+      "provider_profile_id": "matrix-text-facts-column-pylon-section-v12",
+      "provider_config_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "input_manifest_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ],
+  "resultRows": [
+    {
+      "rule_key": "manual-rule",
+      "rule_version": "1",
+      "parameter_code": "KR-060",
+      "comparison_variant": "PD_RD",
+      "execution_status": "SUCCEEDED",
+      "machine_status": "CANDIDATE",
+      "result_payload": {
+        "manual": true
+      },
+      "entity_key": {
+        "key": "wall-one"
+      },
+      "evidence_fingerprint": null
+    }
+  ],
+  "coverageRows": [
+    {
+      "parameter_id": 60,
+      "parameter_code": "KR-060",
+      "parameter_name": "Manual boundary data",
+      "execution_rollup": "PARTIAL",
+      "reason": "Manual scope",
+      "atomic_summary": {
+        "implementedAtomicRules": 1
+      }
+    }
+  ],
+  "snapshotRows": [
+    {
+      "execution_hash": "b49a99cf7b871738d4cf4209d6fed4731cc965af97b8fde98c1168eda3da8e57",
+      "submission_hash": "29fbcb99d21deafd883e10061e7e3c43bacd09c66016ffebb5feb9ad377d1933",
+      "submission_bytes_hex": "7b226d616e75616c223a227375626d697373696f6e227d",
+      "metadata": {
+        "partial": true
+      }
+    }
+  ],
+  "expectedFingerprintPreimage": {
+    "prepared": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "stageHash": "b49a99cf7b871738d4cf4209d6fed4731cc965af97b8fde98c1168eda3da8e57",
+    "results": [
+      "{\"comparison_variant\":\"PD_RD\",\"entity_key\":{\"key\":\"wall-one\"},\"evidence_fingerprint\":null,\"execution_status\":\"SUCCEEDED\",\"machine_status\":\"CANDIDATE\",\"parameter_code\":\"KR-060\",\"result_payload\":{\"manual\":true},\"rule_key\":\"manual-rule\",\"rule_version\":\"1\"}"
+    ],
+    "coverage": [
+      "{\"atomic_summary\":{\"implementedAtomicRules\":1},\"execution_rollup\":\"PARTIAL\",\"parameter_code\":\"KR-060\",\"parameter_id\":60,\"parameter_name\":\"Manual boundary data\",\"reason\":\"Manual scope\"}"
+    ],
+    "submissionHash": "29fbcb99d21deafd883e10061e7e3c43bacd09c66016ffebb5feb9ad377d1933",
+    "metadata": {
+      "partial": true
+    },
+    "outputHash": "e81cc49aea47b77b83ddae1cbbdd60354d085b9732bb113e3a8f041d51ba447c"
+  },
+  "expectedFingerprint": "850ba54fc8afb7b25c0409383bbc86f1e9685c9200e9381fb5e719a4343cc4fc",
+  "expectedScope": {
+    "runId": "manual-run",
+    "objectId": "manual-object",
+    "objectApiId": "OBJ-MANUAL"
+  }
+}

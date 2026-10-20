@@ -1,0 +1,18 @@
+/** Frozen independent source-only oracles; synthetic evidence confers no review authority. */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
+import {describe,it} from 'vitest';
+import {reconstructOdi120RailInventorySource as reconstruct,railInventoryContentHash} from '../src/matrix-rail-inventory-source.js';
+import {canonicalSourceDeclarationJson} from '../src/matrix-source-declarations.js';
+const fixture=new URL('../../../services/worker/tests/fixtures/matrix-rail-inventory-v1/',import.meta.url);
+const read=(name:string)=>JSON.parse(fs.readFileSync(new URL(name,fixture),'utf8'));
+const originals=read('research-rail-authored-goldens.json').fixtures;
+const packets=[['original',originals],['python-independent',read('researchpy-independent-portable-probes.json').fixtures],['cross-mixed-gates',read('researchpy-cross-added-manual-probes.json').fixtures],['typescript-independent',read('ts-adversarial-vectors.json').vectors],['typescript-extra',read('ts-cross-extra-probes.json').vectors],['typescript-manual',read('ts-manual-goldens.json').cases]] as const;
+const hash=(value:Buffer|string)=>createHash('sha256').update(value).digest('hex');
+describe('ODI120 rail source frozen whole outputs and ordered gates',()=>{
+ for(const [population,cases]of packets)for(const c of cases)it(population+': '+c.name,()=>{const input=structuredClone(c.input),before=structuredClone(input);assert.deepEqual(reconstruct(input),c.expected);assert.deepEqual(input,before);});
+ it('retains47 frozen original fixture hashes',()=>{const provenanceBytes=fs.readFileSync(new URL('provenance.json',fixture));assert.equal(hash(provenanceBytes),'6314810f0359a6e66699ac6e10d7b281f03c3e1166b50287fb61fcb89cf95bbd');const provenance=JSON.parse(provenanceBytes.toString());assert.equal(provenance.files.length,46);for(const f of provenance.files){const bytes=fs.readFileSync(new URL(f.file,fixture));assert.equal(bytes.length,f.bytes);assert.equal(hash(bytes),f.sha256);}});
+ it('retains20 full original PDFs and canonical envelopes',()=>{const manifest=read('research-rail-original-manifest-before-extraction.json'),extracted=read('research-rail-extraction-first-receipt.json');assert.equal(manifest.originals.length,20);assert.equal(extracted.status,'PASS');for(const source of manifest.originals){const bytes=fs.readFileSync(new URL(source.originalPdf,fixture));assert.equal(bytes.length,source.originalBytes);assert.equal(hash(bytes),source.originalSha256);const canonical=extracted.originals.find((c:any)=>c.name===source.name);assert.ok(canonical);const full=fs.readFileSync(new URL(canonical.canonicalFile,fixture));assert.equal(hash(full),canonical.canonicalFileSha256);assert.deepEqual(JSON.parse(full.toString()),originals.find((c:any)=>c.name===source.name).input.textArtifact);}});
+ it('preserves domain hash and emits no review/comparison authority',()=>{const result=reconstruct(structuredClone(originals.find((c:any)=>c.name==='pd-both').input));assert.equal(result.status,'RECONSTRUCTED');if(result.status!=='RECONSTRUCTED')throw Error('Unexpected abstention');assert.equal(railInventoryContentHash(result.inventory),hash(canonicalSourceDeclarationJson({hashDomain:'matrix-odi120-rail-inventory-source-id-v1',inventory:result.inventory})));const keys=new Set<string>();const visit=(v:any)=>{if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v==='object')for(const[k,x]of Object.entries(v)){keys.add(k);visit(x)}};visit(result);for(const forbidden of ['complete','assertion','approved','qualified','entityKey','ruleId','parameterCode','confidence','calibratedProbability','physicalAbsence','coverage'])assert.ok(!keys.has(forbidden));});
+});

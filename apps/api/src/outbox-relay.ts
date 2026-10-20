@@ -5,6 +5,23 @@ import { createServer, type Server } from "node:http";
 import amqp, { type ConfirmChannel } from "amqplib";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { renderRelayMetrics, type RelayOperationalSnapshot } from "./outbox-metrics.js";
+import { propagateTerminalJobFailure } from "./job-terminal-failure.js";
+import { isDetachedSourceAuditJob } from "./worker-run-scope.js";
+import { frozenSourceAuditReleaseIdentities } from "./source-audit-release-identity.js";
+
+const auditRecoveryIdentities = JSON.stringify(frozenSourceAuditReleaseIdentities.map(identity => ({
+  release_id: identity.releaseId, content_hash: identity.contentHash, byte_size: identity.byteSize,
+  content_json: JSON.parse(identity.canonical),
+})));
+// Discovery is bounded and exact. The protected transaction independently
+// rechecks all job/run/manifest/organization bindings before changing anything.
+const recoveryRunPredicate = `(inspection.active_run_id=run.id OR (
+  run.release_id=job.release_id AND EXISTS (
+    SELECT 1 FROM analysis_releases release,
+      jsonb_to_recordset($1::jsonb) frozen(release_id text,content_hash text,byte_size integer,content_json jsonb)
+    WHERE release.release_id=job.release_id AND release.release_id=frozen.release_id
+      AND release.content_hash=frozen.content_hash AND release.byte_size=frozen.byte_size
+      AND release.content_json=frozen.content_json)))`;
 
 interface OutboxRow extends QueryResultRow {
   id: string;
@@ -270,49 +287,79 @@ export class OutboxRelay {
   }
 
   async recoverDueJobsOnce(): Promise<void> {
-    const client = await this.pool.connect();
-    try {
-      await client.query("BEGIN");
-      const expiredAttempts = await client.query<{ current_attempt_id: string }>(
-        `SELECT current_attempt_id
-         FROM analysis_jobs
-         WHERE state = 'LEASED' AND lease_until <= now() AND current_attempt_id IS NOT NULL
-         ORDER BY lease_until, id
-         FOR UPDATE SKIP LOCKED
-         LIMIT 100`,
-      );
-      for (const attempt of expiredAttempts.rows) {
+    // Scan IDs without locks. Each repair takes inspection/run/job locks in the
+    // same order as worker commands, in its own bounded transaction.
+    const terminalCandidates = await this.pool.query<{ id: string; organization_id: string }>(
+      `SELECT job.id,job.organization_id FROM analysis_jobs job
+       JOIN analysis_runs run ON run.id=job.run_id
+       JOIN inspections inspection ON inspection.id=job.inspection_id
+       WHERE run.run_state IN ('QUEUED','RUNNING') AND inspection.lifecycle='OPEN'
+         AND ${recoveryRunPredicate} AND (job.state IN ('FAILED','DEAD')
+           OR (job.attempt_count>=job.max_attempts AND (
+             (job.state='LEASED' AND job.lease_until<=now()) OR job.state='READY'
+             OR (job.state='RETRY_WAIT' AND job.next_attempt_at<=now()))))
+       ORDER BY job.created_at,job.id LIMIT 100`, [auditRecoveryIdentities]);
+    for (const candidate of terminalCandidates.rows) {
+      const repair = await this.pool.connect();
+      try {
+        await repair.query("BEGIN");
+        await propagateTerminalJobFailure(repair, { jobId: candidate.id,
+          organizationId: candidate.organization_id, reason: "RECOVER" });
+        await repair.query("COMMIT");
+      } catch (error) { await repair.query("ROLLBACK"); throw error; }
+      finally { repair.release(); }
+    }
+    // Candidate discovery holds no job locks. Recheck scope under the same
+    // inspection/run/job lock order used by worker commands before dispatching.
+    const retryCandidates = await this.pool.query<RecoverableJobRow>(
+      `SELECT job.* FROM analysis_jobs job
+       JOIN analysis_runs run ON run.id=job.run_id
+       JOIN inspections inspection ON inspection.id=job.inspection_id
+       WHERE run.run_state IN ('QUEUED','RUNNING') AND inspection.lifecycle='OPEN'
+         AND ${recoveryRunPredicate} AND job.attempt_count<job.max_attempts
+         AND ((job.state='LEASED' AND job.lease_until<=now())
+           OR (job.state='RETRY_WAIT' AND job.next_attempt_at<=now()))
+       ORDER BY job.next_attempt_at,job.created_at,job.id LIMIT 100`, [auditRecoveryIdentities]);
+    for (const candidate of retryCandidates.rows) {
+      const client = await this.pool.connect();
+      try {
+        await client.query("BEGIN");
+        const inspection = await client.query(
+          `SELECT lifecycle,active_run_id FROM inspections
+           WHERE id=$1 AND organization_id=$2 FOR UPDATE`, [candidate.inspection_id, candidate.organization_id]);
+        if (inspection.rows[0]?.lifecycle !== "OPEN") {
+          await client.query("COMMIT"); continue;
+        }
+        const run = await client.query(
+          `SELECT run_state FROM analysis_runs WHERE id=$1 AND inspection_id=$2 FOR UPDATE`,
+          [candidate.run_id, candidate.inspection_id]);
+        if (!["QUEUED", "RUNNING"].includes(run.rows[0]?.run_state)) {
+          await client.query("COMMIT"); continue;
+        }
+        if (inspection.rows[0]?.active_run_id !== candidate.run_id
+          && !await isDetachedSourceAuditJob(client, candidate.id, candidate.run_id, candidate.organization_id)) {
+          await client.query("COMMIT"); continue;
+        }
+        const locked = await client.query<RecoverableJobRow & { current_attempt_id: string | null; state: string }>(
+          `SELECT * FROM analysis_jobs WHERE id=$1 AND organization_id=$2 AND run_id=$3
+           AND attempt_count<max_attempts AND ((state='LEASED' AND lease_until<=now())
+             OR (state='RETRY_WAIT' AND next_attempt_at<=now())) FOR UPDATE`,
+          [candidate.id, candidate.organization_id, candidate.run_id]);
+        const job = locked.rows[0];
+        if (!job) { await client.query("COMMIT"); continue; }
+        if (job.state === "LEASED" && job.current_attempt_id) {
+          await client.query(
+            `UPDATE job_attempts SET state='EXPIRED',completed_at=now(),error_code='LEASE_EXPIRED'
+             WHERE id=$1 AND state='LEASED'`, [job.current_attempt_id]);
+        }
         await client.query(
-          `UPDATE job_attempts
-           SET state = 'EXPIRED', completed_at = now(), error_code = 'LEASE_EXPIRED'
-           WHERE id = $1 AND state = 'LEASED'`,
-          [attempt.current_attempt_id],
-        );
-      }
-      const recovered = await client.query<RecoverableJobRow>(
-        `UPDATE analysis_jobs
-         SET state = 'READY', current_attempt_id = NULL, lease_until = NULL,
-             fencing_token = CASE WHEN state = 'LEASED' THEN fencing_token + 1 ELSE fencing_token END,
-             updated_at = now()
-         WHERE id IN (
-           SELECT id
-           FROM analysis_jobs
-           WHERE (state = 'LEASED' AND lease_until <= now())
-              OR (state = 'RETRY_WAIT' AND next_attempt_at <= now())
-           ORDER BY next_attempt_at, created_at, id
-           FOR UPDATE SKIP LOCKED
-           LIMIT 100
-         )
-         RETURNING id, organization_id, object_id, inspection_id, run_id,
-                   queue_name, job_type, input_manifest_hash, semantic_key, release_id`,
-      );
-      for (const job of recovered.rows) await this.enqueueJobEvent(client, job);
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+          `UPDATE analysis_jobs SET state='READY',current_attempt_id=NULL,lease_until=NULL,
+             fencing_token=CASE WHEN state='LEASED' THEN fencing_token+1 ELSE fencing_token END,updated_at=now()
+           WHERE id=$1`, [job.id]);
+        await this.enqueueJobEvent(client, job);
+        await client.query("COMMIT");
+      } catch (error) { await client.query("ROLLBACK"); throw error; }
+      finally { client.release(); }
     }
   }
 

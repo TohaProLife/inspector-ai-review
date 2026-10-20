@@ -1,0 +1,20 @@
+{
+  "authority": "Independent hand-built typed PostgreSQL SELECT result; not engineering data and not produced by new transcript code.",
+  "sql": "SELECT literal FROM independent_whole_result WHERE source_id=$1 ORDER BY literal",
+  "result": {
+    "command": "SELECT",
+    "rowCount": 2,
+    "oid": 0,
+    "fields": [
+      {"name":"literal","tableID":42,"columnID":1,"dataTypeID":25,"dataTypeSize":-1,"dataTypeModifier":-1,"format":"text"}
+    ],
+    "rows": [
+      {"literal":"Колонна 600х1500мм 🧱","sqlNull":null,"enabled":true,"count":7,"fraction":0.125,"negativeZero":"DATE_AND_BUFFER_HYDRATED_SEPARATELY","sequenceNo":"9223372036854775807","nested":{"a":[1,"x",null],"z":false}},
+      {"literal":"second ordered original row","sqlNull":null,"enabled":false,"count":-3,"fraction":-0.25,"sequenceNo":"1","nested":{"a":[],"z":true}}
+    ]
+  },
+  "dateIso": "2026-10-18T12:34:56.789Z",
+  "bytesHex": "00017fff80fe",
+  "expectedCodes": {"integrity":"SAVED_READ_TRANSCRIPT_INTEGRITY","limit":"SAVED_READ_TRANSCRIPT_LIMIT"},
+  "limits": {"uniqueQueries":2048,"queryCalls":8192,"sqlUtf8Bytes":65536,"paramsEncodedBytes":65536,"responseEncodedBytes":134217728,"responseNodes":8000000,"depth":128,"containerEntries":32768,"totalEncodedResponseBytes":536870912}
+}

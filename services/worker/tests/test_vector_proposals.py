@@ -166,7 +166,7 @@ class VectorProposalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "max_proposals"):
             scan_pdf(self.path, "FIL-1", digest(self.path), max_proposals=501)
         with self.assertRaisesRegex(ValueError, "profile_version"):
-            scan_pdf(self.path, "FIL-1", digest(self.path), profile_version="v7")
+            scan_pdf(self.path, "FIL-1", digest(self.path), profile_version="v8")
 
 
 if __name__ == "__main__":

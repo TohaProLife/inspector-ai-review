@@ -1,3 +1,4 @@
+import {canonicalJson,sha256} from "../src/canonical-json.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
@@ -113,6 +114,8 @@ describe("inspection API", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json().object_id).toBe("OBJ-TYUMENSKAYA-5-GOLD-SEED");
     expect(response.json().checks).toHaveLength(10);
+    expect(response.body).toBe(canonicalJson(response.json()));
+    expect(response.headers["x-content-sha256"]).toBe(sha256(response.body));
     expect(response.json().checks[0]).toMatchObject({
       parameter_code: "IOS4-079",
       violation_label: "VIOLATION_PRESENT",

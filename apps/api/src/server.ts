@@ -1,3 +1,4 @@
+import { PostgresLocalRegistrationService } from "./postgres-local-registration.js";
 import { buildApp } from "./app.js";
 import { PostgresIdentityService } from "./identity.js";
 import { createInspectionRepositoryFromEnv } from "./repository-factory.js";
@@ -25,6 +26,7 @@ if (publicReviewObjectIds?.length && (publicReviewObjectIds.length !== 3
   throw new Error("INSPECTOR_PUBLIC_REVIEW_OBJECT_IDS must contain exactly three distinct object IDs");
 }
 const app = await buildApp({
+  localRegistrationService: process.env.DATABASE_URL ? new PostgresLocalRegistrationService(process.env.DATABASE_URL) : undefined,
   logger: true,
   repository,
   identityService,

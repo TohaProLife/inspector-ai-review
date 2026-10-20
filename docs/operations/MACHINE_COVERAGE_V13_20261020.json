@@ -1,0 +1,1262 @@
+{
+  "schemaVersion": "matrix-static-capability-inventory-v1",
+  "sourceProfile": "matrix-text-facts-concrete-walls-v13",
+  "basis": "FROZEN_SCALAR_REGISTRY_AND_SEVEN_INHERITED_TYPED_CAPABILITY_REGISTRIES",
+  "notMeasuredEngineeringCoverage": true,
+  "parameters": 132,
+  "parametersWithConfiguredAtomicRules": 62,
+  "parametersWithoutConfiguredAtomicRules": 70,
+  "enabledScalarRules": 63,
+  "enabledTypedRules": 7,
+  "unsupportedBaseGaps": {
+    "GEOMETRY_OR_TOPOLOGY": 18,
+    "APPROVAL_OR_CONTEXT": 6,
+    "SOURCE_TRIGGER_CONFLICT": 1,
+    "COMPOSITE_TRIGGER": 25,
+    "NORMATIVE_OR_APPLICABILITY": 10,
+    "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED": 4,
+    "PUBLIC_MAPPING_CONFLICT": 2,
+    "EXTERNAL_REGISTRY": 4
+  },
+  "limitations": [
+    "A configured subrule does not mean an entire parameter is implemented",
+    "Actual comparison needs compatible approved revisions, entity identity, origin hashes and scoped source proofs",
+    "No independent probability or real dataset accuracy follows from this inventory",
+    "PPM-113 source review and warm-floor suspicion are not qualified atomic comparisons"
+  ],
+  "sourcePins": {
+    "services/worker/rules/matrix-execution-v1.json": "cc5dd08210d92434b10e316a5c01959b26ace1929ce48da4bc8f99733e17f769",
+    "services/worker/rules/matrix-call-inventory-capabilities-v1.json": "37d26ba6d5c32cb9dbf6b16737c6d190ed1d0ad0d1039b8684ddc45eb6895987",
+    "services/worker/rules/matrix-column-pylon-section-capabilities-v1.json": "36eed3e10659274d1b62348d6fff426733d8893a771be6a9087e84cc7c6cad39",
+    "services/worker/rules/matrix-inventory-capabilities-v1.json": "df35db2a495143ab769c2f682eb8bbc4e1af1cc16298bb22b659d2bf44eb99d0",
+    "services/worker/rules/matrix-lighting-technology-capabilities-v1.json": "4e34435a8516ef5c2e3dcc9dae172a54bc0a6dd412682434b8d752c89885918b",
+    "services/worker/rules/matrix-rail-inventory-capabilities-v1.json": "aec32c4e715bb6f3965edea91e0590936a1cfd9522e206f6a0472cf1b3a1090d",
+    "services/worker/rules/matrix-steel-comparison-capabilities-v1.json": "48b7aa7030632927cb1152e6476a088fa5f861688d0a550910ea8b9cbac0203b",
+    "services/worker/rules/matrix-water-node-capabilities-v1.json": "94366195a37b2ad450a2dc46e7cd17a32efac8a01a4ebab34f7d9a098a777f37"
+  },
+  "rows": [
+    {
+      "parameterCode": "PZ-001",
+      "name": "Площадь застройки",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PZ-002",
+      "name": "Общая площадь здания",
+      "enabledScalarRules": [
+        "matrix-pz-002-building_total_area"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-003",
+      "name": "Полезная / Расчетная площадь",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "PZ-004",
+      "name": "Строительный объем (Общий)",
+      "enabledScalarRules": [
+        "matrix-pz-004-building_volume"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-005",
+      "name": "Строительный объем (Подземный)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PZ-006",
+      "name": "Строительный объем (Надземный)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "SOURCE_TRIGGER_CONFLICT"
+    },
+    {
+      "parameterCode": "PZ-007",
+      "name": "Этажность (надземная)",
+      "enabledScalarRules": [
+        "matrix-pz-007-above_ground_floor_count"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-008",
+      "name": "Высота здания",
+      "enabledScalarRules": [
+        "matrix-pz-008-building_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-009",
+      "name": "Абсолютная отметка 0.000",
+      "enabledScalarRules": [
+        "matrix-pz-009-declared_project_zero_absolute_elevation"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:DECLARED_PROJECT_ZERO_ABSOLUTE_ELEVATION_ONLY;INDEPENDENT_GEOREFERENCE_TOPOGRAPHIC_BASE_CONTROL_POINTS_DATUM_TRANSFORM_AND_COMPLETE_INVENTORY_UNSUPPORTED"
+    },
+    {
+      "parameterCode": "PZ-010",
+      "name": "Количество квартир",
+      "enabledScalarRules": [
+        "matrix-pz-010-apartment_count"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-011",
+      "name": "Квартирография",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PZ-012",
+      "name": "Количество машино-мест (подземных)",
+      "enabledScalarRules": [
+        "matrix-pz-012-underground_parking_count"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-013",
+      "name": "Технологическая мощность / Вместимость",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PZ-014",
+      "name": "Расчетная электрическая мощность",
+      "enabledScalarRules": [
+        "matrix-pz-014-design_electric_power"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-015",
+      "name": "Категория надежности электроснабжения",
+      "enabledScalarRules": [
+        "matrix-pz-015-power_supply_reliability_category"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-016",
+      "name": "Суточный расход водопотребления",
+      "enabledScalarRules": [
+        "matrix-pz-016-daily_water_consumption"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-017",
+      "name": "Суммарная тепловая нагрузка",
+      "enabledScalarRules": [
+        "matrix-pz-017-total_heating_load"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-018",
+      "name": "Максимальный часовой расход газа",
+      "enabledScalarRules": [
+        "matrix-pz-018-max_hourly_gas_flow"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-019",
+      "name": "Коэффициент застройки (КЗ)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "PZ-020",
+      "name": "Коэффициент использования территории (КИТ)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "PZ-021",
+      "name": "Класс энергетической эффективности",
+      "enabledScalarRules": [
+        "matrix-pz-021-energy_efficiency_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-022",
+      "name": "Степень огнестойкости здания",
+      "enabledScalarRules": [
+        "matrix-pz-022-fire_resistance_degree"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PZ-023",
+      "name": "Класс конструктивной пожарной опасности",
+      "enabledScalarRules": [
+        "matrix-pz-023-structural_fire_hazard_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SPZU-024",
+      "name": "Объем грунта (выемка/насыпь)",
+      "enabledScalarRules": [
+        "matrix-spzu-024-excavation_volume",
+        "matrix-spzu-024-backfill_volume"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SPZU-025",
+      "name": "Площадь асфальтобетонного покрытия",
+      "enabledScalarRules": [
+        "matrix-spzu-025-hard_surface_area"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SPZU-026",
+      "name": "Площадь тротуарного плиточного покрытия",
+      "enabledScalarRules": [
+        "matrix-spzu-026-sidewalk_tile_area"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:SIDEWALK_TILE_AREA_ONLY;OTHER_PAVING_QUANTITIES_AND_FULL_SCOPE_UNSUPPORTED"
+    },
+    {
+      "parameterCode": "SPZU-027",
+      "name": "Площадь озеленения и газонов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-028",
+      "name": "Площадь детских и спортивных площадок",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-029",
+      "name": "Спецификация МАФ",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-030",
+      "name": "Ширина внутриплощадочных дорог и проездов",
+      "enabledScalarRules": [
+        "matrix-spzu-030-fire_access_road_width"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SPZU-031",
+      "name": "Радиусы поворота дорог и пожарных проездов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "SPZU-032",
+      "name": "Конструкция дорожной одежды",
+      "enabledScalarRules": [
+        "matrix-spzu-032-asphalt_layer_thickness",
+        "matrix-spzu-032-crushed_stone_layer_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:LAYER_OMISSION_REQUIRES_COMPLETE_LAYER_INVENTORY;OTHER_LAYERS_AND_LAYER_COMPOSITION_UNSUPPORTED"
+    },
+    {
+      "parameterCode": "SPZU-033",
+      "name": "Уклоны дорог и проездов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-034",
+      "name": "Точки и координаты подключения внешних сетей",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-035",
+      "name": "Охранные зоны существующих коммуникаций",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "SPZU-036",
+      "name": "Тип и высотные параметры ограждения территории",
+      "enabledScalarRules": [
+        "matrix-spzu-036-territory_fence_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:TERRITORY_FENCE_HEIGHT_DECREASE_ONLY;FENCE_TYPE_REPLACEMENT_GATE_DIMENSIONS_DRAWING_GEOMETRY_COMPLETE_INVENTORY_AND_ID_UNSUPPORTED"
+    },
+    {
+      "parameterCode": "SPZU-037",
+      "name": "Количество и разметка парковочных мест на участке",
+      "enabledScalarRules": [
+        "matrix-spzu-037-surface_parking_count"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SPZU-038",
+      "name": "Количество парковочных мест для МГН на участке",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "SPZU-039",
+      "name": "Мероприятия по инженерной подготовке (дренажи)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "AR-040",
+      "name": "Ширина магистральных эвакуационных коридоров",
+      "enabledScalarRules": [
+        "matrix-ar-040-evacuation_corridor_width"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "AR-041",
+      "name": "Ширина эвакуационных выходов (дверей)",
+      "enabledScalarRules": [
+        "matrix-ar-041-evacuation_door_clear_width"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "AR-042",
+      "name": "Высота путей эвакуации и проемов",
+      "enabledScalarRules": [
+        "matrix-ar-042-evacuation_corridor_clear_height",
+        "matrix-ar-042-evacuation_door_clear_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "SCOPED_LITERAL_HEIGHT_ONLY;DRAWING_GEOMETRY_COMPLETE_INVENTORY_NORM_EXCEPTIONS_AND_PD_BASELINE_REVIEW_REQUIRED"
+    },
+    {
+      "parameterCode": "AR-043",
+      "name": "Направление открывания эвакуационных дверей",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "AR-044",
+      "name": "Послойный состав пирога кровли",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-045",
+      "name": "Уклоны кровли и система водостока",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-046",
+      "name": "Общее количество и габариты оконных блоков",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "AR-047",
+      "name": "Габариты и глубина тамбуров входных групп",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "AR-048",
+      "name": "Количество и параметры лестничных маршей и ступеней",
+      "enabledScalarRules": [
+        "matrix-ar-048-stair_tread_depth",
+        "matrix-ar-048-stair_riser_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "SCOPED_LITERAL_STAIR_DIMENSIONS_ONLY;STEP_COUNT_DRAWING_GEOMETRY_COMPLETE_INVENTORY_NORM_EXCEPTIONS_PD_BASELINE_AND_ID_REQUIRED"
+    },
+    {
+      "parameterCode": "AR-049",
+      "name": "Высота и тип ограждений лестниц, балкона, кровли",
+      "enabledScalarRules": [
+        "matrix-ar-049-roof_balcony_guard_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "AR-050",
+      "name": "Спецификация и типы внутренней отделки помещений",
+      "enabledScalarRules": [
+        "matrix-ar-050-finish_fire_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "AR-051",
+      "name": "Параметры естественного освещения (КЕО)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "AR-052",
+      "name": "Цветовое решение и материалы облицовки фасадов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "AR-053",
+      "name": "Конструктивные мероприятия по защите от шума",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-ar-053-declared_joint_damping_tape_omission",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_DECLARED_REGION_INVENTORY",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_DECLARED_JOINT_DAMPING_TAPE_MEMBERSHIP_ONLY;GLOBAL_OR_PHYSICAL_ABSENCE_AND_SUBSTITUTION_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "KR-054",
+      "name": "Шаг и привязка координационных осей несущего каркаса",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-055",
+      "name": "Класс прочности бетона монолитных конструкций",
+      "enabledScalarRules": [
+        "matrix-kr-055-concrete_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "KR-056",
+      "name": "Марка стали и класс прочности металлопроката",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-kr-056-reviewed_steel_catalog_transition",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_PHYSICAL_MEMBER_STEEL_CATALOG_TRANSITION",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:EXPLICIT_REVIEWED_SAME_DISTRIBUTION_BELT_I_BEAM_PD_C345_TO_RD_C245_WITH_PAIR_APPLICABILITY_ONLY;OTHER_GRADES_MEMBERS_PROFILES_STANDARDS_STRENGTH_RANK_COMPLETENESS_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-057",
+      "name": "Марка и класс прочности рабочей арматуры",
+      "enabledScalarRules": [
+        "matrix-kr-057-catalog_a500c_to_a400"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:CATALOG_A500C_TO_A400_EXAMPLE_ONLY;OTHER_GRADES_PLASTICITY_SCALE_NONWORKING_REINFORCEMENT_COMPLETE_INVENTORY_AND_ID_UNSUPPORTED"
+    },
+    {
+      "parameterCode": "KR-058",
+      "name": "Толщина монолитной фундаментной плиты / ростверка",
+      "enabledScalarRules": [
+        "matrix-kr-058-foundation_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "KR-059",
+      "name": "Толщина монолитных плит перекрытий и покрытия",
+      "enabledScalarRules": [
+        "matrix-kr-059-slab_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "KR-060",
+      "name": "Геометрические сечения несущих колонн и пилонов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-kr-060-reviewed_rectangular_gross_section_area_decrease",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_COLUMN_PYLON_RECTANGULAR_GROSS_SECTION_AREA_PD_RD",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:ONE_EXPLICIT_HUMAN_REVIEWED_SAME_COLUMN_OR_PYLON_RECTANGULAR_GROSS_SECTION_PD_RD_AREA_COMPARISON;OTHER_SHAPES_DIMENSION_MEANINGS_MEMBER_MATCHING_ALL_MEMBERS_COMPLETENESS_RENDERED_VISIBILITY_PHYSICAL_GEOMETRY_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-061",
+      "name": "Толщина несущих монолитных стен (ядра жесткости)",
+      "enabledScalarRules": [
+        "matrix-kr-061-load_bearing_monolithic_wall_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "KR-062",
+      "name": "Диаметр продольной (рабочей) арматуры в колоннах/пилонах",
+      "enabledScalarRules": [
+        "matrix-kr-062-longitudinal_rebar_diameter"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "KR-063",
+      "name": "Наличие и конструктивное исполнение деформационных швов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-064",
+      "name": "Привязки и габариты лифтовых шахт",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-065",
+      "name": "Схемы расположения и площади технологических проемов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "KR-066",
+      "name": "Антикоррозионная и огнезащитная обработка конструкций",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "KR-067",
+      "name": "Ведомости расхода материалов (бетон, сталь)",
+      "enabledScalarRules": [
+        "matrix-kr-067-concrete_volume",
+        "matrix-kr-067-steel_mass"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "IOS1-068",
+      "name": "Номинальная аппаратная защита ВРУ/ГРЩ",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS1-069",
+      "name": "Сечение жил и маркировка распределительных кабелей",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS1-070",
+      "name": "Параметры и контуры заземления и молниезащиты",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS2-071",
+      "name": "Диаметры стояков и разводящих трубопроводов В1/Т3",
+      "enabledScalarRules": [
+        "matrix-ios2-071-water_pipe_diameter"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "IOS2-072",
+      "name": "Материал и класс давления напорных труб В1/Т3",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "IOS2-073",
+      "name": "Характеристики насосных станций хоз-питьевого водоснабжения",
+      "enabledScalarRules": [
+        "matrix-ios2-073-pump_flow_rate",
+        "matrix-ios2-073-pump_head"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:PUMP_POWER_AND_COMPLETE_WORKING_CURVE_UNSUPPORTED;MATCHED_OPERATING_POINT_ONLY"
+    },
+    {
+      "parameterCode": "IOS3-074",
+      "name": "Диаметры выпусков и магистралей К1/К2",
+      "enabledScalarRules": [
+        "matrix-ios3-074-sewer_pipe_diameter"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "IOS3-075",
+      "name": "Материал и тип канализационных труб и фасонных частей",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "IOS4-076",
+      "name": "Диаметры магистралей и стояков отопления (Т1, Т2)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "IOS4-077",
+      "name": "Технические параметры отопительных приборов (радиаторов)",
+      "enabledScalarRules": [
+        "matrix-ios4-077-radiator_section_count",
+        "matrix-ios4-077-radiator_heat_output"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:RADIATOR_MODEL_SUBSTITUTION_AND_FULL_SPECIFICATION_UNSUPPORTED;MATCHED_THERMAL_TEST_CONDITIONS_ONLY"
+    },
+    {
+      "parameterCode": "IOS4-078",
+      "name": "Сечения и геометрия воздуховодов общеобменной вентиляции",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "PUBLIC_MAPPING_CONFLICT"
+    },
+    {
+      "parameterCode": "IOS4-079",
+      "name": "Характеристики вентиляторов общеобменной вентиляции",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "PUBLIC_MAPPING_CONFLICT"
+    },
+    {
+      "parameterCode": "IOS5-080",
+      "name": "Состав и емкость систем пожарной сигнализации (АПС)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POS-081",
+      "name": "Границы опасных зон работы грузоподъемных кранов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-082",
+      "name": "Продолжительность этапов строительства (Календарный график)",
+      "enabledScalarRules": [
+        "matrix-pos-082-critical_construction_stage_duration"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "POS-083",
+      "name": "Посадка и габариты временных зданий и сооружений",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-084",
+      "name": "Схемы движения и ширина временных автодорог",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "POS-085",
+      "name": "Места размещения площадок складирования материалов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POS-086",
+      "name": "Потребность в кадрах (Максимальная численность)",
+      "enabledScalarRules": [
+        "matrix-pos-086-peak_personnel_count"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "POS-087",
+      "name": "Технологическая последовательность возведения",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "POS-088",
+      "name": "Точки подключения и мощности временных ресурсов",
+      "enabledScalarRules": [
+        "matrix-pos-088-temporary_power_demand"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "POS-089",
+      "name": "Расположение пунктов мойки колес и выездов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-090",
+      "name": "Границы опасных зон развала и обрушения конструкций",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "POD-091",
+      "name": "Методы и технологическая последовательность демонтажа",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "POD-092",
+      "name": "Мероприятия по защите действующих коммуникаций",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "POD-093",
+      "name": "Общие объемы демонтируемых конструкций (по типам)",
+      "enabledScalarRules": [
+        "matrix-pod-093-demolition_volume_by_type"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "POD-094",
+      "name": "Масса и класс опасности образующихся отходов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-095",
+      "name": "Мероприятия по пылеподавлению и снижению шума",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "POD-096",
+      "name": "Узлы временного расчленения сохраняемых конструкций",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "POD-097",
+      "name": "Места и габариты площадок временного складирования лома",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "OOS-098",
+      "name": "Регистрация лимитов в АИС \"ОСИГ\"",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-099",
+      "name": "Верфикация транспортных средств (ГЛОНАСС)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-100",
+      "name": "Фиксация рейсов через мобильный КПТС",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "OOS-101",
+      "name": "Сверка легитимности полной утилизации",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "EXTERNAL_REGISTRY"
+    },
+    {
+      "parameterCode": "PPM-102",
+      "name": "Деление здания на пожарные отсеки",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PPM-103",
+      "name": "Пределы огнестойкости противопожарных дверей и ворот (EI)",
+      "enabledScalarRules": [
+        "matrix-ppm-103-fire_door_rating"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PPM-104",
+      "name": "Ширина и высота эвакуационных проходов",
+      "enabledScalarRules": [
+        "matrix-ppm-104-evacuation_passage_width"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PPM-105",
+      "name": "Ширина эвакуационных дверей наружных выходов",
+      "enabledScalarRules": [
+        "matrix-ppm-105-external_evacuation_door_clear_width"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PPM-106",
+      "name": "Направление открывания дверей на путях эвакуации",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "PPM-107",
+      "name": "Класс пожарной опасности отделочных материалов",
+      "enabledScalarRules": [
+        "matrix-ppm-107-finish_fire_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "PPM-108",
+      "name": "Количество и расстановка извещателей АПС",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-109",
+      "name": "Пожарная маркировка кабелей систем ПЗ (СПЗ)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-110",
+      "name": "Количество и расстановка оповещателей СОУЭ",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-111",
+      "name": "Расположение и пределы огнестойкости клапанов (ОЗК)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-112",
+      "name": "Производительность вентиляторов ДУ и подпора воздуха",
+      "enabledScalarRules": [
+        "matrix-ppm-112-smoke_control_fan_flow_rate",
+        "matrix-ppm-112-smoke_control_fan_pressure"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": "PARTIAL_SUBRULES_ONLY:COMPLETE_FAN_CURVE_AND_OPERATING_RANGE_UNSUPPORTED;MATCHED_OPERATING_POINT_ONLY"
+    },
+    {
+      "parameterCode": "PPM-113",
+      "name": "Расход воды и количество струй внутреннего пожаротушения (ВПВ)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "PPM-114",
+      "name": "Расход воды на наружное пожаротушение (НПВ)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "GEOMETRY_OR_TOPOLOGY"
+    },
+    {
+      "parameterCode": "ODI-115",
+      "name": "Технические параметры и наличие инвалидных подъемников",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ODI-116",
+      "name": "Ширина коридоров на путях движения МГН",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-117",
+      "name": "Ширина дверных проемов на путях движения МГН",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-118",
+      "name": "Высота порогов в дверных проемах на путях МГН",
+      "enabledScalarRules": [
+        "matrix-odi-118-accessible_door_threshold_height"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "ODI-119",
+      "name": "Габариты и планировка санузлов для инвалидов (универсальные кабины)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "NORMATIVE_OR_APPLICABILITY"
+    },
+    {
+      "parameterCode": "ODI-120",
+      "name": "Спецификация опорных стационарных и откидных поручней",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-odi-120-declared_accessible_room_wc_rails_omission",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_NAMED_ROOM_RAIL_INVENTORY",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_ACCESSIBLE_ROOM_BOTH_WC_RAIL_TYPES_MEMBERSHIP_OMISSION_ONLY;QUANTITIES_MOUNTING_LOAD_DIMENSIONS_OTHER_ROOMS_GLOBAL_PHYSICAL_ABSENCE_AND_SUBSTITUTION_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "ODI-121",
+      "name": "Количество и габариты парковочных мест для инвалидов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ODI-122",
+      "name": "Наличие и расстановка тактильно-контрастных указателей",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "ODI-123",
+      "name": "Состав систем двухсторонней связи и вызова помощника",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-odi-123-declared_sanitary_room_personnel_call_button_omission",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_NAMED_ROOM_CALL_INVENTORY",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_ACCESSIBLE_ROOM_PERSONNEL_CALL_BUTTON_MEMBERSHIP_ONLY;ENTRANCES_OTHER_ROOMS_GLOBAL_PHYSICAL_ABSENCE_FUNCTIONALITY_AND_SUBSTITUTION_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "ZU-124",
+      "name": "Класс энергетической эффективности здания",
+      "enabledScalarRules": [
+        "matrix-zu-124-energy_efficiency_class"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "ZU-125",
+      "name": "Толщина теплоизоляционного слоя наружных стен",
+      "enabledScalarRules": [
+        "matrix-zu-125-wall_insulation_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "ZU-126",
+      "name": "Коэффициент теплопроводности (λ) утеплителя стен",
+      "enabledScalarRules": [
+        "matrix-zu-126-wall_insulation_thermal_conductivity"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "ZU-127",
+      "name": "Коэффициент сопротивления теплопередаче окон (Ro)",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": false,
+      "baseGap": "COMPOSITE_TRIGGER"
+    },
+    {
+      "parameterCode": "ZU-128",
+      "name": "Толщина утеплителя чердачных перекрытий / кровли",
+      "enabledScalarRules": [
+        "matrix-zu-128-roof_insulation_thickness"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "ZU-129",
+      "name": "Наличие приборов учета расхода энергоресурсов",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-zu-129-declared_cold_water_inlet_meter_omission",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_NAMED_COLD_WATER_INLET_NODE",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_COMMON_BUILDING_COLD_WATER_INLET_NODE_METER_MEMBERSHIP_OMISSION_ONLY;QUANTITIES_CAPACITY_DIAMETERS_APARTMENT_HOT_WATER_ELECTRICITY_HEAT_OTHER_NODES_GLOBAL_PHYSICAL_ABSENCE_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "ENUMERATION_COMPLETE_AND_NEGATIVE_SCOPE_REQUIRED"
+    },
+    {
+      "parameterCode": "ZU-130",
+      "name": "Установка энергосберегающего осветительного оборудования",
+      "enabledScalarRules": [],
+      "enabledTypedRules": [
+        {
+          "ruleId": "matrix-zu-130-declared_led_technology_replacement",
+          "variant": "PD_RD",
+          "executionKind": "REVIEWED_NAMED_LIGHTING_TECHNOLOGY",
+          "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_LUMINAIRE_LIGHT_SOURCE_POSITION_PD_LED_TO_RD_FLUORESCENT_OR_INCANDESCENT_ONLY;UNNAMED_GROUPS_OTHER_TECHNOLOGIES_EFFICIENCY_CAPACITY_QUANTITIES_CONTROLS_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+        }
+      ],
+      "staticAtomicSupport": true,
+      "baseGap": "APPROVAL_OR_CONTEXT"
+    },
+    {
+      "parameterCode": "ZU-131",
+      "name": "Удельный годовой расход тепловой энергии на отопление",
+      "enabledScalarRules": [
+        "matrix-zu-131-annual_specific_heating_energy"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    },
+    {
+      "parameterCode": "SM-132",
+      "name": "Итоговая стоимость по Сводному сметному расчету (ССР)",
+      "enabledScalarRules": [
+        "matrix-sm-132-construction_total_cost"
+      ],
+      "enabledTypedRules": [],
+      "staticAtomicSupport": true,
+      "baseGap": null
+    }
+  ]
+}

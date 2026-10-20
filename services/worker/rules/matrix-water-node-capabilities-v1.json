@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "matrix-water-node-capabilities-v1",
+  "entries": [
+    {
+      "parameterCode": "ZU-129",
+      "matrixCode": "M-129",
+      "ruleId": "matrix-zu-129-declared_cold_water_inlet_meter_omission",
+      "ruleVersion": "1",
+      "enabled": true,
+      "comparisonVariant": "PD_RD",
+      "family": "PRESENCE_SET",
+      "executionKind": "REVIEWED_NAMED_COLD_WATER_INLET_NODE",
+      "resultSchemaVersion": "matrix-zu129-water-node-comparison-v1",
+      "partialGap": "PARTIAL_SUBRULES_ONLY:REVIEWED_NAMED_COMMON_BUILDING_COLD_WATER_INLET_NODE_METER_MEMBERSHIP_OMISSION_ONLY;QUANTITIES_CAPACITY_DIAMETERS_APARTMENT_HOT_WATER_ELECTRICITY_HEAT_OTHER_NODES_GLOBAL_PHYSICAL_ABSENCE_AND_NORMATIVE_COMPLIANCE_UNSUPPORTED"
+    }
+  ]
+}

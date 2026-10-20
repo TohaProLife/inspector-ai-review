@@ -1,5 +1,6 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { FileText } from "./icons";
+import { loadSourcePreview } from "../source-preview-loader";
 
 export type SourceImageStatus = "loading" | "missing" | "error";
 
@@ -34,5 +35,24 @@ function AvailableSourceImage({ src, alt, style, loading = "lazy", onLoad, onErr
 
 /** Changing the URL resets its request state, including returning to a failed URL. */
 export function SourceImage(props: SourceImageProps) {
+  // Native <img> preview requests also consume the server's render slots. Put
+  // landing/source thumbnails through the same queue as the paired viewer.
+  if (props.src && /^\/api\/objects\/[^/?#]+\/files\/[^/?#]+\/pages\/[1-9]\d*\/preview(?:\?[^#]*)?$/u.test(props.src)) {
+    return <ScheduledSourceImage key={props.src} {...props} src={props.src} />;
+  }
   return props.src ? <AvailableSourceImage key={props.src} {...props} src={props.src} /> : <SourceImageState status="missing" description={props.alt} />;
+}
+function ScheduledSourceImage(props: SourceImageProps & { src: string }) {
+  const [url, setUrl] = useState<string | null>(null), [failed, setFailed] = useState(false), [retry, setRetry] = useState(0);
+  useEffect(() => {
+    const abort = new AbortController(); let objectUrl: string | null = null;
+    setUrl(null); setFailed(false);
+    void loadSourcePreview(props.src, abort.signal).then(blob => {
+      if (abort.signal.aborted) return;
+      objectUrl = URL.createObjectURL(blob); setUrl(objectUrl);
+    }).catch(() => { if (!abort.signal.aborted) { setFailed(true); props.onError?.(); } });
+    return () => { abort.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [props.src, retry]);
+  return url ? <AvailableSourceImage {...props} src={url} /> : <SourceImageState status={failed ? "error" : "loading"}
+    description={props.alt} onRetry={() => setRetry(value => value + 1)} />;
 }

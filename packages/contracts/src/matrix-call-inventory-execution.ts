@@ -1,0 +1,9 @@
+/** Separate ODI123 scoped result, never a scalar observation or calibrated probability. */
+import type {MatrixCallRoomIdentity} from './matrix-call-inventory-review.js';
+import type {MatrixInventoryComparisonReference,MatrixInventoryComparisonEvidence} from './matrix-inventory-execution.js';
+export type MatrixOdi123CallInventoryComparison={schemaVersion:'matrix-odi123-call-inventory-comparison-v1';status:'ABSTAIN';reasonCode:string;calibratedProbability:null}|{
+ schemaVersion:'matrix-odi123-call-inventory-comparison-v1';status:'CANDIDATE';ruleId:'matrix-odi-123-declared_sanitary_room_personnel_call_button_omission';ruleVersion:'1';parameterCode:'ODI-123';reasonCode:'PERSONNEL_CALL_BUTTON_NOT_LISTED_IN_REVIEWED_RD_ROOM_INVENTORY';calibratedProbability:null;comparisonScope:'REVIEWED_NAMED_ACCESSIBLE_ROOM_DECLARED_REGIONS_ONLY';identity:MatrixCallRoomIdentity;expected:MatrixInventoryComparisonReference;actual:MatrixInventoryComparisonReference;missingFeatureKeys:['PERSONNEL_CALL_BUTTON']};
+type Common={schemaVersion:'matrix-call-inventory-execution-result-v1';id:string;ruleId:'matrix-odi-123-declared_sanitary_room_personnel_call_button_omission';ruleVersion:'1';parameterCode:'ODI-123';comparisonVariant:'PD_RD'};
+export type MatrixCallInventoryExecutionResult=Common&({kind:'SCOPED_COMPARISON';identity:MatrixCallRoomIdentity;comparison:MatrixOdi123CallInventoryComparison}|{kind:'UNBOUND_ATOM_ABSTENTION';reasonCode:'REVIEWED_CALL_INVENTORY_IDENTITY_MISSING';calibratedProbability:null});
+export interface MatrixCallInventoryComparisons {schemaVersion:'matrix-call-inventory-comparisons-v1';purpose:'MACHINE_COMPARISON';objectId:string;inputManifestHash:string;capabilityRegistryHash:string;results:MatrixCallInventoryExecutionResult[]}
+export type MatrixCallInventoryComparisonEvidence=Omit<MatrixInventoryComparisonEvidence,'fragmentRole'>&{fragmentRole:'HEADER'|'SCOPE'|'END'|'FEATURE'};

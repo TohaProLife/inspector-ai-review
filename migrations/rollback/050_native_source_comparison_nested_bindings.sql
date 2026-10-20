@@ -1,0 +1,3 @@
+DROP TRIGGER native_capacity_comparisons_nested_binding ON native_capacity_comparisons;
+DROP TRIGGER native_airflow_comparisons_nested_binding ON native_airflow_comparisons;
+DROP FUNCTION verify_native_source_comparison_nested_binding();

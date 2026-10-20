@@ -1,0 +1,19 @@
+.local-document-registration { min-width: 0; margin: 16px 0; padding: 16px; border: 1px solid var(--border, #b9c9ce); border-radius: 8px; }
+.local-document-registration p { overflow-wrap: anywhere; }
+.local-registration-sheets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.local-registration-sheets>section { min-width: 0; }
+.local-registration-sheet { display: block; position: relative; width: 100%; padding: 0!important; line-height: 0; cursor: crosshair!important; overflow: hidden; }
+.local-registration-sheet img { display: block; width: 100%; height: auto; pointer-events: none; }
+.local-registration-marker { position: absolute; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #0e5c8e; color: white; font: bold 12px/1 sans-serif; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 0 2px white; }
+.local-registration-marker.holdout { background: #974700; }
+.local-registration-marker.pending { background: #97242c; }
+.local-registration-controls,.local-registration-anchors { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: 12px; margin: 12px 0; }
+.local-document-registration label { display: flex; flex-direction: column; gap: 5px; min-width: 0; margin: 8px 0; }
+.local-document-registration input,.local-document-registration select,.local-document-registration textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
+.local-registration-coordinates { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+.local-registration-anchors fieldset { min-width: 0; border: 1px solid var(--border, #b9c9ce); }
+.local-registration-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.local-registration-outcome { padding: 12px; border: 1px solid var(--border, #b9c9ce); border-radius: 6px; }
+.local-registration-acknowledgement { flex-direction: row!important; align-items: start; }
+.local-registration-acknowledgement input { width: auto; margin-top: 4px; }
+@media(max-width:700px) { .local-registration-sheets { grid-template-columns: minmax(0,1fr); } .local-document-registration { padding: 10px; } }

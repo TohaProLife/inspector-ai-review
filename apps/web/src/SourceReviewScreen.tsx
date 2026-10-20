@@ -1,3 +1,22 @@
+import { DrainageSourceCandidates } from "./DrainageSourceCandidates";
+import { Ppm113SourceCandidates } from "./Ppm113SourceCandidates";
+import {SourceWaterNodeSourcePreview} from "./SourceWaterNodeSourcePreview";
+import { LightingTechnologyReviewWorkspace } from "./LightingTechnologyReviewWorkspace";
+import { withLightingReviewScope } from "./LightingTechnologyReview";
+import { withSteelReviewScope } from "./SteelReview";
+import { SteelSourceReviewWorkspace, SteelApplicabilityWorkspace } from "./SteelReviewWorkspace";
+import { steelComparisonScopeDecisionToInput, type SteelComparisonScopeRequest } from "@inspector-ai/contracts";
+import { lightingTechnologyScopeDecisionToInput, type MatrixLightingTechnologyScopeInput } from "@inspector-ai/contracts";
+import {waterNodeScopeDecisionToInput,type MatrixWaterNodeScopeInput} from "@inspector-ai/contracts";
+import {SourceRailInventorySourcePreview} from "./SourceRailInventorySourcePreview";
+import {railInventoryScopeDecisionToInput,type MatrixRailInventoryScopeInput} from "@inspector-ai/contracts";
+import { MatrixSourceScopeFields } from "./MatrixSourceScopeFields";
+import { SourceInventoryReviewFields } from "./SourceInventoryReviewFields";
+import { SourceTextExplorer } from "./SourceTextExplorer";
+import { SourceAuditV3LargeWorkspace } from "./SourceAuditV3LargeWorkspace";
+import { SourceAuditV4FullWorkspace } from "./SourceAuditV4FullWorkspace";
+import { SourceCallInventorySourcePreview } from "./SourceCallInventorySourcePreview";
+import { callInventoryScopeDecisionToInput, inventoryScopeDecisionToInput, type MatrixCallInventoryScopeInput, type MatrixInventoryScopeInput, type MatrixSourceScope } from "@inspector-ai/contracts";
 import { useEffect, useState, type FormEvent } from "react";
 import { sourceSectionCodes } from "@inspector-ai/contracts";
 import type { SourceFileListResponse, SourceFileSummary, SourceReviewInput } from "@inspector-ai/contracts";
@@ -166,18 +185,32 @@ export function ocrProfileLabel(profileId: string): string {
     : `Профиль ${profileId}`;
 }
 
-export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onReprocess, onUpload }: {
+/** An explicit source address never falls back to another file or revision. */
+export function initialSourceReviewSelection(files: SourceFileSummary[], requested?: { id: string; sha256: string }): string | null {
+  if (!requested) return files[0]?.id ?? null;
+  const matches = files.filter(file => file.id === requested.id);
+  return matches.length === 1 && /^[a-f0-9]{64}$/u.test(requested.sha256)
+    && matches[0].sha256 === requested.sha256 ? matches[0].id : null;
+}
+
+export function SourceReviewScreen({ objectId, checkId, checkStatus, sourceAuditOnly = false, initialSourceFile, onBack, onReprocess, onUpload }: {
   objectId: string;
   checkId: string | null;
   checkStatus?: string;
+  sourceAuditOnly?: boolean;
+  initialSourceFile?: { id: string; sha256: string };
   onBack: () => void;
   onReprocess: () => Promise<void>;
   onUpload?: () => void;
 }) {
   const [files, setFiles] = useState<SourceFileSummary[]>([]);
-  const [permissions, setPermissions] = useState<SourceFileListResponse["permissions"]>({
+  const [serverPermissions, setPermissions] = useState<SourceFileListResponse["permissions"]>({
     upload: false, review: false, run: false,
   });
+  const [serverReadOnlyReason, setReadOnlyReason] = useState<string | null>(null);
+  const readOnlyReason = serverReadOnlyReason ?? (checkStatus === "FINALIZED"
+    ? "Проверка финализирована. Изменение комплекта и новый запуск недоступны до разрешённого отзыва протокола." : null);
+  const permissions = readOnlyReason ? { upload: false, review: false, run: false } : serverPermissions;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stageFile, setStageFile] = useState<File | null>(null);
   const [revision, setRevision] = useState<Revision>("UNKNOWN");
@@ -186,6 +219,14 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
   const [linkGroup, setLinkGroup] = useState("");
   const [ranges, setRanges] = useState("");
   const [basis, setBasis] = useState("");
+  const [matrixScope, setMatrixScope] = useState<MatrixSourceScope | undefined>();
+  const [inventoryScope,setInventoryScope]=useState<MatrixInventoryScopeInput|undefined>();
+  const [callInventoryScope,setCallInventoryScope]=useState<MatrixCallInventoryScopeInput|undefined>();
+  const [railInventoryScope,setRailInventoryScope]=useState<MatrixRailInventoryScopeInput|undefined>();
+  const [waterNodeScope,setWaterNodeScope]=useState<MatrixWaterNodeScopeInput|undefined>();
+  const [lightingTechnologyScope,setLightingTechnologyScope]=useState<MatrixLightingTechnologyScopeInput|undefined>();
+  const [steelComparisonScope,setSteelComparisonScope]=useState<SteelComparisonScopeRequest|undefined>();
+  const [sourceReviewHash,setSourceReviewHash]=useState<string|null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingDecision, setLoadingDecision] = useState(false);
@@ -225,7 +266,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
   }, [checkId, selectedId]);
 
   useEffect(() => {
-    if (!checkId) {
+    if (!checkId || sourceAuditOnly) {
       setOcrLayout(null);
       setOcrError(null);
       setOcrLoading(false);
@@ -241,7 +282,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
       if (!cancelled) setOcrError(caught instanceof Error ? caught.message : "Не удалось загрузить OCR-страницы");
     }).finally(() => { if (!cancelled) setOcrLoading(false); });
     return () => { cancelled = true; };
-  }, [checkId, checkStatus]);
+  }, [checkId, checkStatus, sourceAuditOnly]);
 
   useEffect(() => {
     if (!checkId || !ocrSelectedPage || ocrSelectedPage.sourceFileId !== selectedId) return;
@@ -268,7 +309,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
   }, [checkId, selectedId]);
 
   useEffect(() => {
-    if (!checkId) {
+    if (!checkId || sourceAuditOnly) {
       setVisual(null);
       setVisualError(null);
       setVisualLoading(false);
@@ -294,7 +335,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
         ? caught.message : "Не удалось загрузить историю решений");
     });
     return () => { cancelled = true; };
-  }, [checkId, checkStatus]);
+  }, [checkId, checkStatus, sourceAuditOnly]);
 
   useEffect(() => {
     let cancelled = false;
@@ -303,21 +344,32 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
       if (cancelled) return;
       setFiles(data.items);
       setPermissions(data.permissions);
-      setSelectedId((current) => data.items.some((item) => item.id === current) ? current : data.items[0]?.id ?? null);
+      setReadOnlyReason(data.readOnlyReason ?? (data.inspectionLifecycle === "FINALIZED"
+        ? "Проверка финализирована. Изменение комплекта и новый запуск недоступны." : null));
+      const initial = initialSourceReviewSelection(data.items, initialSourceFile);
+      setSelectedId(initial);
+      if (initialSourceFile && initial === null) setNotice("Выбранный источник с исходным SHA недоступен. Выберите файл вручную после проверки комплекта.");
       setError(null);
     }).catch((caught) => {
       if (!cancelled) setError(caught instanceof Error ? caught.message : "Не удалось загрузить файлы");
     }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [objectId]);
+  }, [objectId, checkStatus, initialSourceFile?.id, initialSourceFile?.sha256]);
 
   useEffect(() => {
     if (!selectedId) return;
     let cancelled = false;
     setLoadingDecision(true);
     setStageFile(null);
-    setRevision("UNKNOWN"); setApproval("UNKNOWN"); setSectionCode(null); setLinkGroup(""); setRanges(""); setBasis("");
+    setRevision("UNKNOWN"); setApproval("UNKNOWN"); setSectionCode(null); setLinkGroup(""); setRanges(""); setBasis(""); setMatrixScope(undefined);
+    setInventoryScope(undefined);
+    setCallInventoryScope(undefined);
+    setRailInventoryScope(undefined);
+    setWaterNodeScope(undefined);
+    setLightingTechnologyScope(undefined);
+    setSteelComparisonScope(undefined);
     setSavedSnapshot(null);
+    setSourceReviewHash(null);
     setError(null); setNotice(null);
     void api.getSourceReview(objectId, selectedId).then((decision) => {
       if (cancelled || !decision) return;
@@ -328,10 +380,24 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
       const savedRanges = formatPageStageRanges(decision.pageStages);
       setRanges(savedRanges);
       setBasis(decision.basis.reference);
+      setMatrixScope(decision.matrixScope);
+      const savedInventory=decision.inventoryScope?inventoryScopeDecisionToInput(decision.inventoryScope):undefined;
+      setInventoryScope(savedInventory);
+      const savedCallInventory=decision.callInventoryScope?callInventoryScopeDecisionToInput(decision.callInventoryScope):undefined;
+      setCallInventoryScope(savedCallInventory);
+      const savedRailInventory=decision.railInventoryScope?railInventoryScopeDecisionToInput(decision.railInventoryScope):undefined;
+      setRailInventoryScope(savedRailInventory);
+      const savedWaterNode=decision.waterNodeScope?waterNodeScopeDecisionToInput(decision.waterNodeScope):undefined;
+      setWaterNodeScope(savedWaterNode);
+      const savedLighting=decision.lightingTechnologyScope?lightingTechnologyScopeDecisionToInput(decision.lightingTechnologyScope):undefined;
+      setLightingTechnologyScope(savedLighting);
+      const savedSteel=decision.steelComparisonScope?steelComparisonScopeDecisionToInput(decision.steelComparisonScope):undefined;
+      setSteelComparisonScope(savedSteel);
+      setSourceReviewHash(decision.contentHash);
       setSavedSnapshot(JSON.stringify([
         decision.revisionStatus, decision.approvalStatus, decision.sectionCode ?? null,
         decision.linkGroupId ?? "",
-        savedRanges, decision.basis.reference,
+        savedRanges, decision.basis.reference, decision.matrixScope, savedInventory, savedCallInventory, savedRailInventory, savedWaterNode, savedLighting, savedSteel,
       ]));
     }).catch((caught) => {
       if (!cancelled) setError(caught instanceof Error ? caught.message : "Не удалось загрузить решение");
@@ -381,7 +447,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
     (item) => item.proposalOrdinal === activePreview.proposalIndex,
   );
   const mixed = Boolean(selected && selected.stages.length > 1);
-  const currentSnapshot = JSON.stringify([revision, approval, sectionCode, linkGroup, ranges, basis]);
+  const currentSnapshot = JSON.stringify([revision, approval, sectionCode, linkGroup, ranges, basis, matrixScope,inventoryScope,callInventoryScope,railInventoryScope,waterNodeScope,lightingTechnologyScope,steelComparisonScope]);
   const stageToAdd = selected?.stages.length === 1
     ? selected.stages[0] === "RD" ? "ID" : selected.stages[0] === "ID" ? "RD" : null
     : null;
@@ -415,7 +481,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
       const pageStages = mixed
         ? parsePageStageRanges(ranges, selected.stages, selected.pageCount ?? 0)
         : {};
-      const input: SourceReviewInput = {
+      const input: SourceReviewInput = withSteelReviewScope(withLightingReviewScope({
         sourceSha256: selected.sha256,
         revisionStatus: revision,
         approvalStatus: approval,
@@ -423,9 +489,16 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
         linkGroupId: linkGroup.trim() || null,
         pageStages,
         basis: { reference: basis.trim() },
-      };
+        ...(matrixScope ? { matrixScope } : {}),
+        ...(inventoryScope ? { inventoryScope } : {}),
+        ...(callInventoryScope ? { callInventoryScope } : {}),
+        ...(railInventoryScope ? { railInventoryScope } : {}),
+        ...(waterNodeScope ? { waterNodeScope } : {}),
+        expectedReviewHash:sourceReviewHash,
+      },lightingTechnologyScope),steelComparisonScope);
       setSaving(true);
-      await api.recordSourceReview(objectId, selected.id, input);
+      const decision=await api.recordSourceReview(objectId, selected.id, input);
+      setSourceReviewHash(decision.contentHash);
       const data = await api.listSourceFiles(objectId);
       setFiles(data.items); setPermissions(data.permissions);
       setSavedSnapshot(currentSnapshot);
@@ -492,6 +565,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
   return (
     <div className="content content--wide source-review-screen">
       <button className="back-link" onClick={onBack}><ArrowLeft size={16} /> К результатам</button>
+      {readOnlyReason && <p className="notice notice--warning" role="status">{readOnlyReason}</p>}
       <div className="page-title-row">
         <div><span className="kicker">Исходные документы</span><h1>Проверка источников</h1><p>Сверьте исходный PDF, его редакцию и согласование. Решение сохраняется с основанием и действует только для новых прогонов.</p></div>
         <div className="source-review-actions">{permissions.upload && onUpload && <button className="button button--secondary" onClick={onUpload} disabled={saving || stageUploading || reprocessing}><UploadCloud size={17} /> Дозагрузить документы</button>}
@@ -525,6 +599,24 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
               <SourceSectionCodeField value={sectionCode} onChange={setSectionCode} disabled={!permissions.review || saving || reprocessing} />
               <label><span>Группа связанных документов</span><input value={linkGroup} onChange={(event) => setLinkGroup(event.target.value)} maxLength={120} disabled={!permissions.review || saving || reprocessing} placeholder="Одинаковый код у сопоставимых ПД и РД" /></label>
               {mixed && <label><span>Стадия каждой страницы</span><textarea rows={4} value={ranges} onChange={(event) => setRanges(event.target.value)} disabled={!permissions.review || saving || reprocessing || selected.pageCount === null} placeholder="1-12=RD, 13-676=UNRESOLVED" /><small>Файл содержит {selected.pageCount ?? "неизвестное число"} страниц; перечислите все без пропусков. Доступны {selected.stages.join(" и ")} и UNRESOLVED. Если на одной странице одновременно есть штамп РД и исполнительная отметка, укажите UNRESOLVED: одну стадию для всего листа выбирать нельзя. Такие страницы не участвуют в автоматическом сравнении.</small></label>}
+              {matrixScope&&"schemaVersion" in matrixScope
+                ?<p>Сохранены привязки отдельных строк: {matrixScope.bindings.length}. Изменить их можно в машинном анализе выбранного запуска.</p>
+                :<MatrixSourceScopeFields value={matrixScope} onChange={setMatrixScope} disabled={!permissions.review || saving || reprocessing} />}
+              {checkId&&<SourceInventoryReviewFields objectId={objectId} checkId={checkId} file={selected} reviewHash={sourceReviewHash}
+                value={inventoryScope} onChange={setInventoryScope} disabled={!permissions.review||saving||reprocessing||stageUploading}/>}
+              {checkId&&<SourceCallInventorySourcePreview objectId={objectId} checkId={checkId} file={selected} reviewHash={sourceReviewHash}
+                value={callInventoryScope} onChange={setCallInventoryScope} disabled={!permissions.review||saving||reprocessing||stageUploading}/>}
+              {checkId&&<SourceRailInventorySourcePreview objectId={objectId} checkId={checkId} file={selected} reviewHash={sourceReviewHash}
+                value={railInventoryScope} onChange={setRailInventoryScope} disabled={!permissions.review||saving||reprocessing||stageUploading}/>}
+              {checkId&&<SourceWaterNodeSourcePreview objectId={objectId} checkId={checkId} file={selected} reviewHash={sourceReviewHash}
+                value={waterNodeScope} onChange={setWaterNodeScope} disabled={!permissions.review||loadingDecision||saving||reprocessing||stageUploading}/>}
+              <LightingTechnologyReviewWorkspace objectId={objectId} file={selected} reviewHash={sourceReviewHash}
+                value={lightingTechnologyScope} onChange={setLightingTechnologyScope} canRun={permissions.run} canReview={permissions.review}
+                disabled={loadingDecision||saving||reprocessing||stageUploading}
+                review={{revisionStatus:revision,approvalStatus:approval,sectionCode,linkGroupId:linkGroup}}/>
+              {checkId&&<SteelSourceReviewWorkspace identity={{objectId,checkId,file:selected,reviewHash:sourceReviewHash}}
+                value={steelComparisonScope} onChange={setSteelComparisonScope}
+                disabled={!permissions.review||loadingDecision||saving||reprocessing||stageUploading}/>}
               <label><span>Основание решения</span><textarea rows={3} value={basis} onChange={(event) => setBasis(event.target.value)} minLength={8} maxLength={1000} required disabled={!permissions.review || saving || reprocessing} placeholder="Укажите лист, штамп, документ или запись, по которой проверен статус" /></label>
               {selected.review && <small>Текущее решение от {new Date(selected.review.createdAt).toLocaleString("ru-RU")} · SHA-256 {selected.review.contentHash.slice(0, 16)}…</small>}
               {permissions.review ? <button className="button button--primary" type="submit" disabled={saving || reprocessing || stageUploading || (mixed && (selected.pageCount === null || !ranges.trim())) || basis.trim().length < 8 || savedSnapshot === currentSnapshot}>{saving ? <LoaderCircle className="spin" size={17} /> : <Save size={17} />} Сохранить решение</button> : <p>У вашей учётной записи нет права принимать решения по источникам.</p>}
@@ -532,11 +624,26 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
           </form>}
         </div>
       )}
+      {!loading && selected && checkId && <DrainageSourceCandidates key={`${objectId}:${checkId}:${selected.id}:${selected.sha256}`}
+        checkId={checkId} sourceFile={selected} sourceUrl={api.sourceFileUrl(objectId, selected.id)}
+        disabled={saving || stageUploading || reprocessing}
+        preview={(input, signal) => api.previewDrainageSourceCandidates(objectId, input, signal)} />}
+      {!loading && selected && checkId && <Ppm113SourceCandidates key={`ppm113:${objectId}:${checkId}:${selected.id}:${selected.sha256}`}
+        checkId={checkId} sourceFile={selected} sourceUrl={api.sourceFileUrl(objectId, selected.id)}
+        disabled={saving || stageUploading || reprocessing}
+        preview={(input, signal) => api.previewPpm113SourceCandidates(objectId, input, signal)} />}
+      {!loading && !loadingDecision && selected && checkId && <SourceTextExplorer objectId={objectId} checkId={checkId}
+        file={selected} reviewHash={sourceReviewHash} disabled={saving || stageUploading || reprocessing} />}
+      {!loading && !loadingDecision && selected && <SourceAuditV3LargeWorkspace objectId={objectId} file={selected}
+        reviewHash={sourceReviewHash} canRun={permissions.run} runUnavailableReason={readOnlyReason ?? undefined} disabled={saving || stageUploading || reprocessing} />}
+      {!loading && !loadingDecision && selected && <SourceAuditV4FullWorkspace objectId={objectId} file={selected}
+        reviewHash={sourceReviewHash} canRun={permissions.run} runUnavailableReason={readOnlyReason ?? undefined} disabled={saving || stageUploading || reprocessing} />}
+      {!loading&&<SteelApplicabilityWorkspace objectId={objectId} refreshKey={sourceReviewHash} disabled={loadingDecision||saving||stageUploading||reprocessing}/>}
       {!loading && <section className="surface visual-proposal-panel" aria-label="Сохранённый OCR">
         <div className="surface-title"><div><span className="kicker">Текущая проверка</span><h2>Распознанные страницы</h2><p>Машинный OCR отдельных листов исходных PDF.</p></div></div>
         {ocrLoading && <p role="status"><LoaderCircle className="spin" size={17} /> Загружаем OCR-результат…</p>}
         {ocrError && <p className="inline-message" role="alert">{ocrError}</p>}
-        {!ocrLoading && !ocrError && !ocrLayout && <p>В этой проверке OCR-результат ещё не сохранён. Это не означает, что на чертежах нет текста или элементов.</p>}
+        {!ocrLoading && !ocrError && !ocrLayout && <p>{sourceAuditOnly ? "Этот запуск готовит исходный native text; OCR в его профиль не входит." : "В этой проверке OCR-результат ещё не сохранён. Это не означает, что на чертежах нет текста или элементов."}</p>}
         {ocrLayout && <>
           <p className="visual-proposal-warning"><strong>Текст не проверен человеком.</strong> Сверяйте каждую строку с исходным листом. Оценка OCR не подтверждает правильность текста; по непросмотренным листам выводов нет.</p>
           <p>OCR требовался для {ocrLayout.ocrRequiredPageCount} стр.; обработано {ocrLayout.processedPageCount}, отложено {ocrLayout.deferredPageCount}. {ocrProfileLabel(ocrLayout.providerProfileId)}.</p>
@@ -640,7 +747,7 @@ export function SourceReviewScreen({ objectId, checkId, checkStatus, onBack, onR
         {visualLoading && <p role="status"><LoaderCircle className="spin" size={17} /> Загружаем предложения…</p>}
         {visualError && <p className="inline-message" role="alert">{visualError}</p>}
         {visualReviewError && <p className="inline-message" role="alert">{visualReviewError}</p>}
-        {!visualLoading && !visualError && !visual && <p>В этой проверке нет сохранённых визуальных предложений. Это не подтверждает отсутствие элементов на чертежах.</p>}
+        {!visualLoading && !visualError && !visual && <p>{sourceAuditOnly ? "Визуальный анализ в профиль аудита исходного текста не входит." : "В этой проверке нет сохранённых визуальных предложений. Это не подтверждает отсутствие элементов на чертежах."}</p>}
         {visual && <>
           <p className="visual-proposal-warning"><strong>Не подтверждены.</strong> Предложения не становятся замечаниями или выводом об отсутствии элемента без проверки источника.</p>
           {selected && !visualSource && <p>Для выбранного файла предложения не сохранены. Отсутствие элементов не установлено.</p>}

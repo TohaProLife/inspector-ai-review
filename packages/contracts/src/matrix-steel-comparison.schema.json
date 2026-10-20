@@ -1,0 +1,1343 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:matrix-kr056-steel-comparison-v1-proposal",
+  "title": "PROPOSED bounded source-linked KR056 catalog example; not enabled capability",
+  "$ref": "#/definitions/input",
+  "definitions": {
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityKey",
+        "buildingKey",
+        "zoneKey",
+        "memberKey",
+        "componentRole"
+      ],
+      "properties": {
+        "entityKey": {
+          "$ref": "#/definitions/key"
+        },
+        "buildingKey": {
+          "$ref": "#/definitions/key"
+        },
+        "zoneKey": {
+          "$ref": "#/definitions/key"
+        },
+        "memberKey": {
+          "$ref": "#/definitions/key"
+        },
+        "componentRole": {
+          "const": "DISTRIBUTION_BELT_I_BEAM"
+        }
+      }
+    },
+    "fragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "blockIndex",
+        "lineIndex",
+        "rawText",
+        "bboxMilliPoints"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "blockIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "lineIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000000
+        },
+        "bboxMilliPoints": {
+          "$ref": "#/definitions/bbox"
+        }
+      }
+    },
+    "productScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "productKind",
+        "profile",
+        "count",
+        "tier",
+        "productStandard",
+        "gradeStandard"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "DISTRIBUTION_BELT_I_BEAMS",
+            "I_BEAM_GENERIC_DECLARATION"
+          ]
+        },
+        "productKind": {
+          "const": "I_BEAM"
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "count": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "productStandard": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "gradeStandard": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "originalSteelScope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "productKind",
+            "profile",
+            "count",
+            "tier",
+            "productStandard",
+            "gradeStandard"
+          ],
+          "properties": {
+            "role": {
+              "const": "DISTRIBUTION_BELT_I_BEAMS"
+            },
+            "productKind": {
+              "const": "I_BEAM"
+            },
+            "profile": {
+              "const": "70Б3"
+            },
+            "count": {
+              "const": 3
+            },
+            "tier": {
+              "const": 2
+            },
+            "productStandard": {
+              "const": "ГОСТ Р 35087-2024"
+            },
+            "gradeStandard": {
+              "const": "ГОСТ 27772-2015"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "productKind",
+            "profile",
+            "count",
+            "tier",
+            "productStandard",
+            "gradeStandard"
+          ],
+          "properties": {
+            "role": {
+              "const": "I_BEAM_GENERIC_DECLARATION"
+            },
+            "productKind": {
+              "const": "I_BEAM"
+            },
+            "profile": {
+              "const": null
+            },
+            "count": {
+              "const": null
+            },
+            "tier": {
+              "const": null
+            },
+            "productStandard": {
+              "const": "ГОСТ Р 57837-2017"
+            },
+            "gradeStandard": {
+              "const": "ГОСТ 27772-2021"
+            }
+          }
+        }
+      ]
+    },
+    "declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "kind",
+        "extractorVersion",
+        "sourceFileId",
+        "sourceSha256",
+        "textArtifactHash",
+        "stage",
+        "pageNumber",
+        "widthMilliPoints",
+        "heightMilliPoints",
+        "value",
+        "rawValue",
+        "rawUnit",
+        "canonicalUnit",
+        "entityKey",
+        "applicabilityStatus",
+        "primaryFragments",
+        "scopeFragments",
+        "productScope"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-source-declaration-v1"
+        },
+        "id": {
+          "$ref": "#/definitions/sha"
+        },
+        "kind": {
+          "const": "SOURCE_AUTHORED_STEEL_DECLARATION"
+        },
+        "extractorVersion": {
+          "const": "matrix-steel-prose-v1"
+        },
+        "sourceFileId": {
+          "$ref": "#/definitions/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "textArtifactHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "stage": {
+          "enum": [
+            "PD",
+            "RD"
+          ]
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "widthMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "heightMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "value": {
+          "enum": [
+            "С245",
+            "С345"
+          ]
+        },
+        "rawValue": {
+          "enum": [
+            "C245",
+            "С245",
+            "C345",
+            "С345"
+          ]
+        },
+        "rawUnit": {
+          "const": null
+        },
+        "canonicalUnit": {
+          "const": "steel_catalog_example"
+        },
+        "entityKey": {
+          "const": null
+        },
+        "applicabilityStatus": {
+          "const": "UNREVIEWED"
+        },
+        "primaryFragments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/definitions/fragment"
+          }
+        },
+        "scopeFragments": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/definitions/fragment"
+          }
+        },
+        "productScope": {
+          "$ref": "#/definitions/originalSteelScope"
+        }
+      }
+    },
+    "originTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkId",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactHash"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "inputManifestHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "textStageContentHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "textArtifactHash": {
+          "$ref": "#/definitions/sha"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkId",
+        "inputManifestHash",
+        "textStageContentHash",
+        "textArtifactHash",
+        "declarationId"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "inputManifestHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "textStageContentHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "textArtifactHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "declarationId": {
+          "$ref": "#/definitions/sha"
+        }
+      }
+    },
+    "memberMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assertion",
+        "identity",
+        "scopeFragments",
+        "reference"
+      ],
+      "properties": {
+        "assertion": {
+          "enum": [
+            "UNKNOWN",
+            "HUMAN_REVIEWED_SAME_PHYSICAL_MEMBER"
+          ]
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "scopeFragments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/fragment"
+          }
+        },
+        "reference": {
+          "$ref": "#/definitions/reference"
+        }
+      }
+    },
+    "claimRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "identity",
+        "memberMapping"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "memberMapping": {
+          "$ref": "#/definitions/memberMapping"
+        }
+      }
+    },
+    "claimDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "identity",
+        "memberMapping",
+        "declarationSnapshot"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "memberMapping": {
+          "$ref": "#/definitions/memberMapping"
+        },
+        "declarationSnapshot": {
+          "$ref": "#/definitions/declaration"
+        }
+      }
+    },
+    "scopeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "claims"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-review-v1"
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/claimRequest"
+          }
+        }
+      }
+    },
+    "scopeDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "claims"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-review-v1"
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/claimDecision"
+          }
+        }
+      }
+    },
+    "referencePair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "reviewDecisionId",
+        "reviewContentHash",
+        "target",
+        "productScope"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/definitions/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "reviewDecisionId": {
+          "$ref": "#/definitions/key"
+        },
+        "reviewContentHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "productScope": {
+          "$ref": "#/definitions/productScope"
+        }
+      }
+    },
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference",
+        "expectedScopeFragments",
+        "actualScopeFragments",
+        "catalogScope",
+        "standardsTreatment",
+        "profilesTreatment"
+      ],
+      "properties": {
+        "reference": {
+          "$ref": "#/definitions/reference"
+        },
+        "expectedScopeFragments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/fragment"
+          }
+        },
+        "actualScopeFragments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/fragment"
+          }
+        },
+        "catalogScope": {
+          "const": "ONLY_KR056_EXPLICIT_C345_TO_C245"
+        },
+        "standardsTreatment": {
+          "const": "RETAINED_DIFFERENCES_HUMAN_REVIEWED_NO_NORMATIVE_EQUIVALENCE"
+        },
+        "profilesTreatment": {
+          "const": "RETAINED_DIFFERENCES_NO_GEOMETRY_OR_STRENGTH_RANK"
+        }
+      }
+    },
+    "applicabilityDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "decisionId",
+        "contentHash",
+        "objectId",
+        "status",
+        "authorityKind",
+        "identity",
+        "expected",
+        "actual",
+        "basis"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-applicability-decision-v1"
+        },
+        "decisionId": {
+          "$ref": "#/definitions/key"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "objectId": {
+          "$ref": "#/definitions/key"
+        },
+        "status": {
+          "enum": [
+            "UNKNOWN",
+            "APPROVED",
+            "WITHDRAWN"
+          ]
+        },
+        "authorityKind": {
+          "const": "HUMAN_REVIEWED_DECLARATION_APPLICABILITY"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "expected": {
+          "$ref": "#/definitions/referencePair"
+        },
+        "actual": {
+          "$ref": "#/definitions/referencePair"
+        },
+        "basis": {
+          "$ref": "#/definitions/basis"
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 4,
+      "items": {
+        "enum": [
+          "PD",
+          "RD",
+          "ID",
+          "UNRESOLVED"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "pageStages": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[1-9][0-9]*$"
+      },
+      "additionalProperties": {
+        "enum": [
+          "PD",
+          "RD",
+          "ID",
+          "UNRESOLVED"
+        ]
+      },
+      "maxProperties": 512
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decisionId",
+        "contentHash",
+        "revisionStatus",
+        "approvalStatus",
+        "sectionCode",
+        "linkGroupId",
+        "pageStages",
+        "steelComparisonScope"
+      ],
+      "properties": {
+        "decisionId": {
+          "$ref": "#/definitions/key"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "revisionStatus": {
+          "enum": [
+            "CURRENT",
+            "SUPERSEDED",
+            "UNKNOWN"
+          ]
+        },
+        "approvalStatus": {
+          "enum": [
+            "APPROVED",
+            "UNAPPROVED",
+            "UNKNOWN"
+          ]
+        },
+        "sectionCode": {
+          "anyOf": [
+            {
+              "enum": [
+                "PZ",
+                "SPZU",
+                "AR",
+                "KR",
+                "IOS1",
+                "IOS2",
+                "IOS3",
+                "IOS4",
+                "IOS5",
+                "POS",
+                "POD",
+                "OOS",
+                "PPM",
+                "ODI",
+                "ZU",
+                "SM",
+                "EOM",
+                "GP",
+                "GSV",
+                "KJ",
+                "KM",
+                "NVK",
+                "OV",
+                "PP",
+                "PPR",
+                "SS",
+                "VK"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "linkGroupId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageStages": {
+          "$ref": "#/definitions/pageStages"
+        },
+        "steelComparisonScope": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/scopeDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "objectId",
+        "stages",
+        "review"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/definitions/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "objectId": {
+          "$ref": "#/definitions/key"
+        },
+        "stages": {
+          "$ref": "#/definitions/stages"
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/review"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "fullTextArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "sourceFileId",
+        "inputSha256",
+        "coordinateSystem",
+        "pageCount",
+        "textPageCount",
+        "qualityPolicyVersion",
+        "qualitySummary",
+        "pages"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-v2"
+        },
+        "sourceFileId": {
+          "$ref": "#/definitions/key"
+        },
+        "inputSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "coordinateSystem": {
+          "const": "PDF_BOTTOM_LEFT_MILLI_POINTS"
+        },
+        "pageCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "textPageCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "qualityPolicyVersion": {
+          "enum": [
+            "text-layer-quality-v1",
+            "text-layer-quality-v2"
+          ]
+        },
+        "qualitySummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "textLayerCandidatePageCount",
+            "ocrRequiredPageCount"
+          ],
+          "properties": {
+            "textLayerCandidatePageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 512
+            },
+            "ocrRequiredPageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 512
+            }
+          }
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pageNumber",
+              "widthMilliPoints",
+              "heightMilliPoints",
+              "blocks",
+              "quality"
+            ],
+            "properties": {
+              "pageNumber": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 512
+              },
+              "widthMilliPoints": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "heightMilliPoints": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "blocks": {
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 32768,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text",
+                    "bboxMilliPoints"
+                  ],
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 0,
+                      "maxLength": 2000000
+                    },
+                    "bboxMilliPoints": {
+                      "$ref": "#/definitions/bbox"
+                    },
+                    "lineBboxesMilliPoints": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 32768,
+                      "items": {
+                        "$ref": "#/definitions/bbox"
+                      }
+                    }
+                  }
+                }
+              },
+              "quality": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "disposition",
+                  "metrics",
+                  "reasonCodes"
+                ],
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "TEXT_LAYER_CANDIDATE",
+                      "OCR_REQUIRED"
+                    ]
+                  },
+                  "metrics": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "alphanumericCharacterCount",
+                      "blockCount",
+                      "disallowedControlCharacterCount",
+                      "nonWhitespaceCharacterCount",
+                      "replacementCharacterCount"
+                    ],
+                    "properties": {
+                      "alphanumericCharacterCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "blockCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "disallowedControlCharacterCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "nonWhitespaceCharacterCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "replacementCharacterCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    }
+                  },
+                  "reasonCodes": {
+                    "type": "array",
+                    "minItems": 0,
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFileId",
+        "sourceSha256",
+        "target",
+        "artifactContentSha256",
+        "textArtifact",
+        "stages",
+        "pageStages"
+      ],
+      "properties": {
+        "sourceFileId": {
+          "$ref": "#/definitions/key"
+        },
+        "sourceSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "target": {
+          "$ref": "#/definitions/originTarget"
+        },
+        "artifactContentSha256": {
+          "$ref": "#/definitions/sha"
+        },
+        "textArtifact": {
+          "$ref": "#/definitions/fullTextArtifact"
+        },
+        "stages": {
+          "$ref": "#/definitions/stages"
+        },
+        "pageStages": {
+          "$ref": "#/definitions/pageStages"
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "objectId",
+        "inputManifestHash",
+        "identity",
+        "sources",
+        "origins",
+        "applicabilityDecisions"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "matrix-kr056-steel-comparison-input-v1"
+        },
+        "objectId": {
+          "$ref": "#/definitions/key"
+        },
+        "inputManifestHash": {
+          "$ref": "#/definitions/sha"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/definitions/source"
+          }
+        },
+        "origins": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/definitions/origin"
+          }
+        },
+        "applicabilityDecisions": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/applicabilityDecision"
+          }
+        }
+      }
+    },
+    "candidateComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "expected",
+        "actual",
+        "expectedValue",
+        "actualValue",
+        "applicabilityDecisionId",
+        "applicabilityDecisionContentHash"
+      ],
+      "properties": {
+        "scope": {
+          "const": "HUMAN_REVIEWED_PHYSICAL_MEMBER_AND_DECLARATION_APPLICABILITY_ONLY"
+        },
+        "expected": {
+          "$ref": "#/definitions/referencePair"
+        },
+        "actual": {
+          "$ref": "#/definitions/referencePair"
+        },
+        "expectedValue": {
+          "const": "С345"
+        },
+        "actualValue": {
+          "const": "С245"
+        },
+        "applicabilityDecisionId": {
+          "$ref": "#/definitions/key"
+        },
+        "applicabilityDecisionContentHash": {
+          "$ref": "#/definitions/sha"
+        }
+      }
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "identity",
+            "calibratedProbability",
+            "status",
+            "reasonCode",
+            "comparison"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-kr056-steel-comparison-v1"
+            },
+            "identity": {
+              "$ref": "#/definitions/identity"
+            },
+            "calibratedProbability": {
+              "const": null
+            },
+            "status": {
+              "const": "CANDIDATE"
+            },
+            "reasonCode": {
+              "const": "EXPLICIT_C345_TO_C245_IN_REVIEWED_SAME_MEMBER"
+            },
+            "comparison": {
+              "$ref": "#/definitions/candidateComparison"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "identity",
+            "calibratedProbability",
+            "status",
+            "reasonCode",
+            "comparison"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "matrix-kr056-steel-comparison-v1"
+            },
+            "identity": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/identity"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "calibratedProbability": {
+              "const": null
+            },
+            "status": {
+              "const": "ABSTAIN"
+            },
+            "reasonCode": {
+              "enum": [
+                "INVALID_INPUT",
+                "INPUT_LIMIT",
+                "SOURCE_PROVENANCE_UNVERIFIED",
+                "DECLARATION_RECONSTRUCTION_UNVERIFIED",
+                "APPLICABILITY_DECISION_UNVERIFIED",
+                "REVIEWED_STEEL_DECLARATION_IDENTITY_MISSING",
+                "AMBIGUOUS_DECLARATION_SCOPE",
+                "DUPLICATE_DECLARATION",
+                "SOURCE_STAGE_UNVERIFIED",
+                "SOURCE_REVIEW_UNVERIFIED",
+                "SOURCE_SECTION_UNVERIFIED",
+                "SOURCE_LINK_UNVERIFIED",
+                "PHYSICAL_MEMBER_MAPPING_UNVERIFIED",
+                "APPLICABILITY_DECISION_MISSING",
+                "AMBIGUOUS_APPLICABILITY_DECISION",
+                "UNSUPPORTED_CATEGORY_TRANSITION",
+                "NEGATIVE_SCOPE_UNVERIFIED"
+              ]
+            },
+            "comparison": {
+              "const": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-semantic-contract": {
+    "wireFile": "steel-comparison-wire-proposal-v4.json",
+    "gates": [
+      {
+        "order": 1,
+        "name": "NATIVE",
+        "reason": "INVALID_INPUT",
+        "rule": "Descriptor-first plain JSON only: no proxies/accessors/custom prototypes/cycles/sparse arrays/callbacks; Unicode scalars and safe integers only; limit failure INPUT_LIMIT."
+      },
+      {
+        "order": 2,
+        "name": "STRUCTURAL_DTO",
+        "reason": "INVALID_INPUT",
+        "rule": "Exact keys/enums/known section catalog/fragment DTO/string bounds, no semantic snapshot parser before reconstruction."
+      },
+      {
+        "order": 3,
+        "name": "SOURCE_ORIGIN_PROVENANCE",
+        "reason": "SOURCE_PROVENANCE_UNVERIFIED",
+        "rule": "All committed sources same object; unique source IDs, full supplied origins known and exact source SHA/target associations; plain artifact hash and old domain hash independently recomputed. Loader authenticates source bytes/seal/manifest/full review hash/actor, pure cannot."
+      },
+      {
+        "order": 4,
+        "name": "ALL_FULL_ORIGINS",
+        "reason": "SOURCE_PROVENANCE_UNVERIFIED",
+        "rule": "Every retained document-text-v2 envelope fully validated through frozen source_declarations validation; malformed/unrelated supplied origin cannot hide behind unbound or UNKNOWN."
+      },
+      {
+        "order": 5,
+        "name": "ALL_CLAIMS_RECONSTRUCT",
+        "reason": "DECLARATION_RECONSTRUCTION_UNVERIFIED",
+        "rule": "All claims including UNKNOWN/unrelated rebuild exact declaration from full original using origins.stages/pageStages. Snapshot/ID/raw/productScope/fragments must equal; current stages/review.pageStages eligibility remains later. Missing origin for any claim fails."
+      },
+      {
+        "order": 6,
+        "name": "ALL_PAIR_DECISION_PROVENANCE",
+        "reason": "APPLICABILITY_DECISION_UNVERIFIED",
+        "rule": "Every retained pair decision, including UNKNOWN/WITHDRAWN/unrelated, validates contentHash, same object, two exact source/declaration/origin/review refs, retained product metadata and whole own-source basis fragments against fully reconstructed claims. Before selected identity/missing/unknown returns. Status APPROVED and selected identity/pair eligibility later. No signed claim: authenticated immutable human-review journal only."
+      },
+      {
+        "order": 7,
+        "name": "SELECTED_DUPLICATES_AND_AMBIGUITY",
+        "reason": "AMBIGUOUS_DECLARATION_SCOPE",
+        "rule": "Selected physical identity per stage counts ALL retained claims before revision/approval filtering. Duplicate declaration identity within a source scope =>DUPLICATE_DECLARATION. Multiple distinct selected claims, including UNKNOWN, abstain. No union/first match. If no selected pair exists, REVIEWED_STEEL_DECLARATION_IDENTITY_MISSING; this is ordinary source-only unbound state."
+      },
+      {
+        "order": 8,
+        "name": "SINGLE_PD_RD",
+        "reason": "SOURCE_STAGE_UNVERIFIED",
+        "rule": "Exactly one PD and one RD for selected identity, homogeneous current source stages+pageStages; no inferred stage from declaration snapshot."
+      },
+      {
+        "order": 9,
+        "name": "SOURCE_REVISION_APPROVAL",
+        "reason": "SOURCE_REVIEW_UNVERIFIED",
+        "rule": "Both frozen source reviews CURRENT and APPROVED; full latest review authenticated at materialization, run snapshot frozen for replay."
+      },
+      {
+        "order": 10,
+        "name": "SOURCE_SECTIONS",
+        "reason": "SOURCE_SECTION_UNVERIFIED",
+        "rule": "Both reviewed sectionCode KR. OTHER is not a source-review enum; ordinary metadata OTHER is not authority."
+      },
+      {
+        "order": 11,
+        "name": "DISTINCT_SOURCE_AND_LINK",
+        "reason": "SOURCE_LINK_UNVERIFIED",
+        "rule": "Different source IDs AND original SHA; common nonempty linkGroup. Not a same-file reinterpretation."
+      },
+      {
+        "order": 12,
+        "name": "PHYSICAL_MEMBER_MAPPING",
+        "reason": "PHYSICAL_MEMBER_MAPPING_UNVERIFIED",
+        "rule": "Both explicit HUMAN_REVIEWED_SAME_PHYSICAL_MEMBER mappings exactly selected identity, original own scope fragments, reference. No entity key alone, beam size, tier alone, sort or fuzzy pairing."
+      },
+      {
+        "order": 13,
+        "name": "PAIR_BOUND_APPLICABILITY",
+        "reason": "APPLICABILITY_DECISION_UNVERIFIED",
+        "rule": "Exactly one APPROVED pair decision for selected identity/two current frozen refs. All decisions already passed provenance before selection. Basis required original fragments on both sides+professional reference; retained metadata never means normative equivalence. Missing=>APPLICABILITY_DECISION_MISSING, multiple=>AMBIGUOUS_APPLICABILITY_DECISION, UNKNOWN/WITHDRAWN=>APPLICABILITY_DECISION_UNVERIFIED."
+      },
+      {
+        "order": 14,
+        "name": "DIRECTED_CATALOG_PREDICATE",
+        "reason": "UNSUPPORTED_CATEGORY_TRANSITION",
+        "rule": "Only existing frozen compare_steel_catalog_example PDС345/RDС245 yields CANDIDATE. Equal=>NEGATIVE_SCOPE_UNVERIFIED. Reverse/unknown never rank and never negative certificate."
+      }
+    ],
+    "limits": {
+      "wholeInputUtf8Bytes": 8000000,
+      "nodesIncludingKeys": 200000,
+      "depthRootZero": 64,
+      "containerItems": 32768,
+      "sources": 64,
+      "origins": 128,
+      "claimsPerSource": 16,
+      "claimsTotal": 128,
+      "pairDecisions": 16,
+      "pagesPerArtifact": 512,
+      "fragmentRawCodepoints": 2000000,
+      "fragmentCountPerMapping": 16,
+      "requestWholeParentUtf8Bytes": 524288,
+      "materializedWholeParentUtf8Bytes": 8000000
+    },
+    "authority": "Authenticated immutable human-review journal only; no cryptographic signature, normative equivalence, numerical strength certificate, coverage or approval inferred. Exact all-origin/all-claim/all-decision provenance before selected missing/UNKNOWN outcomes.",
+    "nativeStrings": "Unicode scalar/codepoint lengths; clean edges fixed Python whitespace set. Keys/reference no line controls U0000..0008,U000A..001F,U2028,U2029,U+FFFD; internal TAB/C1 follow explicit key policy, whole original raw preserved. Never trim/casefold input.",
+    "fullArtifact": "Frozen extract_source_declarations full-v2 validation and parser exact reconstruction are MANDATORY semantic checks; page numbering/count, native positive bbox, summary, duplicate paths, artifact/domain/decl hashes cannot be established by JSONSchema alone. Repository authenticates original bytes/release/manifest and recomputes approved page quality before protected projection.",
+    "declSnapshot": "Structural DTO does not prove literal value/raw/standard/applicability; all exact fields rebound by frozen source_declarations over original full artifacts. Rehashed snapshot never self-authenticates.",
+    "origin": "Original classification vs current classification separate. Origin target four fields; claim target additionally declarationId. Same source/check can contain multiple declarations; no fake observation IDs.",
+    "pairReference": "ProductScope in pair reference is retained descriptive structural metadata, not source parser output or normative enum. Exact match against reconstructed declaration mandatory. Different product/grade standards retained; no year/profile ranking.",
+    "hash": "Existing T34 declaration ID and textArtifactHash domains unchanged. Pair contentHash=SHA256(UTF8 portable canonical({hashDomain:matrix-kr056-steel-applicability-decision-json-v1,decision:entireBodyExcludingContentHash}))). Includes decisionId, identity, references, standards, basis; integrity only.",
+    "reviewRequest": "Request has no declarationSnapshot or authenticated decision materialization; strict deep decision-to-request projection. No parent/sourceReview integration in T69 pure packet."
+  }
+}

@@ -1,0 +1,132 @@
+import { createHash } from "node:crypto";
+import { types } from "node:util";
+import type { DocumentTextV4FullAuditSourceRead } from "@inspector-ai/contracts";
+import { readDocumentTextV4FullArtifact } from "./document-text-v4.js";
+
+export type NativeSourceComparisonOrigin = Omit<DocumentTextV4FullAuditSourceRead, "pageStages" | "latestReviewHash">;
+export type NativeSourceComparisonOriginReason = "INVALID_ORIGIN" | "INVALID_TEXT_ARTIFACT" | "INPUT_LIMIT"
+  | "PAIR_SCOPE_MISMATCH" | "IDENTICAL_SOURCE" | "SOURCE_ROLE_CONFLICT"
+  | "EXTRACTOR_PROFILE_MISMATCH" | "ORIGIN_ARTIFACT_MISMATCH";
+export const NATIVE_SOURCE_COMPARISON_LIMITS = Object.freeze({ maxPagesPerSource: 1024,
+  maxNativeLinesPerSource: 128000, maxQuotesPerSource: 4096, maxQuoteUtf8BytesPerSource: 1048576 });
+const SHA = /^[a-f0-9]{64}$(?![\s\S])/u;
+const ORIGIN_FIELDS = ["schemaVersion", "purpose", "sourceAuditProfileVersion", "resourcePolicyVersion", "checkId",
+  "sourceFileId", "sourceSha256", "inputManifestHash", "textStageContentHash", "textArtifactByteSha256",
+  "textArtifactContentHash", "extractorProfileHash", "stage", "authorityStatus", "renderedVisibility",
+  "calibratedProbability", "textArtifact"];
+const HASH_FIELDS = ["sourceSha256", "inputManifestHash", "textStageContentHash", "textArtifactByteSha256",
+  "textArtifactContentHash", "extractorProfileHash"] as const;
+type Json = Record<string, unknown>;
+const scalar = (s: string) => Array.from(s).every(c => { const n = c.codePointAt(0)!; return n < 0xd800 || n > 0xdfff; });
+
+/** Trusted, already validated JSON or newly built output only. Fixed JS code-unit key order. */
+export function nativeSourceCanonicalTrusted(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(nativeSourceCanonicalTrusted).join(",")}]`;
+  if (value && typeof value === "object") return `{${Object.keys(value).sort().map(key =>
+    `${JSON.stringify(key)}:${nativeSourceCanonicalTrusted((value as Json)[key])}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+export const nativeSourceSha256 = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
+
+/** Integrity only. No semantic/schema/authentication admission. Descriptor-first, no callbacks. */
+export function verifyNativeSourceComparisonHash(value: unknown, domain: string): boolean {
+  let nodes = 0, bytes = 0;
+  const ancestors = new Set<object>();
+  function encode(item: unknown, depth: number): string | undefined {
+    if (++nodes > 1400000 || depth > 64) return undefined;
+    if (item === null) return "null";
+    if (typeof item === "boolean") return item ? "true" : "false";
+    if (typeof item === "number") return Number.isSafeInteger(item) ? String(item) : undefined;
+    if (typeof item === "string") {
+      bytes += Buffer.byteLength(item, "utf8");
+      if (bytes > 32000000 || item.length > 2000000 || !scalar(item)) return undefined;
+      return JSON.stringify(item);
+    }
+    if (!item || typeof item !== "object" || types.isProxy(item) || ancestors.has(item)) return undefined;
+    const array = Array.isArray(item);
+    if (Object.getPrototypeOf(item) !== (array ? Array.prototype : Object.prototype)) return undefined;
+    const descriptors = Object.getOwnPropertyDescriptors(item), names = Reflect.ownKeys(descriptors);
+    if (names.length > 131072 || names.some(key => typeof key !== "string")) return undefined;
+    const length = array ? descriptors.length?.value : undefined;
+    if (array && (!Number.isSafeInteger(length) || length < 0 || length + 1 !== names.length)) return undefined;
+    const keys = array ? Array.from({ length }, (_, index) => String(index)) : (names as string[]).sort();
+    ancestors.add(item); const parts: string[] = [];
+    for (const key of keys) {
+      const descriptor = descriptors[key];
+      if (!descriptor?.enumerable || !Object.hasOwn(descriptor, "value")) return undefined;
+      const encodedKey = array ? "" : encode(key, depth + 1);
+      if (encodedKey === undefined) return undefined;
+      const encoded = encode(descriptor.value, depth + 1); if (encoded === undefined) return undefined;
+      parts.push(array ? encoded : `${encodedKey}:${encoded}`);
+    }
+    ancestors.delete(item);
+    return array ? `[${parts.join(",")}]` : `{${parts.join(",")}}`;
+  }
+  try {
+    if (typeof domain !== "string" || domain.length > 200 || !scalar(domain)
+      || !value || typeof value !== "object" || types.isProxy(value) || Object.getPrototypeOf(value) !== Object.prototype) return false;
+    const descriptors = Object.getOwnPropertyDescriptors(value), hash = descriptors.contentHash;
+    if (!hash?.enumerable || !Object.hasOwn(hash, "value") || typeof hash.value !== "string" || !SHA.test(hash.value)) return false;
+    const body: Json = {};
+    for (const key of Reflect.ownKeys(descriptors)) {
+      if (typeof key !== "string") return false;
+      const d = descriptors[key]; if (!d?.enumerable || !Object.hasOwn(d, "value")) return false;
+      if (key !== "contentHash") Object.defineProperty(body, key, { value: d.value, enumerable: true });
+    }
+    const raw = encode({ hashDomain: domain, result: body }, 0);
+    return raw !== undefined && Buffer.byteLength(raw, "utf8") <= 32000000 && nativeSourceSha256(raw) === hash.value;
+  } catch { return false; }
+}
+export function freezeNativeSourceOutput<T>(value: T): T {
+  if (value && typeof value === "object") { Object.values(value).forEach(freezeNativeSourceOutput); Object.freeze(value); }
+  return value;
+}
+function originShape(value: unknown): value is NativeSourceComparisonOrigin {
+  if (!value || typeof value !== "object" || types.isProxy(value) || Object.getPrototypeOf(value) !== Object.prototype) return false;
+  const descriptors = Object.getOwnPropertyDescriptors(value), keys = Reflect.ownKeys(descriptors);
+  if (keys.length !== ORIGIN_FIELDS.length || !ORIGIN_FIELDS.every(key => descriptors[key]?.enumerable
+    && Object.hasOwn(descriptors[key]!, "value"))) return false;
+  const v = value as Json;
+  return v.schemaVersion === "document-text-v4-full-source-read-v1" && v.purpose === "SOURCE_AUDIT_ONLY"
+    && v.sourceAuditProfileVersion === "SOURCE_AUDIT_V4_FULL_SOURCE_V1"
+    && v.resourcePolicyVersion === "document-text-v4-full-source-bounds-v1"
+    && [v.checkId, v.sourceFileId].every(id => typeof id === "string" && id.length > 0 && id.length <= 200
+      && scalar(id) && !/[\u0000-\u0020\u007f-\u009f]/u.test(id))
+    && HASH_FIELDS.every(key => typeof v[key] === "string" && SHA.test(v[key] as string))
+    && ["PD", "RD", "UNRESOLVED"].includes(v.stage as string)
+    && v.authorityStatus === "SOURCE_DECLARED_UNVERIFIED" && v.renderedVisibility === "UNVERIFIED"
+    && v.calibratedProbability === null;
+}
+function verify(origin: NativeSourceComparisonOrigin): NativeSourceComparisonOriginReason | undefined {
+  const read = readDocumentTextV4FullArtifact(origin.textArtifact);
+  if (read.status !== "VALID") return read.reasonCode === "INPUT_LIMIT" ? "INPUT_LIMIT" : "INVALID_TEXT_ARTIFACT";
+  const a = origin.textArtifact;
+  if (a.extractorProfile.traversalPolicyVersion !== "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1"
+    || a.extractorProfileHash !== origin.extractorProfileHash) return "EXTRACTOR_PROFILE_MISMATCH";
+  const bytesHash = nativeSourceSha256(nativeSourceCanonicalTrusted(a));
+  if (a.sourceFileId !== origin.sourceFileId || a.inputSha256 !== origin.sourceSha256
+    || read.contentHash !== origin.textArtifactContentHash || bytesHash !== origin.textArtifactByteSha256
+    || origin.textStageContentHash !== bytesHash) return "ORIGIN_ARTIFACT_MISMATCH";
+  return undefined;
+}
+/** checkId is this origin's run identity. Independent object/release membership must be authenticated by caller. */
+export function validateNativeSourceComparisonPair(pd: NativeSourceComparisonOrigin, rd: NativeSourceComparisonOrigin): NativeSourceComparisonOriginReason | undefined {
+  try {
+    if (!originShape(pd) || !originShape(rd)) return "INVALID_ORIGIN";
+    if (pd.checkId !== rd.checkId || pd.inputManifestHash !== rd.inputManifestHash) return "PAIR_SCOPE_MISMATCH";
+    if (pd.sourceFileId === rd.sourceFileId || pd.sourceSha256 === rd.sourceSha256) return "IDENTICAL_SOURCE";
+    if (pd.stage === "RD" || rd.stage === "PD") return "SOURCE_ROLE_CONFLICT";
+    for (const origin of [pd, rd]) { const reason = verify(origin); if (reason) return reason; }
+    if (pd.extractorProfileHash !== rd.extractorProfileHash) return "EXTRACTOR_PROFILE_MISMATCH";
+    return undefined;
+  } catch { return "INVALID_ORIGIN"; }
+}
+export function nativeSourceProvenance(origin: NativeSourceComparisonOrigin, role: "PD" | "RD", count: number) {
+  return { checkId: origin.checkId, sourceFileId: origin.sourceFileId, sourceSha256: origin.sourceSha256,
+    inputManifestHash: origin.inputManifestHash, textStageContentHash: origin.textStageContentHash,
+    textArtifactByteSha256: origin.textArtifactByteSha256, textArtifactContentHash: origin.textArtifactContentHash,
+    extractorProfileHash: origin.extractorProfileHash, extractorProfile: { ...origin.textArtifact.extractorProfile },
+    sourceAuditProfileVersion: origin.sourceAuditProfileVersion, resourcePolicyVersion: origin.resourcePolicyVersion,
+    declaredStage: origin.stage, selectedRole: role, roleQualification: "UNVERIFIED" as const,
+    pageCount: origin.textArtifact.pageCount, scannedNativeLineCount: count };
+}

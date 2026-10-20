@@ -1,4 +1,15 @@
+import type { ColumnPylonSectionV2SourcePreview, ColumnPylonSectionV2ReviewList, ColumnPylonSectionV2Request, ColumnPylonSectionV2Journal, ColumnPylonSectionV2ComparisonPreviewRequest, ColumnPylonSectionV2Result } from "@inspector-ai/contracts";
+import type {MatrixWaterNodeInventorySelection,MatrixWaterNodeInventoryTarget,MatrixWaterNodeSourceInventory} from "@inspector-ai/contracts";
+import type {DocumentCoordinatePageFrame,DocumentCoordinatePreviewInput,DocumentCoordinatePreviewRead} from "@inspector-ai/contracts";
+import type {MatrixRailInventorySelection,MatrixRailInventoryTarget,MatrixRailSourceInventory} from "@inspector-ai/contracts";
+import type { InspectorReviewDetails, CandidateReviewAction } from "@inspector-ai/contracts";
+import type { MatrixCallInventorySelection, MatrixCallInventoryTarget, MatrixCallSourceInventory } from "@inspector-ai/contracts";
 import type {
+  MatrixLightingTechnologyPreviewRead,
+  LightingTechnologyV3Selection,
+  DocumentTextV3AuditSourceRead,
+  DocumentTextV3LargeAuditSourceRead,
+  DocumentTextV4FullAuditPageBatchRead,
   BinaryUploadRecord,
   CheckRun,
   CreateObjectInput,
@@ -14,14 +25,26 @@ import type {
   SourceFileListResponse,
   SourceReviewDecision,
   SourceReviewInput,
+  SteelApplicabilityReviewInput,
+  SteelApplicabilityReviewDecision,
+  MatrixInventorySourcePagesRead,
+  MatrixInventoryPreviewRead,
+  MatrixInventorySelection,
   UploadStage,
 } from "@inspector-ai/contracts";
 import { protocolRequiresGapAcknowledgement } from "./protocol-state";
+import type { LocalDocumentFrame, LocalDocumentRegistrationPreview, LocalDocumentRegistrationPreviewInput,
+  LocalDocumentRegistrationSaveInput, LocalDocumentRegistrationWorkspaceRead,
+  PersistedLocalDocumentRegistrationReview } from "../../../packages/contracts/src/local-document-registration.js";
+
+import type { DrainageSourceCandidatesV1 } from "./drainage-source-candidates-types";
+import type { DrainageSourcePreviewRequest } from "./DrainageSourceCandidates";
+import type { Ppm113SourceCandidatesV1, Ppm113SourcePreviewInputV1 } from "./ppm113-source-types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
 
 export interface VisualProposalAnalysis {
-  schemaVersion: "visual-proposal-analysis-v1" | "visual-proposal-analysis-v2" | "visual-proposal-analysis-v3" | "visual-proposal-analysis-v4" | "visual-proposal-analysis-v5" | "visual-proposal-analysis-v6";
+  schemaVersion: "visual-proposal-analysis-v1" | "visual-proposal-analysis-v2" | "visual-proposal-analysis-v3" | "visual-proposal-analysis-v4" | "visual-proposal-analysis-v5" | "visual-proposal-analysis-v6" | "visual-proposal-analysis-v7" | "visual-proposal-analysis-v8" | "visual-proposal-analysis-v9";
   status: "PROPOSAL_ONLY_UNVERIFIED";
   artifactId: string;
   contentHash: string;
@@ -35,15 +58,16 @@ export interface VisualProposalAnalysis {
     scannedPageNumbers?: number[];
     skippedPageCount?: number;
     documentContext?: {
-      schemaVersion: "document-context-v1";
-      methodId: "first-two-pdf-cover-text-pages-v1";
-      status: "HEATING" | "VENTILATION" | "UNKNOWN";
-      reasonCode: "TITLE_KEYWORD_MATCH" | "TITLE_CONFLICT" | "NO_TITLE_KEYWORD_MATCH";
-      inspectedPages: Array<{ pageNumber: number; textSha256: string; titleWindow: string | null }>;
+      schemaVersion: "document-context-v1" | "document-context-v2";
+      methodId: string;
+      status: string;
+      domains?: string[]; ambiguity?: boolean; unreadablePageCount?: number;
+      reasonCode: string;
+      inspectedPages: Array<{ pageNumber: number; textSha256: string; titleWindow?: string | null }>;
     };
     vlm?: {
       schemaVersion: "visual-vlm-observations-v1";
-      methodId: "spread-two-saved-proposals-v1" | "spread-two-saved-proposals-server-nonnegative-v1";
+      methodId: "spread-two-saved-proposals-v1" | "spread-two-saved-proposals-server-nonnegative-v1" | "all-saved-proposals-v1";
       eligibleProposalCount: number;
       selectedOrdinals: number[];
       omittedProposalCount: number;
@@ -1296,10 +1320,13 @@ export interface ReviewCandidatesRead {
 export interface ReviewCandidateDecisionInput {
   schemaVersion: "review-candidate-decision-v1";
   candidateId: string; artifactHash: string;
-  decision: "ACCEPT_FOR_REVIEW" | "REJECT";
+  decision: CandidateReviewAction;
+  details?: InspectorReviewDetails;
+  expectedDecisionHash?: string | null;
   note: string;
 }
 export interface ReviewCandidateDecisionRead extends ReviewCandidateDecisionInput {
+  inheritedFrom?: { decisionId: string; checkId: string; decisionHash: string; createdAt: string };
   id: string; checkId: string; actorId: string; decisionHash: string; createdAt: string;
 }
 export interface ReviewCandidateDecisionList {
@@ -1428,6 +1455,27 @@ export interface VisualProposalReviewList {
   canReview: boolean;
 }
 
+export interface MatrixCallInventoryPreviewRead {
+  checkId:string;sourceFileId:string;sourceSha256:string;latestReviewHash:string|null;
+  result:{schemaVersion:"matrix-odi123-call-inventory-source-result-v1";status:"RECONSTRUCTED";inventory:MatrixCallSourceInventory}
+    |{schemaVersion:"matrix-odi123-call-inventory-source-result-v1";status:"ABSTAIN";reasonCode:string};
+  target?:MatrixCallInventoryTarget;
+}
+
+export interface MatrixWaterNodePreviewRead {
+  checkId:string;sourceFileId:string;sourceSha256:string;latestReviewHash:string|null;
+  result:{schemaVersion:"matrix-zu129-water-node-source-result-v1";status:"RECONSTRUCTED";inventory:MatrixWaterNodeSourceInventory}
+    |{schemaVersion:"matrix-zu129-water-node-source-result-v1";status:"ABSTAIN";reasonCode:string};
+  target?:MatrixWaterNodeInventoryTarget;
+}
+
+export interface MatrixRailInventoryPreviewRead {
+  checkId:string;sourceFileId:string;sourceSha256:string;latestReviewHash:string|null;
+  result:{schemaVersion:"matrix-odi120-rail-inventory-source-result-v1";status:"RECONSTRUCTED";inventory:MatrixRailSourceInventory}
+    |{schemaVersion:"matrix-odi120-rail-inventory-source-result-v1";status:"ABSTAIN";reasonCode:string};
+  target?:MatrixRailInventoryTarget;
+}
+
 async function requestResponse(path: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers);
   if (init?.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
@@ -1440,13 +1488,64 @@ async function requestResponse(path: string, init?: RequestInit): Promise<Respon
   });
   if (!response.ok) {
     const error = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(error?.message ?? `Ошибка запроса: ${response.status}`);
+    throw Object.assign(new Error(error?.message ?? `Ошибка запроса: ${response.status}`), { status: response.status });
   }
   return response;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await requestResponse(path, init)).json() as Promise<T>;
+}
+
+/** New source-only route has a fixed raw UTF8 ceiling, separate from legacy readers. */
+async function requestLargeSourceText(path: string, signal?: AbortSignal): Promise<DocumentTextV3LargeAuditSourceRead> {
+  signal?.throwIfAborted();
+  const response = await requestResponse(path, { signal }), maxBytes = 33554432;
+  const announced = response.headers.get("Content-Length");
+  if (announced && /^[0-9]+$/u.test(announced) && Number(announced) > maxBytes) {
+    await response.body?.cancel(); throw new Error("Большой исходный текст превышает предел передачи 33 554 432 байта.");
+  }
+  if (!response.body) throw new Error("Ответ не содержит исходного текста.");
+  const reader = response.body.getReader(), decoder = new TextDecoder("utf-8", { fatal: true });
+  let bytes = 0, text = "";
+  try {
+    while (true) {
+      signal?.throwIfAborted(); const part = await reader.read(); signal?.throwIfAborted();
+      if (part.done) break;
+      bytes += part.value.byteLength;
+      if (bytes > maxBytes) throw new Error("Большой исходный текст превышает предел передачи 33 554 432 байта.");
+      text += decoder.decode(part.value, { stream: true });
+    }
+    text += decoder.decode(); signal?.throwIfAborted();
+    return JSON.parse(text) as DocumentTextV3LargeAuditSourceRead;
+  } catch (cause) { await reader.cancel().catch(() => {}); throw cause; }
+  finally { reader.releaseLock(); }
+}
+
+/** V4 batches have their own bounded transport; historical V3 reads stay unchanged. */
+async function requestFullSourceV4Batch(path: string, signal?: AbortSignal): Promise<DocumentTextV4FullAuditPageBatchRead> {
+  signal?.throwIfAborted();
+  const response = await requestResponse(path, { signal }), maxBytes = 33554432;
+  const announced = response.headers.get("Content-Length");
+  if (response.headers.get("Content-Type")?.split(";", 1)[0]?.trim().toLowerCase() !== "application/json"
+    || announced && /^[0-9]+$/u.test(announced) && Number(announced) > maxBytes) {
+    await response.body?.cancel(); throw new Error("Неподдерживаемый или слишком большой ответ полного аудита PDF.");
+  }
+  if (!response.body) throw new Error("Ответ не содержит пакет исходных страниц.");
+  const reader = response.body.getReader(), decoder = new TextDecoder("utf-8", { fatal: true });
+  let bytes = 0, text = "";
+  try {
+    while (true) {
+      signal?.throwIfAborted(); const part = await reader.read(); signal?.throwIfAborted();
+      if (part.done) break;
+      bytes += part.value.byteLength;
+      if (bytes > maxBytes) throw new Error("Пакет исходных страниц превышает предел передачи 33 554 432 байта.");
+      text += decoder.decode(part.value, { stream: true });
+    }
+    text += decoder.decode(); signal?.throwIfAborted();
+    return JSON.parse(text) as DocumentTextV4FullAuditPageBatchRead;
+  } catch (cause) { await reader.cancel().catch(() => {}); throw cause; }
+  finally { reader.releaseLock(); }
 }
 
 function csrfToken(): string | undefined {
@@ -1482,10 +1581,24 @@ export const api = {
     `${API_BASE}/objects/${encodeURIComponent(objectId)}/files/${encodeURIComponent(sourceFileId)}/pages/${encodeURIComponent(pageNumber)}/preview`,
   sourcePageCropUrl: (objectId: string, sourceFileId: string, pageNumber: number, bbox: readonly [number, number, number, number]) =>
     `${API_BASE}/objects/${encodeURIComponent(objectId)}/files/${encodeURIComponent(sourceFileId)}/pages/${encodeURIComponent(pageNumber)}/preview?crop=${bbox.join(",")}`,
-  listSourceFiles: (id: string) => request<SourceFileListResponse>(`/objects/${id}/files`),
-  async getSourceReview(objectId: string, sourceFileId: string): Promise<SourceReviewDecision | null> {
+  listSourceFiles: (id: string, signal?: AbortSignal) => request<SourceFileListResponse>(`/objects/${id}/files`, { signal }),
+  listSourceOcrImports: (checkId: string, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").SourceOcrImportWorkspace>(`/checks/${encodeURIComponent(checkId)}/source-ocr-imports`, { signal }),
+  importSourceOcr: (checkId: string, sourceFileId: string, input: import("@inspector-ai/contracts").SourceOcrImportBundle, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").SourceOcrImportRecord>(`/checks/${encodeURIComponent(checkId)}/sources/${encodeURIComponent(sourceFileId)}/source-ocr-imports`, { method: "POST", headers: commandHeaders(), body: JSON.stringify(input), signal }),
+  reviewSourceOcr: (checkId: string, input: import("@inspector-ai/contracts").SourceOcrReviewInput, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").SourceOcrReviewRecord>(`/checks/${encodeURIComponent(checkId)}/source-ocr-reviews`, { method: "POST", headers: commandHeaders(), body: JSON.stringify(input), signal }),
+  listNativeAirflowComparisons: (checkId: string, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").NativeAirflowWorkspace>(`/checks/${encodeURIComponent(checkId)}/native-airflow-comparisons`, { signal }),
+  compareNativeAirflow: (checkId: string, input: import("@inspector-ai/contracts").NativeAirflowCompareInput, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").NativeAirflowRecord>(`/checks/${encodeURIComponent(checkId)}/native-airflow-comparisons`, { method: "POST", headers: commandHeaders(), body: JSON.stringify(input), signal }),
+  listNativeCapacityComparisons: (checkId: string, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").NativeCapacityWorkspace>(`/checks/${encodeURIComponent(checkId)}/native-capacity-comparisons`, { signal }),
+  compareNativeCapacity: (checkId: string, input: import("@inspector-ai/contracts").NativeCapacityCompareInput, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").NativeCapacityRecord>(`/checks/${encodeURIComponent(checkId)}/native-capacity-comparisons`, { method: "POST", headers: commandHeaders(), body: JSON.stringify(input), signal }),
+  async getSourceReview(objectId: string, sourceFileId: string, signal?: AbortSignal): Promise<SourceReviewDecision | null> {
     const response = await fetch(`${API_BASE}/objects/${objectId}/files/${sourceFileId}/source-review`, {
-      credentials: "include",
+      credentials: "include", signal,
     });
     if (response.status === 404) return null;
     if (!response.ok) {
@@ -1498,6 +1611,55 @@ export const api = {
     request<SourceReviewDecision>(`/objects/${objectId}/files/${sourceFileId}/source-review`, {
       method: "POST", headers: commandHeaders(), body: JSON.stringify(input),
     }),
+  getColumnPylonSectionV2Source: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<ColumnPylonSectionV2SourcePreview>(`/checks/${encodeURIComponent(checkId)}/column-pylon-section-source-v2?sourceFileId=${encodeURIComponent(sourceFileId)}`,{signal}),
+  getColumnPylonSectionV2Reviews: (objectId:string,signal?:AbortSignal) =>
+    request<ColumnPylonSectionV2ReviewList>(`/objects/${encodeURIComponent(objectId)}/column-pylon-section-reviews-v2`,{signal}),
+  recordColumnPylonSectionV2Review: (objectId:string,input:ColumnPylonSectionV2Request,signal?:AbortSignal,idempotencyKey?:string) => {
+    const headers=commandHeaders(); if(idempotencyKey) headers.set('Idempotency-Key',idempotencyKey);
+    return request<ColumnPylonSectionV2Journal>(`/objects/${encodeURIComponent(objectId)}/column-pylon-section-reviews-v2`,{method:'POST',headers,body:JSON.stringify(input),signal});
+  },
+  previewColumnPylonSectionV2Comparison: (objectId:string,input:ColumnPylonSectionV2ComparisonPreviewRequest,signal?:AbortSignal) =>
+    request<ColumnPylonSectionV2Result>(`/objects/${encodeURIComponent(objectId)}/column-pylon-section-comparison-v2`,{method:'POST',headers:mutationHeaders(),body:JSON.stringify(input),signal}),
+  getSteelApplicabilityReviews: (objectId:string,signal?:AbortSignal) =>
+    request<{items:SteelApplicabilityReviewDecision[];canReview:boolean}>(`/objects/${encodeURIComponent(objectId)}/steel-applicability-reviews`,{signal}),
+  recordSteelApplicabilityReview: (objectId:string,input:SteelApplicabilityReviewInput,signal?:AbortSignal) =>
+    request<SteelApplicabilityReviewDecision>(`/objects/${encodeURIComponent(objectId)}/steel-applicability-reviews`,{
+      method:'POST',headers:commandHeaders(),body:JSON.stringify(input),signal}),
+  getSourceInventoryPages: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<MatrixInventorySourcePagesRead>(`/checks/${encodeURIComponent(checkId)}/source-inventory-pages?sourceFileId=${encodeURIComponent(sourceFileId)}`,{signal}),
+  getDocumentTextV3Source: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<DocumentTextV3AuditSourceRead>(`/checks/${encodeURIComponent(checkId)}/source-text-v3?sourceFileId=${encodeURIComponent(sourceFileId)}`,{signal}),
+  getDocumentTextV3LargeSource: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    requestLargeSourceText(`/checks/${encodeURIComponent(checkId)}/source-text-v3-large-v1?sourceFileId=${encodeURIComponent(sourceFileId)}`,signal),
+  getDocumentTextV4FullPageBatch: (checkId: string, sourceFileId: string, input: {
+    startPage: number; pageLimit: number; expectedArtifactContentHash?: string;
+  }, signal?: AbortSignal) => {
+    const query = new URLSearchParams({ sourceFileId, startPage: String(input.startPage), pageLimit: String(input.pageLimit),
+      ...(input.expectedArtifactContentHash === undefined ? {} : { expectedArtifactContentHash: input.expectedArtifactContentHash }) });
+    return requestFullSourceV4Batch(`/checks/${encodeURIComponent(checkId)}/source-text-v4-full-source-v1/pages?${query}`, signal);
+  },
+  previewSourceLightingTechnology: (checkId:string,sourceFileId:string,selection:LightingTechnologyV3Selection,signal?:AbortSignal) =>
+    request<MatrixLightingTechnologyPreviewRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/lighting-technology-preview`,{
+      method:"POST",headers:mutationHeaders(),body:JSON.stringify({selection}),signal}),
+  previewSourceInventory: (checkId:string,sourceFileId:string,selection:MatrixInventorySelection,signal?:AbortSignal) =>
+    request<MatrixInventoryPreviewRead>(`/checks/${encodeURIComponent(checkId)}/source-inventory-preview`,{
+      method:"POST",headers:commandHeaders(),body:JSON.stringify({sourceFileId,selection}),signal}),
+  getSourceCallInventoryPages: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<MatrixInventorySourcePagesRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/call-inventory-pages`,{signal}),
+  previewSourceCallInventory: (checkId:string,sourceFileId:string,selection:MatrixCallInventorySelection,signal?:AbortSignal) =>
+    request<MatrixCallInventoryPreviewRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/call-inventory-preview`,{
+      method:"POST",headers:mutationHeaders(),body:JSON.stringify({selection}),signal}),
+  getSourceRailInventoryPages: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<MatrixInventorySourcePagesRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/rail-inventory-pages`,{signal}),
+  previewSourceRailInventory: (checkId:string,sourceFileId:string,selection:MatrixRailInventorySelection,signal?:AbortSignal) =>
+    request<MatrixRailInventoryPreviewRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/rail-inventory-preview`,{
+      method:"POST",headers:mutationHeaders(),body:JSON.stringify({selection}),signal}),
+  getSourceWaterNodePages: (checkId:string,sourceFileId:string,signal?:AbortSignal) =>
+    request<MatrixInventorySourcePagesRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/water-node-pages`,{signal}),
+  previewSourceWaterNode: (checkId:string,sourceFileId:string,selection:MatrixWaterNodeInventorySelection,signal?:AbortSignal) =>
+    request<MatrixWaterNodePreviewRead>(`/checks/${encodeURIComponent(checkId)}/source-files/${encodeURIComponent(sourceFileId)}/water-node-preview`,{
+      method:"POST",headers:mutationHeaders(),body:JSON.stringify({selection}),signal}),
   createObject: (input: CreateObjectInput) =>
     request<InspectionObject>("/objects", {
       method: "POST",
@@ -1513,11 +1675,49 @@ export const api = {
       body,
     });
   },
-  startCheck: (id: string) => request<CheckRun>(`/objects/${id}/checks`, {
+  previewDrainageSourceCandidates: (objectId: string, input: DrainageSourcePreviewRequest, signal?: AbortSignal) =>
+    request<DrainageSourceCandidatesV1>(`/objects/${encodeURIComponent(objectId)}/drainage-source-candidates/preview`, {
+      method: "POST", headers: mutationHeaders(), body: JSON.stringify(input), signal,
+    }),
+  getGeometryRegistration: (objectId: string, sourceFileId: string, registrationId: string) => request<Record<string, any>>(`/objects/${encodeURIComponent(objectId)}/files/${encodeURIComponent(sourceFileId)}/geometry-registrations/${encodeURIComponent(registrationId)}`),
+  getDocumentCoordinateFrame: (objectId: string, sourceFileId: string, pageNumber: number, checkId: string, signal?: AbortSignal) =>
+    request<DocumentCoordinatePageFrame>(`/objects/${encodeURIComponent(objectId)}/files/${encodeURIComponent(sourceFileId)}/pages/${pageNumber}/document-coordinate-frame?${new URLSearchParams({checkId})}`, {signal}),
+  previewPpm113SourceCandidates: (objectId: string, input: Ppm113SourcePreviewInputV1, signal?: AbortSignal) =>
+    request<Ppm113SourceCandidatesV1>(`/objects/${encodeURIComponent(objectId)}/ppm113-source-candidates/preview`, {
+      method: "POST", headers: mutationHeaders(), body: JSON.stringify(input), signal,
+    }),
+  previewDocumentCoordinates: (objectId: string, input: DocumentCoordinatePreviewInput, signal?: AbortSignal) =>
+    request<DocumentCoordinatePreviewRead>(`/objects/${encodeURIComponent(objectId)}/document-coordinates/preview`, {
+      method: "POST", headers: mutationHeaders(), body: JSON.stringify(input), signal,
+    }),
+  getLocalRegistrationFrame: (objectId: string, sourceFileId: string, pageNumber: number, floorKey: string, phaseKey: string) =>
+    request<LocalDocumentFrame>(`/objects/${encodeURIComponent(objectId)}/files/${encodeURIComponent(sourceFileId)}/pages/${pageNumber}/local-registration-frame?${new URLSearchParams({ floorKey, phaseKey })}`),
+  getLocalRegistrationWorkspace: (objectId: string) =>
+    request<LocalDocumentRegistrationWorkspaceRead>(`/objects/${encodeURIComponent(objectId)}/local-registrations`),
+  previewLocalRegistration: (objectId: string, input: LocalDocumentRegistrationPreviewInput) =>
+    request<LocalDocumentRegistrationPreview>(`/objects/${encodeURIComponent(objectId)}/local-registrations/preview`, {
+      method: "POST", headers: mutationHeaders(), body: JSON.stringify(input),
+    }),
+  saveLocalRegistrationReview: (objectId: string, input: LocalDocumentRegistrationSaveInput, idempotencyKey: string) =>
+    request<PersistedLocalDocumentRegistrationReview>(`/objects/${encodeURIComponent(objectId)}/local-registrations/reviews`, {
+      method: "POST", headers: mutationHeaders({ "Idempotency-Key": idempotencyKey }), body: JSON.stringify(input),
+    }),
+  listObjectChecks: (id: string, signal?: AbortSignal) => request<{ items: CheckRun[] }>(`/objects/${encodeURIComponent(id)}/checks`, {signal}),
+  startSourceAuditV3: (id: string) => request<CheckRun>(`/objects/${encodeURIComponent(id)}/source-audit-v3`, {
+    method: "POST", headers: commandHeaders(), body: JSON.stringify({}),
+  }),
+  startSourceAuditV3LargeVertical: (id: string, signal?: AbortSignal) => request<CheckRun>(`/objects/${encodeURIComponent(id)}/source-audit-v3-large-vertical-v1`, {
+    method: "POST", headers: commandHeaders(), body: JSON.stringify({}), signal,
+  }),
+  startSourceAuditV4Full: (id: string, signal?: AbortSignal) => request<CheckRun>(`/objects/${encodeURIComponent(id)}/source-audit-v4-full-source-v1`, {
+    method: "POST", headers: commandHeaders(), body: JSON.stringify({}), signal,
+  }),
+  startCheck: (id: string, analysisMode?: "SAMPLE" | "FULL") => request<CheckRun>(`/objects/${id}/checks`, {
     method: "POST",
     headers: commandHeaders(),
+    ...(analysisMode ? { body: JSON.stringify({ analysisMode }) } : {}),
   }),
-  getCheck: (id: string) => request<CheckRun>(`/checks/${id}`),
+  getCheck: (id: string, signal?: AbortSignal) => request<CheckRun>(`/checks/${encodeURIComponent(id)}`, { signal }),
   async getOcrLayout(checkId: string): Promise<OcrLayoutRead | null> {
     const response = await fetch(`${API_BASE}/checks/${encodeURIComponent(checkId)}/ocr-layout`, {
       credentials: "include",
@@ -1562,6 +1762,9 @@ export const api = {
     const data = await request<{ items: ParameterCoverageItem[] }>(`/checks/${id}/coverage`);
     return data.items;
   },
+  getMatrixExecution: (id: string,signal?:AbortSignal) => request<import("@inspector-ai/contracts").MatrixExecutionRead>(`/checks/${encodeURIComponent(id)}/matrix-execution`,{signal}),
+  getMatrixFactTargets: (id: string, signal?: AbortSignal) =>
+    request<import("@inspector-ai/contracts").MatrixFactTargetsRead>(`/checks/${encodeURIComponent(id)}/matrix-fact-targets`, {signal}),
   getPilotResults: (id: string) => request<PilotResultsRead>(`/checks/${encodeURIComponent(id)}/pilot-results`),
   listReviewCandidateDecisions: (id: string) =>
     request<ReviewCandidateDecisionList>(`/checks/${encodeURIComponent(id)}/review-candidate-decisions`),
@@ -1670,7 +1873,37 @@ export const api = {
     const data = await request<{ items: ParameterCatalogItem[] }>("/parameters");
     return data.items;
   },
+  async downloadProtocolArtifact(id: string, format: "pdf" | "docx" | "xml", signal?: AbortSignal): Promise<{ blob: Blob; contentHash: string | null }> {
+    const response = await requestResponse(`/protocols/${encodeURIComponent(id)}/artifacts/${format}`, { signal });
+    const expectedType = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xml: "application/xml" }[format];
+    const maxBytes = 16 * 1024 * 1024, announced = response.headers.get("Content-Length");
+    if (response.headers.get("Content-Type")?.split(";", 1)[0]?.trim().toLowerCase() !== expectedType
+      || announced && Number(announced) > maxBytes || !response.body) {
+      await response.body?.cancel(); throw new Error("Сервер вернул неподдерживаемый или слишком большой файл протокола.");
+    }
+    const reader = response.body.getReader(), chunks: BlobPart[] = [];
+    let size = 0;
+    try {
+      while (true) {
+        signal?.throwIfAborted(); const next = await reader.read(); signal?.throwIfAborted();
+        if (next.done) break;
+        size += next.value.byteLength;
+        if (size > maxBytes) throw new Error("Файл протокола превышает лимит 16 MiB.");
+        chunks.push(new Uint8Array(next.value).buffer);
+      }
+    } catch (error) { await reader.cancel().catch(() => {}); throw error; }
+    finally { reader.releaseLock(); }
+    if (!size) throw new Error("Сервер вернул пустой файл протокола.");
+    const blob = new Blob(chunks, { type: expectedType }), contentHash = response.headers.get("X-Content-SHA256");
+    if (contentHash && globalThis.crypto?.subtle) {
+      const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+      const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+      if (contentHash !== actual) throw new Error("Контрольная сумма скачанного протокола не совпала. Повторите скачивание.");
+    }
+    return { blob, contentHash };
+  },
   exportUrl: (id: string) => `${API_BASE}/protocols/${id}/export`,
   canonicalArtifactUrl: (id: string) => `${API_BASE}/protocols/${id}/artifacts/canonical-json`,
+  iaisPullUrl: (id: string) => `${API_BASE}/integrations/iais/protocols/${encodeURIComponent(id)}`,
   submissionUrl: (id: string) => `${API_BASE}/checks/${id}/submission`,
 };

@@ -73,7 +73,7 @@ describe("canonical legacy API contract", () => {
     expect(refs.length).toBeGreaterThan(0);
 
     for (const schemaRef of refs) {
-      expect(schemaRef).toMatch(/^#\/components\/schemas\/[A-Za-z]+$/);
+      expect(schemaRef).toMatch(/^#\/components\/schemas\/[A-Za-z][A-Za-z0-9]*$/);
       const schemaName = schemaRef.slice("#/components/schemas/".length);
       expect(apiSchemas).toHaveProperty(schemaName);
     }

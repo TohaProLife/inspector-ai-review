@@ -1,4 +1,526 @@
+## 2026-10-20 18:14 МСК — подсказка двойных единиц в OCR
+
+Принят web-only кандидат для одной полной строки кВт/Гкал/ч с непересекающимися точными интервалами округления; список, переход к исходной странице/строке и focus сохраняются после reload. Human CONFIRMED не скрывает противоречие. Реальный264-line replay дал1подсказкуF0201p8. Helper72, web1368, PostgreSQL22 и browser14 PASS; typecheck/build PASS. [Приёмка](operations/SOURCE_OCR_UNIT_QUALITY_20261020.md). Никаких исправлений исходных чисел, новых engineering warnings или роста покрытия.
+
+## 2026-10-20 17:54 МСК — текущие CPU-образы и два архива v4
+
+Чистый код3728162 принят в установленных API/web/worker образах: три сборки, offline export/worker self-check,51миграция,18/18заданий и весь676-страничный F0201; после перезапуска полный ответ совпал побайтно. [Квитанция](operations/evidence/final-qa-20261020/installed-cpu-3728162.json). Source и companion ZIP v4 зафиксированы SHA; companion111Python tests и два настоящих CLI replay PASS. Source вне Git/ancestor node_modules принят: fresh npm ci, typecheck/build, API4877/web1294/PostgreSQL22/Python2931 PASS;236 API и42 Python SKIP. Все2715 source payload pins неизменны; [квитанция](operations/evidence/final-qa-20261020/outside-checkout-3728162.json). Первые tmpfs ENOSPC отказы сохранены. [Точная передача](operations/FINAL_PACKAGE_V4_20261020.md). Новое инженерное покрытие, аппаратная приёмка H100 и отправка не заявлены.
+
+## 2026-10-20 17:36 МСК — отдельный OCR-импорт и чистая CPU-сборка
+
+Импорт сохранённых OCR responses теперь отдельный immutable derivative полного V4: сервер проверяет оригинальный PDF, сохраняет точные строки и человеческую сверку, UI даёт поиск/страницы/JSON. Реальный offline replay264строки/12страниц/8UNRESOLVED; происхождение внешнего растра и исполнение провайдера не подтверждены. PostgreSQL7, browser11, общий API4879/web1294 PASS; машинное покрытие остаётся62/132 с хотя бы одним узким правилом. Чистые CPU-образы5e95eb3 и runner075ce60 отдельно прошли18/18 заданий,676страниц и побайтное чтение после перезапуска; OCR требует новой установленной сборки. [Текущая передача](operations/FINAL_HANDOFF_20261020.md).
+
+## 2026-10-20 17:07 МСК — экспорт и сохраняемые native сверки
+
+Экспорт PDF/DOCX/XML из одного immutable snapshot принят (`f812e94`), хакатонный authenticated ИАИС pull facade — `1afe649`; внешняя доставка/подпись не заявлены. Сверка вместимости ПД/РД по полным V4 origins с PostgreSQL, историей, JSON и парным viewer принята в `85c3df1`. Реальная пара600/600мест:30 цитат ПД и9 РД; отдельный синтетический PG7/7 и browser9/9. Вентиляция П17: чистый движок79/79 на9060=3340+5720, PG8/8 и browser9/9; после независимого ревью приняты shared storage88/88, nested binding migration050 и итоговые PG15/15/browser9/9. Новая общая регрессияAPI4711/web1290 PASS; H100offline5cases+3resource mergesPASS, аппаратный запуск не выполнен. Исторические статусы ниже сохраняются как история, актуальная передача — [FINAL_HANDOFF_20261020.md](operations/FINAL_HANDOFF_20261020.md).
+
+Актуализация 20 октября, 12:22 МСК: подготовлен V9 для H100 без доступа к GPU: 8B FP8 SAMPLE/FULL, явные пропуски, context-v2/crop2048, исправленный native RabbitMQ healthcheck. Локальные API/worker/web-образы собраны и проверены изолированно. Реальные публичные пары упакованы отдельно; новые квалифицированные инженерные нарушения и независимая точность не заявлены. [Приёмка V9 и границы доказательств](operations/H100_V9_ACCEPTANCE_20261020.md). Полный переносимый прогон завершён: 8480 pass/246 skip/0 failed, typecheck/build и три installed-image probes PASS; для передачи использовать актуальный V9 review ZIP. H100 runtime и браузерная приёмка отсутствуют.
+
+Актуализация 20 октября, 04:18 МСК: локальный CPU-контур принят на свежем PDF через ClamAV/RabbitMQ/outbox/worker: девять заданий, `PARTIAL/100`, сохранённые чтения и полная очистка. Новые API/web-образы PPM-113 отдельно прошли TCP/HTTP; инженерное правило диаметра реализуется. [Текущая приёмка](operations/CURRENT_ACCEPTANCE_20261019.md). Браузер на SECURITY_HOLD; форма не отправлена.
+
+## 2026-10-20 03:50 МСК — установленный TCP/HTTP принят, PPM-113 продолжается
+
+20 октября, 03:50 МСК: установленная локальная CPU-сборка прошла настоящий TCP/HTTP-прогон: 45 миграций, 132 записи каталога, действующая сессия, CSRF, logout и 29 web-ресурсов. ROOT сверил 58 команд и 40 ответов; четыре контейнера, два тома и две сети удалены, соседние ресурсы сохранены. Приёмка: `output/local-work-20261020/local-http-smoke-v14-v6/root-actual-review.json`. Очередь в этом прогоне не запускалась.
+
+PPM-113: принят просмотр кандидатов из источника — 59 новых тестов, 186 регрессионных проверок дренажа, полный typecheck и web build. `output/local-work-20261020/ppm113-source-qualification-v3/root-actual-review.json`. Ответ сохраняет точные цитаты и SHA, `SOURCE_REVIEW_ONLY`, вероятность и покрытие `null`; это ещё не инженерная проверка. Два обновлённых API/web-образа собираются, worker остаётся прежним. Отдельное правило V14 для снижения внутреннего диаметра выбранного кольца ВПВ реализуется; реальная подтверждённая пара ПД/РД пока не установлена.
+
+Следом — настоящий NORMAL-прогон через ClamAV/RabbitMQ/worker. Браузер остаётся на SECURITY_HOLD после отказа автоматической проверки разрешения; причина отказа в доступных данных не сохранена, повторные попытки не выполняются. HTTP и SSR не подтверждают взаимодействие в браузере. Homeserver отложен по указанию пользователя; периодических SSH-проверок нет.
+
+## 2026-10-20 03:00 МСК — offline image probes и инструмент калибровки
+
+20 октября, 03:00 МСК: три локальных образа прошли отдельные offline probes. Установленные176модулей worker,25правил,336файлов API и29web-ресурсов совпали с эталонами; whole canonical policy и4исторические политики сверены. Одноразовые контейнеры удалены, наборы соседних контейнеров и томов не изменились. Приёмка: `output/local-work-20261020/local-image-probes-v14-v1/root-actual-review.json`. Это ещё не HTTP/очередь. Новый офлайн-инструмент калибровки `scripts/prepare-machine-confidence-calibration.py` принят с23синтетическими тестами; вычисляет PAV/Brier/ECE, проверяет hashes/разделение объектов и документов, вне fit-диапазона abstain. Реальная калибровка и runtime activation не приняты; документация `docs/operations/MACHINE_CONFIDENCE_CALIBRATION.md`.
+
+Текущее дополнение20октября02:53МСК: DockerV4 собрал все три обычных образа API/worker/web из1089исходников. ROOT принял1253привязки/160выходных файлов/38команд, реальные image IDs и очистку собственного builder при сохранности соседних контейнеров/томов. Итог `d9c7ab7748c9c375ff617ea51610aec8bf707c9ec3f3605490360ca4a29c6686`, ROOT review `53f99e413f7933598b525133e7b9002276788dabb09f4e68f47d5b0cd4b521e7`. Следом готовятся изолированные проверки содержимого образов и локальный HTTP-стенд. В confidence найден отдельный пробел офлайн-обучения калибровки: реализуется подготовка артефакта с независимыми метками и heldout-оценкой; активации вероятностей/независимых меток пока нет. Homeserver отложен по указанию пользователя.
+
+Текущее дополнение20октября02:43МСК: homeserver отложен по указанию пользователя; работа продолжается локально без периодических SSH-проверок. Создан и целиком проверен локальный ZIP контекста1089исходников плюс10материалов ревью: SHA `af90e88f3d32d3d9020b17954b7c5722e8008076ef143676e8943a0d82d8d7ea`, права0600; это не финальная сдача и не полный репозиторий. DockerV2 успешно загрузил BuildKit, затем остановился до сборки приложений: проверка ошибочно запрещала штатный daemon-флаг Buildx, несмотря на реальный bridge. Очистка и соседние контейнеры/тома проверены; исправляется только эта проверка. Текущая локальная приёмка full94/HTTP16/witness37 сохраняется. Подробности — [CURRENT_ACCEPTANCE_20261019.md](operations/CURRENT_ACCEPTANCE_20261019.md).
+
+Текущее дополнение20октября02:24МСК: source107 V14 прошёл полный94-набор, совместные API/web16HTTP-сценариев и отдельный сценарий одной заполненной области37runtime-фаз плюс сборка. Последний итог `b1cd8b68e8162ddd85e5224fd001620e5fd551dd055de173618a8e6f305cef5d`; ROOT review `output/matrix-t85-20261020/one-populated-inventory-inherit-v3/root-actual-review.json`, SHA `e9f8e6dfb4091a9100d613d408e965720b549f71fd80f6231140ecc941573970`. Пик447406080B,1266привязок,38шагов/журналы/JSON и очистка проверены. Эталон9заданий выведен отдельно из planner/валидатора/фиксированного текста; продукт и лимиты не менялись. Наследование/отзыв одной inventory-области подтверждены; шесть заполненных семейств, свежий OCR, инженерная квалификация, браузер и установка не подтверждены. Исправлены две ошибки Dockerfile; готовится локальная сборка. Последний SSH homeserver02:17МСК завершился timeout.
+
+## 20 октября, 01:31 МСК — drainage API с настоящей сессией и БД
+
+20октября02:03МСК: текущий source107 V14 прошёл original94 сценария с прежними лимитами; max group RSS517738496B. Итог3704daf335eb31ada1eef228ac882def1a64be6832b188877d44858f131f4fb0, ROOT review74aaddd50ee1bf6bdd9f202147f10c5ffe19a38050b20e7d9048479bb6696ea5; 1235pins,95steps/log/privateJSON и очистка БД/private точны. Перед ним прошли lifetime9 без принудительного GC, свежие worker202/wheel/sdist/две установки и14policy. Это локальная приёмка исходного набора сценариев; browser/стенд/реальные инженерные пары ещё не приняты. Совместный API/web HTTP16 прогон выполняется.
+
+Полное приложение прошло16 Fastify.inject сценариев с PostgreSQL/45миграциями, входом, CSRF, READ-доступом, отзывом доступа между чтениями, сменой проверки и сохранностью истории. Целый ответ на495реальных OCR-строк совпал с независимым эталоном7исходных ссылок. Итог `661da2e9a31a3f5bb430b61cfa7510697c94a518bc12469417f4a5442c0f309e`; приёмка — `output/local-work-20261020/drainage-source-api-http-preparation-v2/root-actual-review.json`. Слушающий TCP-сервер/браузер/инженерное покрытие не подтверждены.
+
+## 2026-10-20 01:19 МСК — дренажный preview API и причина конкурентного сбоя
+
+API предпросмотра исходных дренажных цитат: полный typecheck API/contracts,156 pure проверок и14 Fastify.inject проверок маршрута прошли. Реальный OCR-кэш495 строк дал полный ожидаемый ответ с7 ссылками. Цитаты имеют SOURCE_CANDIDATE, вероятностьnull и непроверенную геометрию; покрытие параметров не повышается. Приёмка: `output/local-work-20261020/drainage-source-api-preview-v2/root-actual-review.json`, outcomeSHA `90ede75eda12b6b434334bb84b190c83fd69f4e4dd966ddc75716c726f28f2d6`. Настоящий HTTP с PostgreSQL/сессией ещё готовится.
+
+После85 успешных сценариев full94 отдельный SQL-прогон подтвердил55P03 на блокировке квитанции одинаковой команды. Первая команда успешна; вторая не дождалась блокировки. Диагностика: `output/matrix-t85-20261020/concurrent-same-command-diagnosis-v1/root-actual-review.json`. Исходная ошибка и все лимиты сохранены. Новая межпроцессная очередь допуска пока не принята; полный94-набор и установкаv13 ещё впереди.
+
+Текущее состояние и оставшиеся границы: [CURRENT_ACCEPTANCE_20261019.md](operations/CURRENT_ACCEPTANCE_20261019.md).
+
+
+## 2026-10-19 — T85 память и совместная маршрутизация
+
+Focused V4: BUILD +71 runtime PASS; 70.572s, runtime peak501325824B <512MiB. Outcome `4a26bbbb11a491941fc9e82ce1cf2e36d7bc590fec636b36e26eccc208b32f56`; guarded DUT imports, same assertions/limits, cleanup/source exact.
+
+Combined104 inherited44: BUILD +44 runtime PASS,77.349s, max437100544B. Outcome `0bfb1693af579c909c396685e253056a87c10917771dfdc9b4e60892604ed97a`; actual inherited durable inventory/replay/CAS/current source/PDF guard tests accepted.
+
+Combined104 full94 first RED retained:35 runtime steps passed, including previous memory refusal at08WORK (now484368384B) and seal completion10 (525766656B). `BOOTSTRAP_TARGETS` rejected public read value before target oracle assertions. Outcome `ba55a37a70618ba50f976ae26a2d26a806546a1ba3b0d5ea8e01887ca58c1455`. DB cleanup0/private gone/protected exact; full94 NOT accepted. Read-only root-cause diagnosis underway.
+
+T84 candidate PG4/4 +focused2/2 and final independent binding review accepted. Explicit API/outbox-only install now running on authorized ordinary stand; no ordinary-host20s PASS claimed yet.
+
+
+## 2026-10-19 19:52 MSK — локальные проверки перед продолжением homeserver
+
+- T84: genuine PG4/4 и focused2/2 прошли вместе с двумя noEmit. Outcome `a8735e2e309ae00e3ee9e4b93e068f7e763a489479366868fe1704f75bac6849`; owned DB cleanup0, private/source pins exact. Node384, aggregate PG suite1024MiB/CPU300/wall600, операция20s сохранена. Ordinary-host20s ещё не подтверждён, overlay пока не установлен.
+- T85 focused V3 подтвердил единственное запрещённое действие загрузчика `tsx/dist/client-D_mPDF5S.mjs`: `node:net.createConnection` до DUT. Все41 whole-assembly/getter проверки прошли, весь71-набор не принят из-за exit1. Outcome `b77b7012525f308c13a8dafb3104d4debd5c1c738fa91fb6fe2a4143987ca5f0`; исходники/cleanup exact. Готовится отдельная коррекция bootstrap без ослабления запретов или caps.
+- Combined104: ROOT сверил780/751 pins двух неизменённых runtime-наборов94/44. Запусков пока нет.
+
+## 19.10 19:45 МСК — inherited inventory44 PASS; memory focused41 assertions PASS, harness refusal retained
+
+- Inherited inventory consumerV2 genuine BUILD+44 runtime phases PASS,71.953s. Outcome `a1910beb61ee00ea0b0779e988165ae657da7c68091e0f772fa52654d22477e0`, ROOT acceptance в consumer-v2/root-actual-acceptance.json. Max runtimeRSS432500736B при512МиБ; normalDROP0/private527 removed/allpins exact. Настоящие9jobs SEAL, populated inventory + inherited scalar[]/omittedNULL, exact receipt/conflict/CAS/PDF/revocation/current-stage/raw-origin/resource/refinal revocation проверены. One populated family only; other5/full6, nonempty scalarrevocation и61 durableengineeringoracles остаются отдельными границами.
+- Memory focusedV2: BUILD_ONLYPASS; все41wholeassertion/getterPASS при437428224B. Childexit1 от отдельного preload FORBIDDEN_RUNTIME_ATTEMPTS:1 после записи observedPASS. Эти41 не считаются полным71PASS. Исследуется служебный tsx IPC; разрешения DUT не ослабляются. V1/V2 результаты сохранены.
+- MemoPG V5 ещё остановлен на aggregate1024МиБ при1076146176B, source/test/cleanup exact. НовыйV6 уменьшает V8heap768 до384, оставляет aggregate1024/CPU300/wall600 и20soperation; добавляет только metadata по процессам. РезультатV6 пока pending. Stand overlay не установлен.
+
+## 19.10 18:15 МСК — проверки продолжаются; отказы сборки и harness сохранены
+
+- Memo-кандидат v12: V2 остановлен на BUILD RSS537665536B при512МиБ, runtime не выполнялся (`f5b96e4d068c17a30934e0b399a2d7f3664858345c800e986229164d7e0740c3`). В отдельном V4 build-only1024МиБ/Node768 оба noEmit и focused2 PASS; genuinePG4 остановлен на суммарной памяти1081794560B при1024МиБ до готового отчёта (`aa1ee0957aa52c475a48c481f47133698dd1cd4783d549bf8f09c1b331ce6f01`). Cleanup0, private removed, source pins exact в обоих. Рабочий20s deadline не менялся; установка этого кандидата ещё не разрешена результатами.
+- Memory focused71 V1: BUILD_ONLY TS2554 в cleanup тестового generator.return без аргумента; runtime0. Ошибка расположена в consumer, source/private pins exact и cleanupPASS. Готовится отдельная type-only коррекция вызова с явным undefined; прежний RED сохраняется.
+- Для будущего v13 подготовлена явная композиция memory/routing/memo,104 targets. Четыре пересечения объединены с сохранением budget precharge и transaction-local memo. Ready `a1e768005cdba1ad7254d6ad4afa9bad544bf68261425f4cef6a0f3eee3b90be`; только исходники, runtime пока не принят.
+- Browser HOLD, calibratedProbability=null, realQualifiedPairs0; новое покрытие этими подготовками не заявлено.
+
+## 19.10 17:57 МСК — упаковщик проверен; две оптимизации подготовлены
+
+- Packaging fixture consumer: actual25/25 PASS за1.295с, source pins exact, temp cleanup PASS. Receipt `output/submission-snapshot-consumer-20261019-v1/first-result.json`, SHA `f8e9beb1a175e882582b14ea62894a016ff70d59272621a42d2ad7b816d21db2`. Настоящий архив сдачи пока не создан; это проверка целостности упаковки.
+- v12 подготовлен transaction-local memo для повторной реконструкции двух immutable origins; fresh current source/review/job headers и независимый C сохранены. v13 подготовлен validate-only entry вместо23 выбрасываемых полных canonical strings. Обе версии output-only, ускорение и снижение памяти пока не подтверждены.
+- Genuine one-inventory inheritance consumer: actual30 runtime phases PASS, затем test-only RED — harness ожидал10 jobs при настоящем9-job профиле безOCR. Outcome `10ea619d626357c889697c6ae5be09db55d7b2bb83e8c9aae7bc4b186c16cb2e`; cleanup DB0/private removed/all pins exact. Готовится отдельная версия ожиданий9 без изменения профиля. Полные шесть семейств, fresh extraction и реальная инженерная квалификация этим не заявлены.
+
+## 19.10 17:41 МСК — v12 baseline проверен; причины двух отказов локализованы
+
+- Тот же CHK-12F624DC прошёл полную проверку настроенного OCR v2: 10 заданий, 63 scalar/70 outputs/132 coverage, две обработанные страницы ПД99/100 и десять отложенных. Проверка исходных документов тоже PASS. Нового baseline POST не было. Receipt `configured-ocr-verification-correction-v2/controlled-v12-v3-normal-baseline.json`, SHA `c66aab94da88ecf9b6bb3d13e4010c5e315b0384fc40e1520a245da6fc59c320`.
+- Следующая команда пары вернула503 KR060_PDF_IO_DEADLINE за22.447с. SHA сохранённого тела совпадает с точным native JSON ошибки. Свежая БД: receipt для ключа0, source reviews2, только UNKNOWN draft1, runs2, active0. Неопределённый ключ/тело сохранены, повтор не выполнялся. Read-only diagnosis `cae9e951eb9342cce24c54e7dc838ca7367b82eee60ed246358e7220979302d8`. Готовится устранение повторной реконструкции immutable origin внутри одной транзакции; лимит20с остаётся.
+- v13 V8 без tsx supervisor всё ещё превысил512МиБ. V9 с ограниченными metadata-наблюдателями прошёл те же27 фаз: пик544694272B = Node473755648B + Python70938624B, маршрут REVIEWED_LOADER_V13. Outcome `6f9d53f00eae731a958b6b86ba199f3153603d0a8b8c19a595475d3b078f2901`. База и private copy удалены, все pins точны. Атрибуция подтверждена; оптимизация ещё не проверена. Ни лимиты, ни assertions не ослаблялись.
+- Полная приёмка v12/v13 пока не завершена. Browser HOLD, probability=null, realQualifiedPairs0.
+
+## 19.10 17:07 МСК — первый полный анализ v12 завершён; проверка OCR уточняется
+
+## 19.10 17:26 МСК — v13 полный worker PASS; PostgreSQL остановлен лимитом памяти
+
+- Genuine compatible wrapper v13: четыре сценария PASS — полный RULE, подмена retained target, forged fact ID и изменение source stage. Outcome `output/matrix-t85-20261019/compatible-rule-seal-consumer-v4/first-results/outcome.json`, SHA `9a846912e3e3991abcae178386fed1cd182ad0d7dfa1f92ad59c21e6930761ee`. Положительный сценарий 33.362 с / 257816 КиБ; 64 скалярных результата, 71 выход, 132 строки покрытия. Все private/source/dependency pins сохранены, временная копия удалена. Это настоящий worker/HTTP transport на полных PDF-derived artifacts с синтетической связью; server SEAL и реальная квалификация этим не подтверждены.
+- Durable PG V7 прошёл 27 runtime этапов, затем BOOTSTRAP_08_WORK остановлен PROCESS_GROUP_RSS_LIMIT: 561618944 байт при 512 МиБ. Outcome `eeb8f33df8f8283c86e5ce951c5d2d42901dc13c4e0535c8fc028efa2ad3d414`. Тестовая база удалена, 526 private copies очищены, source103 и protected pins точны. Лимиты не повышались; исследуется лишний процесс tsx CLI supervisor. Исходный RED сохранён.
+- OCR verification overlay V2 прошёл локальный selftest: корректный вход, swapped/+2 geometry приняты, 16 повреждений отвергнуты. Receipt `output/matrix-t84-20261018/configured-ocr-verification-correction-v2/local-selftest-first-result.json`, SHA `ebb4cf2db4ba3708ef7b1f9476ecfc17a10833d1792371ec49e64b4e5287a9e1`. Проверка стенда пока pending. Fresh read-only precheck подтвердил один существующий baseline CHK-12F624DC/одну command receipt, никаких новых запусков или source reviews; jobs/runs0, сессия действительна.
+- Все прежние RED сохранены. Browser HOLD, calibratedProbability=null, realQualifiedPairs0.
+
+- Единственная сохранённая команда после исправления прав вернула 201: `CHK-12F624DC`. Все десять заданий завершились с первой попытки, сохранены 63 скалярных результата и 70 выходов. Повторного анализа не создавали. Свежая сверка 785 прежних ответов после исправления API/outbox PASS.
+- Проверка остановилась на устаревшем ожидании `UNCONFIGURED`: стенд уже включает `INSPECTOR_MATRIX_OCR_LAYOUT=1`. Настоящий bounded OCR v2 обработал страницы 99/100 ПД, десять требующих OCR страниц отложены; для РД требующих OCR страниц нет. Готовится отдельная версия проверки профиля, хешей, геометрии и отложенных страниц. Провайдер не отключается; исходный отказ сохранён. Полные 79 заданий, перезапуск и итоговая приёмка ещё pending.
+- Извлечение текстового слоя полных оригиналов заняло около 189 секунд. Замер 41.799 секунды ниже относится к расчётному ядру, а не ко всему свежему PDF/OCR pipeline. OCR scores не являются калиброванной вероятностью инженерного вывода.
+
+## 19.10 — v12 установлен; исправлен отказ запуска SUPERVISOR
+
+- Напоминание `inspector-ai-homeserver` удалено. Доступ восстановлен; работа идёт на обычном CPU тестового стенда.
+- Семь ролей v12 установлены; исходники API, 168 модулей и 25 правил каждого worker, три web-ассета сверены. Миграции 044/045 добавлены, прежние 43 сохранены. История: 785 GET и SQL до/после установки совпали. Аудит полных ПД139/РД32 прошёл девять настоящих заданий очереди.
+- Полный анализ сначала получил 409 `KR060_SNAPSHOT_INPUT_INTEGRITY`: проверка admission требовала capability RUN_START, хотя API разрешает SUPERVISOR по роли. Исходный отказ и ключ команды сохранены. На настоящей PostgreSQL старый код дал ожидаемые 3/4, исправленный 4/4; свежие права организации, сессии и объекта проверяются по-прежнему.
+- Установлено явное исправление одного файла API; пересозданы только API/outbox. Остальные 25 контейнеров, настройки и 45 миграций сохранены. Полная сверка установленного кода после исправления PASS. Новая приёмка, семь обычных запусков/79 заданий и перезапуск ещё pending; первоначальный freeze не переписан.
+- T85: полный noEmit API+contracts V4 PASS (`32dfd5a5d31cc92cc13d857329b610701f8db326273613faa44c042558c5c279`); genuine base guards/API/worker/wheel/sdist+две установки PASS (`b306c8890af1380295f622889a593aa1243078877c084111b029e45bcdfeee0a`); общие лимиты rowset проверены двумя настоящими PG-тестами. Полный durable v13 ещё не принят.
+- Браузерная проверка удерживается прежним отказом automatic approval review. CLI/HTTP/SSR не являются browser proof. Реально квалифицированных пар 0, калиброванная вероятность null.
+
+## 19.10 15:39 МСК — обычный homeserver CPU PASS, сервисы сохранены
+
+- Пользователь подтвердил восстановление доступа и разрешил продолжение на homeserver; heartbeat `inspector-ai-homeserver` удалён штатным automation tool. SSH доступен. Первая metadata-попытка после восстановления поймала реальную ошибку Docker template для отсутствующего optional `Health`; исправлено только чтение через safe map index. Все26 прежних ID/images/running/health подтверждены, jobs/runs/leases0, MemAvailable2970776KiB. Исходные отказы сохранены.
+- Genuine ordinary-host semantic capacity PASS: `output/matrix-t83-20261018/ordinary-capacity/transport-v5-order-fixed/actual-first-receipt.json`, SHA `1fd87a91e4c16d90ed9553eb3eedf3a3fbae111f46e3ab3de8295f26560798c5`. Полный настоящий v12 dispatch + column evidence replay +11 whole hashes,41.799s/CPU41.993s/maxRSS275804KiB, bootstrap42.123s. Пределы55CPU/60wall/512MiB и available-memory gate1.5GiB прежние; GPU/networkAPI0. Temporary removed, independent own-dir absence verified.63scalar/70outputs/62partial parameters/70atoms/70unsupported — результаты этого тестового input, realQualifiedPairs0, не новое подтверждение реальных пар или calibration.
+- Остановка сервисов не понадобилась: памяти достаточно. Fresh before/after26 whole metadata rows exact, API/web/relay healthy, jobs0. ROOT preservation receipt `24ed830b304f1e8a5f0ea916ee1113e4900541a7fa4e70146611a9c16c75e0c3` в `capacity-diagnosis/availability-after-ordinary-capacity-v1/root-no-service-mutation-preservation.json`. Lifecycle mutations0; restoration не выполнялась и не объявлена PASS. Новый aggregate-v5 сохраняет semantic gates и добавляет явную no-service-mutation ветку; приёмка aggregate ещё pending. Стенд остаётся T81v11.
+- Shared budget V3 independent consumer проверен ROOT по исходникам/535pins, сейчас выполняется один local noEmit +mock1 +real PostgreSQL4 в собственной disposable DB. No full-v13/runtime/release authority. Target/review и steel admission source продолжаются; browser HOLD прежний.
+
+## 19.10 15:30 МСК — локальный composer V3 noEmit PASS; SSH закрыт
+
+- После истечения пятичасового окна выполнена одна bounded metadata-only SSH-попытка: exit255, `Connection closed by 192.168.31.175 port 22`, 11:19:28UTC. Никаких сервисных изменений/semantic calls, свежего baseline или ordinary-host acceptance нет. Outcome: `output/matrix-t83-20261018/capacity-diagnosis/owned-runtime-isolation-v6-order-fixed/availability-read-outcome.json`. Автоматического повтора нет; локальная реализация продолжается.
+- Composer V3: полная настоящая проверка типов API+contracts PASS, outcome `98aa048b790b2ce68b5c7a317b32258120ebabdfe190a81231869ae9773faa4d`;6.180s/592064512B BUILD_ONLY,469 private copies, исходные/proposal pins exact, cleanup. Исправлены строгая типизация length descriptor и структурная копия WallFact; charge после inspection/run locks закрывает найденную статически гонку с completion. Оба scalar profile probe ограничены2 строками; настоящие конструкторы сохраняют ровно1 RULE slot, включая unconfigured source audit. Runtime race ещё не доказан PG-тестом.
+- Shared budget V3/source-address source готовы; реальные PG budget tests готовятся. Public targets/review и pre-run steel resource seam реализуются в отдельных узких пакетах. Capsule/config остаются null до genuine accepted base; новые исходники output-only. Browser HOLD прежний; CLI/SSR не заменяют browser proof.
+
+## 19.10 14:13 МСК — T85 source-address29 PASS; composer compile RED retained
+
+- Genuine source-address consumer2noEmit+29whole cases PASS. Full PD139/RD32, exact text/context/bbox/union/target/source/stage refusals, whole input immutability/detached return, native getter0. Outcome `3bcd5ad784400f6532e612ef3bb56edbb45749a23f2c3de846252238213cbc7e`;49.468s/peak378720KiB, all1664protected/1650copied pins exact, cleanup. Source-address only, not engineering/review/PDF authorization.
+- Composer v2 source frozen `7b6d9870a30d5ed78c68ab890700ce82c8728bca75d51b19710c3d05339777c9`: all7 typed/current immutable parents, bounded scalar origins, PDF union, claim original-manifest projection, optional budgets before full JSON. Full noEmit first RED `5b458a7bd3260b3fa81642794439b5e47b4776cc758a791d95b3d49de6368c7e` preserved: array descriptor mapped typing and WallFact index signature conversion. No runtime;469private/live441/proposal pins exact and cleanup. Separate narrow source corrections in progress; no unsafe cast requirement accepted.
+- Shared budget v2 adds omitted whole `analysis_jobs.result_json` bytes. Source-only ready `e1c90de27bfabbc50e816610c1f9eb660bd824ab93fdcd2fb35c59214da7040d`, ROOT exact reverse/static review `c4a1476c144f21911d48858d3fb9d123e4424e62ea199dca3cb4fe26ae770865`. Real PG consumer and independent transfer audit pending.
+- Ordinary-host isolation v6 rebased exact current packet/PG/review paths, ROOT static review `921f8cbf9b1a76933561fa9c1236fa30574eb31b8d32c4f1290e7cf53d8f66b3`; remote safety/lifecycle/caps exact. No SSH before11:19UTC. Aggregate v3 lacked outer restoration gate; separate v4 preparation requires genuine capacity plus exact six-role restore/twenty-neighbor preservation. No authority invented.
+
+## 19.10 14:08 МСК — T85 worker90 PASS; полная проверка типов API PASS
+
+- Guarded worker: 90/90 actual local checks PASS, outcome `53a01146947cc12c155954a31ca4f11f7b79576954506e623647c0633d1cd720` in `output/matrix-t85-20261019/durable-worker-integration-v1/independent-consumer-v1/first-results/outcome.json`. Genuine24 refusal/native/marker cases plus BUILD_ONLY66 whole inherited-base validation/mutations. 6.239s; child peaks45860/182976KiB, no network/subprocess, all226protected/199packet pins exact, private cleanup. No accepted v13 capsule or successful RULE/SEAL claimed.
+- Full API/contracts noEmit PASS after two narrow source corrections. First failure `f357f31e6fe0a650468f122bc21ea167b562dc4ef88ca2b888a39502339fc1d6` retained: stale projection import and erased full-definition type. Second failure `1e12234afd1bf81ecf7615bfed589b73967d574f3808c1ac0316ce5784d4a20c` retained: previousPolicy union still lost project fields. Selected v3 uses actual typed base definitions plus full canonical equality; no casts or weaker validation. PASS `874214d2f3d285c40edacaf2d8b242e7fb8c3b67738819d7a27379813427ffaf`, 6.827s/592302080B BUILD_ONLY1024MiB. Live441/private467 pins exact, cleanup.
+- Packaging proposal v2 ready `c15831d94fdda1c68220448f6170cb0f6c1a6d76cb2db217d58974e57a00d027`: API six worker modules/resource, wheel+sdist capsule inclusion, installed module/source identity checks. Prior static construction defect preserved: accepted definitions return dict, not tuple. No image/wheel build or capsule generated.
+- Shared64MiB preparation precharge source ready; six loader copies retain old branches. Found actual inventory loader full manifest/release read before authenticateBase callback; composer must precharge before runIdentity. API composer and external run-state forwarding in progress. Source-address29 independent consumer running once with unchanged55CPU/60wall/512MiB; no result yet.
+- All new proposals remain output-only. Stand T81v11; T83 actual ordinary-host capacity pending. No SSH before11:19UTC/14:19МСК; browser HOLD remains.
+
+## 19.10 13:48 МСК — T85 guarded worker integration source prepared
+
+- Prepared complete guarded worker release/SEAL source proposal, ready `232e973609e9058666b60bb3bd2aa24828d9d0ca47d3c631e7c0d402c6515c0c` in `output/matrix-t85-20261019/durable-worker-integration-v1/`. Own wrapper `90fa21d50f0734662d0c3757443d6bf915880fe82b3d56a4432401377ad475c4`, actual tested Python-v5 scalar, unchanged five selected leaves, tested main/pilot transport copies. Eight ASTs pass; inherited v12 validation body reverse AST exact, real HTTP loader and eight-domain execution body AST exact. These static checks do not prove execution.
+- Explicit before-code amendment permits source preparation before genuine T83 base acceptance. Finite history-v3 capsule contract fixed: three unchanged v2 rows plus accepted v12 row, exact4 row keys; byte-identical API/worker resource, fixed2MiB resource read cap. Accepted capsule/config pins remain null; resource is absent; own v13 RULE/SEAL cannot execute. No fake capsule or accepted config generated.
+- Preserved two ROOT static construction defects before freeze: selected metadata instead of closedLeafBlueprint; token transform also prefixed attribute names. Both corrected, source snapshots/receipts retained; no runtime occurred before correction. Independent worker consumer now being prepared, including genuine inherited-body validation against current whole prepared v12 definitions; this will remain BUILD_ONLY base validation, not v13 authority.
+- API vertical source proposal and source-address reconstruction seam in progress. Live1461 source/profile/stand remain unchanged. No SSH before11:19UTC/browser HOLD unchanged.
+
+## 19.10 13:38 МСК — T85 historical scalar raw SQL4 PASS; source-address contract clarified
+
+- Genuine focused noEmit + actual PostgreSQL4/4 PASS. Whole stage14/release/source raw captures for sealed SUCCEEDED/PARTIAL, unknown profile/corrupt hashes preserved for downstream refusal; seven real SQL gate fixtures, wrong object/check, historical capture after current-stage/latest-review mutations, genuine22P02 same error identity, three actual23505 constraints. Outcome `output/matrix-t85-20261019/scalar-origin-query-v13/pg-consumer-v1/first-results/after.json`, SHA `e2d5f41a0e939dd2a313cadd67a483a2b2275e31f926af98d0a0c7387cc60100`. Own disposable DB normal cleanup0; all9owned/10source/45migration/12tool pins exact. Raw SQL proof only, no release/PDF/engineering/actor authority.
+- Architecture correction to previous 13:24 entry: recursive old-comparison DAG is unnecessary for the frozen oldOrigin source-address contract. The new protected address-only boundary must authenticate exact sealed stage/release/hash, full own-original artifact/stages and selected raw/context/geometry/portable target. It must never authenticate previous engineering results. Existing full fact-origin helper stays unchanged; current consuming run still rebuilds complete scalar + all seven typed domains at completion/seal/saved read. Versioned genuine reconstruction seam and explicit before-code addendum in preparation.
+- No installed v13/profile promotion. Ordinary-host accepted base remains absent. No SSH before11:19UTC; browser HOLD unchanged.
+
+## 19.10 13:24 МСК — T85 scalar assembly42 и real PG composition3 PASS
+
+- Assembly: genuine2noEmit +41 whole cases/getter42 calls PASS,6whole returns/35exact errors, legacy binder regression1, full139/32 opaque artifact transport, entire input/manual/source/tool/private pin immutability and detached graph mutations. Outcome `output/matrix-t85-20261019/scalar-input-assembly-v13/independent-consumer-v1/first-results/outcome.json`, SHA `615deb5ab75463a8c0491c4e4bf0f7f4d02393c767d366a251608f2a00b44390`. Total3.549s/runtime1.829s/peak449552KiB; fixed55CPU60wall512MiB; private copy removed. No DB/PDF/release/engineering authority claimed.
+- Immutable SQL loader bridge: genuine focused noEmit +actual3/3 PG methods PASS, full139/32 artifacts unchanged, all19 review fields/seven opaque siblings, UNKNOWN/null, saved history despite current-stage/new-review changes,10 genuine inserted corruption refusals, real25P02 propagation. Outcome `output/matrix-t85-20261019/immutable-source-loader-v13/pg-consumer-v3/first-results/after.json`, SHA `b973b9b8e74dcabc643bec6a9b58f1ad2f190c5e348ea07dbbf9ac569b70e5a1`. Own DB normal cleanup0/remaining0, source/data exact. BUILD_ONLY SQL/materializer composition, not semantic capacity/PDF/release/membership proof.
+- Both setup REDs retained: v1 duplicate manifest namespace49dcd135..., v2 one-inspection-per-object b61b56c2.... ROOT missed both constraints in initial review/suggestion. V3 only inserts distinct valid review preimage/basis/hash for each fault; same inspection/sources, no bypass/delete/immutable UPDATE; all method bodies and10 exact assertions unchanged.
+- Confirmed next integration gap: source bridge lacks protected scalar FACT_BINDINGS origin closure/PDF fingerprint; previous-v13 origins can form chains. Need one operation-local acyclic bounded composer, unique-run memo and A-client raw capture; no second semantics in C. Existing live1461 source closure and installed profile unchanged. Acceptedbase/ordinaryhost absent; no SSH before11:19UTC/browserHOLD.
+
+## 19.10 13:18 МСК — T85 materializer99 и dispatcher20 PASS; PG fixture RED сохранён
+
+- Materializer: genuine2 noEmit +98 synthetic calls +1 full139/32 linkage PASS. Outcome `output/matrix-t85-20261019/immutable-source-inputs-v13/independent-consumer-v2/first-result.json`, SHA `8de00a1d5622d359ff6fefca83901f8faf88877133a60f648d4e2e55d9a398eb`. Total3.438s, peak full-data397803520B; all source/data/private pins exact, owned copy removed. Только dependency mapping на уже исправленный native6e202d; v1 noEmit RED сохранён.
+- Dispatcher: actual20 serial steps PASS — genuine2 noEmit,244 unchanged golden fixtures ×12 old profiles, manual refusals/native getter0, whole DATA4 original139/32. Outcome `output/matrix-t85-20261019/scalar-stage-dispatch-v13/independent-consumer-v2/first-results/outcome.json`, SHA `1276da05c065b01ed92338271e9a19276881410b57eba86bfcedd988c279e867`. Total104.986s, per-child55CPU/60wall/512MiB preserved, peak483328KiB. Private/source/tool pins exact, temp removed. v1 missing-catalog RED and ROOT wrong-grant-argument preflight refusal retained; v2 only genuine catalog resource mapping.
+- SQL loader bridge: focused genuine noEmit PASS; actual PG2 PASS (whole3-source parent and full139/32). Third method stopped at test fixture duplicate `(inspection_id,sha256)` manifest INSERT before corruption checks; no claimed3PASS. Outcome `output/matrix-t85-20261019/immutable-source-loader-v13/pg-consumer-v1/first-results/after.json`, SHA `49dcd135bbef957c0d4260b005150410cbef6ae255739ef6ff3c0d3d46e0f95a`. Own DB normal DROP/remaining0; source/data exact. Separate v2 fixture isolation correction prepared; no constraint removal.
+- Scalar assembly41+getter consumer ready, ROOT review pending. No installed v13 profile, accepted v12 capsule/ordinary-host proof remain absent; current1461 unchanged. Browser HOLD and no SSH before11:19UTC remain.
+
+
+## 19.10 13:03 МСК — T85 immutable source query + fact origins, actual local checks
+
+- Raw immutable-source SQL: actual PostgreSQL3/3 PASS, own disposable DB removed (remaining0). Original manifest/stage/review snapshot unchanged after current-stage/new-review mutations. Receipt `output/matrix-t85-20261019/immutable-source-query-v13/pg-consumer-v1/first-results/after.json`, SHA `4ebcc81e73f341072e0f3d4608cf2c7ab07ab450ba7ac59f96189a4a33994287`. Raw SQL/schema only; downstream authority is separate.
+- Fact origins: genuine2 noEmit + full DATA4 four original139/32 children + native getter child PASS; exact independent PD/RD selectors/targets and private mutation closure. Receipt `output/matrix-t85-20261019/fact-origin-preparation-v13/independent-consumer-v2/first-results/outcome.json`, SHA `dae0a19875e6155e0c9163b0ddd3d661f6e529dad3a34cee7a28b2e054026681`. Local only; no PDF/release/SQL authorization or ordinary-host proof. Initial test-only TS7022 RED preserved; exactly3 annotations, DUT unchanged.
+- Materializer first noEmit RED selected stale native dependency; runtime0. Preserved SHA `5e5ee1950eb239c5521eb575347c27982c3505cddd2a63d81ae32566a86222e9`. Prepared v2 changes only mapping to already-tested native6e202d; no rerun yet.
+- Scalar dispatcher consumer now running exclusively; assembly source prepared and independent consumer pending. No v13 profile promotion, current1461 source closure unchanged. Browser HOLD; no SSH before11:19UTC.
+
+## Обновление 19.10 12:48 МСК — API18 и историческая композиция25+getter PASS
+
+T85 API transport v6: actual18/18 PASS в отдельных serial runtime children;2 полных noEmit отдельно BUILD_ONLY1024MiB. Runtime caps55CPU/60wall/512MiB/Node384 прежние, peak421.3MiB, total42.920s. Outcome `output/matrix-t85-20261019/api-origin-get-transport-v6-consumer/first-result.json`, SHA3ede4837268bce7325009af41dc6c80c575e23901ed4118b541b9cc77da3c972. Исправлен только prototype-sensitive consumer assertion: Fastify query имеет null-derived prototype; точные own keys/values сохранены. Все исходные compiler/CJS/RSS/callback RED сохранены. DUT proposal неизменен. Это mock repository/Fastify inject, не DB/PDF/release/browser proof.
+
+Immutable source composition UUIDv2:2 настоящих focused noEmit и literal manual24+UUIDaddendum1+getter actual26calls PASS. Outcome `output/matrix-t85-20261019/source-snapshot-composition-v13-uuid-v2/independent-consumer-v1/first-results/outcome.json`, SHA41d7c0b532576c9fc8e5a104546aeb3ba2532bfaaa32a868e048a40cac4d4b81. Полные4returns/21refusals/zero getter callbacks/detached whole graph;1649protected/1642copies exact, private copy removed. Case-insensitive UUID uniqueness исправлена двумя Set-key expressions; parent identity/hash/stages домены прежние. SQL capture prepared separately; actual DB/PDF/fullstage/release authority pending. Accepted v12 capsule/final v13 policy отсутствуют, live profile не установлен. Homeserver hold до14:19МСК и browser security hold сохраняются. Следующая реализация — immutable SQL projection и один stage/seal/read scalar dispatch.
+
+## Обновление 19.10 12:28 МСК — original manifest и полный review parent проверены
+
+Frozenmanifest: genuine2noEmit +22 whole cases/getter23 PASS, outcome3dc684fb8ac168718913673d38f6ce7815928a7706d4a3219151f0491604f0a1;1.774s/163352KiB. Parent review: genuine2noEmit+26whole/getter27 PASS, outcome7f33f9a3a61505cad5428eba97a9d04135d30203581012256ae464868c4015ec;28.262s/151028KiB. Whole19parent/snapshotID/hash/all7siblings/null/UNKNOWN/detachment/nativegetter0 подтверждены в заявленной pure-data границе; все pins/tempcleanup exact. DB/PDF/typedchild/releaseauthority этим не подтверждены.
+
+Подтверждён structural gap generic loader: current source_file_stages использовались для пересборки historical manifest. Подготовлены отдельные output-only SQL2 без mutable stages и composition24, связывающий исходные stages+полный parent+manifestreviewhash; независимый consumer готовится. Live2existingloader не изменён, v13 runtime ещё не установлен.
+
+API v4 первые5 PASS, затемRSS538673152B>512MiB. V5 сериализовал18 исходных checks по свежим children с прежними runtimecaps и общей180sграницей: actual8PASS, девятый conditional200 получил500 при~378MB; исход сохранён, callback/assertion причина исследуется. Обе полные noEmit пройдены; no claimed18PASS. Homeserver до14:19МСК/browserhold прежние.
+
+## Обновление 19.10 12:20 МСК — настоящий HTTP loader10 PASS; API typecheck2 PASS
+
+Локальный HTTP:10/10, настоящий owned127.0.0.1 server+HTTPConnection, полный7.6MB v7 payload принят;409/503, malformedheaders/hash/schema/manifest/truncatedbody/duplicateJSON отвергнуты. Outcome 553332e5c92f16b668293d59874ae85b03fee3d91d97f77f2998465779b18f95;22.627s/childVmHWM265564KiB,55CPU60wall512MiB прежние;202 protected/199private exact, server/socket/thread/temp cleanup. Это transport-only; DB/release/origin/PDF/browser/ordinaryhost этим не подтверждены.
+
+API v3: оба genuine full noEmit PASS с отдельным BUILD_ONLY cap1024MiB (RSS577314816/611598336B). Runtime512MiB отказал доDUT: tsx top-level await CJS transform,0 routechecks. Outcome 19084e9390ae0e056fe5bd2fa834a7b6b2286d1205b56a7442b1e044d57bd85c; первая ошибка/логи сохранены,441sources exact/tempcleanup. Узкая harness .mts correction готовится; код/18 assertions не ослаблены. Проверка frozenmanifest22+nativegetter запущена отдельно; parent27 ждёт такой же ESM correction до первого запуска. Live1461/standT81v11 неизменны;SSH до14:19МСК/browserhold прежние.
+
+## Обновление 19.10 12:06 МСК — policy14 PASS; API transport compiler resource RED
+
+Policy seam:14 genuine calls PASS,2 DATA-only conditions остаются отложены. Exact tuple/data detach,13 refusals, native callbacks0, whole inputs unchanged,218 protected/195 private pins exact, cleanup done. Outcome9a83286288ddcf263758a2a6c99d66d14116a63544ebb508a9c0ec6e4461d96a;0.173s total,19148KiB processHWM. Accepted base/capsule/policy/release по-прежнему NULL; это проверка отказов и метаданных.
+
+API transport consumer первая попытка RED до runtime: genuine source-noemit killed RSS546521088>536870912 bytes at0.806s,CPU3.57s; empty diagnosticlog, ни одного runtime check. Outcomefc1e5f0cb36f46f43d5fa8b754028ac1cf9542b3623cc900b377d650b8f3497c; source441+5 overrides unchanged, private cleanup done. Исторический RED сохранён, compiler-memory diagnosis отдельно; unchanged retry/ослабления sourcecoverage нет.
+
+Новый output-only полный parent-review hash/snapshot-ID helper подготовлен:25 frozen cases+1 optional-null case; независимая проверка готовится. Не подтверждает persisted DB/PDF/domain eligibility. HTTP loader consumer готовится с настоящим локальным сервером. Live1461/standT81v11 сохранены. До14:19МСК SSH запрещён пользователем; browser hold прежний.
+
+## Обновление 19.10 11:44 МСК — Python/TypeScript full-originals parity PASS
+
+T85: genuine2noEmit +4 DATA4 full-originals cases PASS. Оба положительных raw DTO прошли полный admission/rebuild с ручными KR055 rows/coverage; corrupt retained evidence/factID отвергнуты TARGET_UNVERIFIED без DTO. Python/TS whole consistency сохранена, other61/131 только regression. Outcome `output/matrix-t85-20261019/full-scalar-v13-originals-memory-diagnosis-v2/first-results/outcome.json`, SHAc62bd0cec20b31c9d9fa38131b0d5eb13c64cf80bd1161ffb77055fe0681a5af. Total40.068s, maxgroupRSS461368KiB<524288,55CPU/60wall/384Node прежние. Exact1952 protected/1660 copies, temp removed. Убран лишний lifetime копий в consumer и разрешён только один точный исторический пустой crashlog; продукт/oracle неизменны, прежние RED сохранены. Это не свежий PDF I/O, accepted review/release/capsule или homeserver proof.
+
+API own GET transport static reviewed:5output copies/7 edits, exact reverse proof, genuine v13 policy remains unavailable/failclosed. ROOT review745e55f6fb3de798fdb1f2cb1c12e68a63cbf0f452567acdbeadfbeb81e04d76; consumer готовится отдельно. T84 current1461 DATA-only amendment ROOT reviewed41a5f246becd4362915e24453f2a54d4e302f0b8b893b337fe1cc25138f334cc:SQL2/test1,1458unchanged;88migrations/168worker25rules42inputs unchanged. Ни API transport, ни T84 rollout не установлены. Acceptedbase/capsule/aggregate отсутствуют; homeserver hold14:19МСК/browser hold прежние.
+
+## Обновление 19.10 11:37 МСК — transport19 PASS; aggregate tooling исправлен статически
+
+T85 output-only worker main/adapter wiring: actual19/19 PASS, child0.519s/CPU0.549s/VmHWM69812KiB; source207/private174modules+25rules exact, own temporary removed. Outcome `output/matrix-t85-20261019/worker-transport-wiring-v1-consumer/first-results/outcome.json`, SHA081f3618867f5de74f4317d1fb4e692f8fab9a5dfa977b456856583709aa3a15. Genuine draft marker/adapter/native refusals проверены; future heartbeat/alias success — только явно обозначенный MOCK_ONLY_TRANSPORT. Реального принятого v13 release/capsule/engine/PDF/installed proof нет; live sources неизменны.
+
+T83 final197file packet независимо static reviewed:193runtime/1461sources/18evidence, source-keyed32/139,2manual+9consistency hashes точны; ROOT final reviewa0396352b4aece78a538a7d12b83949856987ccfc0e84f44f3b1262f6d3cad0e. Новый aggregate-v3 меняет только3 executable строки: отдельный actual TOOL_BASE и новый builderSHA; historical DATA SCOPE неизменен. ROOT static review678dbb91767c7a30bfae13df493b0f0d6310f763a95f2500f0ddd77198f9cbdc. Aggregate не запускался, настоящий ordinary homeserver результат ещё обязателен.
+
+TS originals: память исправляется только в тестовой обвязке (короче lifetime лишних полных копий; streaming all-byte hashes; whole deep equality после каждого publiccall). До DUT пойманы два preflight отказа: ROOT лишние grant поля и bytes>0 guard для единственного пустого аварийного лога. Первые RED сохранены; готовится точное исключение только для этого path/0/emptySHA. DUT/native/oracle/limits прежние. Homeserver hold14:19МСК и browser security hold сохраняются.
+
+## Обновление 19.10 11:31 МСК — local CPU PASS; TS full originals: отказ по памяти
+
+Actual local order-fixed packet: PASS, полный worker+отдельный column evidence replay+11 whole hashes, total19.282s/CPU19.271s/maxRSS277372KiB; исходные55CPU/60wall/512MiB и1.5GiB RAM gate прежние. Source1461 exact,1 semantic+1 own cleanup, temporary removed, без SSH/DB/network/GPU. Receipt `output/matrix-t83-20261018/ordinary-capacity/local-order-fixed-diagnostic-v1/actual-first-receipt.json`, SHA4e53d7872d229a31e3bc244e4efb5d796401eb75cf86dbfd31dff8243485c97c. Это только местная диагностика CPU; ordinary homeserver/aggregate acceptance=false. Пакет197files/193runtime frozen, bootstrap18/18 PASS, packet-readyfb7ded2d1066227462380e880ab37992cb79c9e81f2e96033691a11df157713e. Actual PG3 принят отдельным collector:8e3a7466b547819acbfdf98169597a66c0420c86cf1a3da75fcfd7af07918001; старый collector JSONDecodeError сохранён, исправлен только raw-log digest check.
+
+T85 TS native v2:2 настоящих noEmit+25/25 cases PASS, outcome56555693046ecc7e4665658f1c214c5d6c47576d21e77e01b1e09854476b04c6. Full-originals отдельный consumer v1 остановлен на TS7022 до DUT; v2 добавил только Value[] annotation. Actual v2 contracts/focused noEmit и первые3 случая PASS, четвёртый nullable current-stage остановлен RSS532628KiB>524288, exit-9, не semantic assertion. Outcome4af88966b2668fe079a66fb2a7388fca69bcf1f45d39f3bf8cef09652173991c сохранён. Причина лишних allocations исследуется; лимиты/ручной DATA4 oracle неизменны. Python originals4/4 PASS остаётся отдельным доказательством. Live/runtime/capsule не установлены.
+
+Итоговый aggregate v2 не запускался: ROOT static review нашёл TOOL_BASE, указывающий на старый каталог при новых executable hashes. Нужна узкая versioned correction с отдельными историческим SCOPE и текущим TOOL_BASE; никакого ослабления acceptance. Homeserver hold14:19МСК/browser security hold прежние. Worker transport wiring проходит отдельную изолированную проверку.
+
+## Обновление 19.10 11:13 МСК — Python full originals4/4 PASS; TS native type fix проверяется
+
+T85: независимые ручные DATA4 проверены фактически на полных artifacts PD139/RD32:4/4 PASS, positive B60=B60 и nullable currentRD точны по полным KR055 rows/coverage; обе coordinated retained-target corruption отклонены TARGET_UNVERIFIED без scalar. Остальные61/131+metadata — только regression. Outcome `output/matrix-t85-20261019/full-scalar-python-v5-originals-consumer/first-results/outcome.json`, SHAdbe20c00603120a999134ea0d3a0dd72a75bb69396c78805c85a1f11d297a865. Максимальный childVmHWM191544KiB,55CPU/60wall/512MiB прежние;206 source pins exact/private copy removed. Это не authenticated review, fresh original PDF I/O, release/capsule или homeserver capacity.
+
+TS первая серия завершилась на настоящем focused noEmit с TS2345: контракты прошли, DUTcases0. RED925e7bccbbd731304d7d8dba715ee2b6e6e7dfc0abf23cb7ca61a568a1a3896d сохранён. Новая output-only версия меняет ровно один guard на return fail; predicates/proxy/error/caps прежние, runner/consumer/cases byteexact. ROOT review5cd1245b04ec69924d058c60792ca4101eb9631ed460f356981b3018e2349414,1695 protected/1665copies/old1685 unchanged. Actual2noEmit+25 запущены отдельным grantfeb2f21c8ece0252f90b16416394eef384f47da2fc8cdf8d92fa95d1be69356c,session15295; исход пока null. Homeserver hold14:19МСК/browser security hold прежние. Две ROOT command argument опечатки в предыдущих grant/ready вызовах отказали до children/results; отдельные preflightRED сохранены, исходники/ожидания не менялись.
+
+## Обновление 19.10 11:03 МСК — genuine fullPG после SQL исправления:3/3 PASS
+
+Текущий полный PostgreSQL-прогон естественно завершён:3PASS/0FAIL/0PENDING, JSONsuccess=true, exit0, watchdog=false;1461 source pins exact до/после/ROOT повторной проверки. `saved-read-order-correction/qualification-renewal/pg/after.json`, SHA3ae9aaec962f8b1873f4f2387205c4464251b231a6e1bc750081654841c7b459. Actual сохранение/UNKNOWN/WITHDRAWN/source change/history/restart/original corruption gates прежнего полного integration test прошли. Старый fullPGv3RED остаётся; его конкретный SQLcause не доказан этим последующим PASS.
+
+ROOT отдельно проверил owned local PG container ID/image/running, ownqa_t83 databases0, scopedPGprocesses0; receipt `pg/root-cleanup-and-functional-review.json`, SHA4aec07888a0725d9d14fb8bb0744308a2881c6c34fda3cdb615d0b2c2cf66091. Runner monotonic1002.540s/Vitest1001.88s записаны как есть; host suspend observation отдельно, ordinarycapacity этим не заявляется. Новый order-fixed acceptedPG collector/capacity/aggregate ещё впереди. После освобождения heavy slot запущен reviewed isolated TSconsumer: реальные2noEmit затем25 cases, session71454, исход пока null. Homeserver до14:19МСК не трогаем, browser security hold прежний.
+
+## Обновление 19.10 10:59 МСК — полные исходники KR055: ручные ожидания приняты
+
+T85 DATA4 проверены до consumer: полные139/32 artifacts, positive В60=В60 с отдельной null-entity abstention, nullable current-stage с actualObservationId/value=null и2 coordinated target corruption. Полные KR055 rows/coverage заданы вручную; остальные61/131 только regression. Источник и9 входных pins точны, изменения positive window ограничены2 заранее объявленными actual byteSize. ROOT review29d88db287940020ea01f52e5464a513eb2e62bc1db3147ad6f0f2ca12d29811. Код Python consumer готовится отдельно; новых запусков/реальных approvals/capsule нет.
+
+TS полный scalar consumer DATA7+18 mutations независимо static reviewed:1685 protected/1665 byteexact copies,2 настоящих noEmit перед25 cases, source/native/contract guards и прежние caps. ROOT review85262fda4f1e0222f4d76daabbcd96216fc380831711aa1206419dc63b23f1a4; запуск отложен до освобождения heavy slot. Текущий fullPG session82856 подтверждён живым, прошёл прежний saved-readseq49 без mismatch и перешёл к третьей проверке history/corruption; исход пока неизвестен. Снимок CLOCK_BOOTTIME-CLOCK_MONOTONIC показывает накопленный suspend host~2191.65s с boot; без исходного clock sample не приписываем его конкретной фазе/причине и не используем прогон как ordinary capacity.
+
+Post-fix closure DATA v2 приняты static e44c773fb0ac1a5bd9e9975b38db9d8a6c5fbbdc9df59411686b80834fbbf624: точные2 production+1 test renewals/1458 unchanged; worker168/25/42 прежний. Найден будущий ложный aggregate gate по отсутствующей строке132 passed: реальный JSON reporter подтверждает132/132/0/0. Отдельный versioned builder будет проверять pinned JSON+success, старые инструменты/логи сохраняются. Actual fullPG/capacity/aggregate остаются null; homeserver hold14:19МСК, browser security hold.
+
+## Обновление 19.10 10:03 МСК — Python все варианты KR055 PASS; SQL исправлен локально
+
+T85 output-only Pythonv5: actual8/8 PASS — первый baseline воспроизводит устаревший RD_ID, затем6 полных ручных положительных случаев и1 inherited source-stage refusal. Ручные ожидания зафиксированы до кода. Whole observations/KR055 results/coverage точны; остальные61 правило/131 coverage проверены регрессией, input/registry неизменны.168 live+6 draft modules/25rules в изолированной копии, исходные pins точны, temporary copy удалена. Receipt `output/matrix-t85-20261019/full-scalar-python-v5/first-results/outcome.json`, SHA4c8dfe8276205e9db45d5d608cf8aa2a28b90d193c11d3ff2f58a29470f4f0c1; wall2.013s, max childVmHWM29108KiB. Runtime/release/capsule не установлены; TS parity и полный139/32 ещё впереди.
+
+SQL saved-read: обнаружен SELECT rule_results без ORDER BY при строгом ordered transcript. Независимый настоящий PG regression принудительно меняет seq/index план: baseline1FAIL/2PASS, candidate3PASS, payload и field-OID corruption по-прежнему отклоняются. Узкое исправление ORDER BY UUID PK и только безопасная mismatch metadata установлены в2 локальных API файлах. Receipt `output/matrix-t83-20261018/prepared-scalar-requalification/saved-read-order-correction/live-promotion/root-install-receipt.json`, SHA9bbe059e0fe648ee773f10c4b07222832184e620a9e7646cfece8ec66b60a054; ровно2 изменения из1461, worker closure прежняя. Причина конкретного предыдущего fullPG отказа пока не доказана. Actual current API132/0/0 PASS14.646s, typecheck2.070s/build1.819s PASS,1461 pins точны. Receipt `qualification-renewal/api/first-result.json`, SHAaaddd86fb0dee0d28284e94337c29891903f82a441a1c3028c52df97c2ff949e. Новый fullPG обязателен; старый v3 RED сохранён, T83 aggregate не принята. Homeserver не трогаем до14:19МСК; browser security hold прежний.
+
+## Обновление 19.10 09:38 МСК — actual prepared PG: 2 PASS / 1 FAIL
+
+Локальный полный PostgreSQL-прогон естественно завершён за896.31s:2PASS/1FAIL,1461 исходных pin неизменны, outer watchdog не сработал. Отказ `SAVED_READ_TRANSCRIPT_INTEGRITY` при повторной проверке сохранённого результата после разрешённого изменения source review; причина ещё исследуется. Исходные log/after-v3 сохранены, новый PASS receipt не создавался. Собственная qa_t83 БД удалена, тяжёлых процессов прогона0. Следующий шаг — найти различающийся SQL input, узко исправить и проверить regression; текущая T83 aggregate остаётся непринятой.
+
+T85: static audit выявил отдельный пробел output-only wall adapter: пересчитывается только KR055 PD_RD, а PD_ID/RD_ID могут сохранить устаревшие строки после добавления wall observations. Готовятся независимые полные ручные случаи и versioned Python/TS пересчёт всех разрешённых KR055 variants. Фактического PASS по новым случаям пока нет. Homeserver не трогаем до14:19МСК, browser hold сохраняется.
+
+## Обновление 19.10 09:26 МСК — локальная работа, homeserver отложен
+
+Пользователь сообщил: homeserver недоступен ещё пять часов. SSH и серверные изменения отложены до 19.10 14:19 МСК. Создана thread heartbeat `inspector-ai-homeserver` для одной последующей проверки; локальная реализация продолжается. Два подлинных PDF восстановлены локально с прежними SHA: F0106 139 страниц, F0141 32. Приватные файлы путей/доступа восстановлены с0600; секреты/пути в журнал не выведены. Собственный существующий `inspector-t30-postgres-test` поднят с прежними ID/image/volume, PostgreSQL ready; соседние контейнеры не изменялись.
+
+Свежий actual PGv3 запущен локально на1461 точном source pin и настоящих оригиналах; временная собственная qa_t83 БД, исходные900000ms/test и2400s outer watchdog, без повторов. ROOT static review `prepared-scalar-requalification/api-schema-qualified-pg/root-static-review-v3.json`, SHA68cf633c4d2232c8aa7b8d6578ff4346204175cd981e1ddd322fc3f5763cd396. Результата ещё нет. Время ожидания используется для подготовки v5/aggregate и проверки confidence-v2. Server capacity/stand acceptance и browser proof остаются отдельными неполученными доказательствами.
+
+## Обновление 19.10 09:04 МСК — текущий API PASS; genuine TS original3 PASS
+
+API schema metadata optimization: прежние loader19 PASS сохранены; первый full178 дал177PASS/1ENOENT из-за отсутствия динамических открытых reference inputs в тестовой копии. Исходный отказ сохранён. Отдельная копия добавила ровно3 настоящих публичных файла без изменения1465 прежних копий, tests/assertions/default5000ms/существующих explicit120000ms. Actual full178 PASS178/0/0,33.448s; receipt `output/matrix-t83-20261018/api-loader-performance-correction/isolated-consumer-v2/full178-first-receipt.json`, SHA0ea8c8af0cdd14f2161b17e71d34abd6369721d41693449b1de55c8707f74173. Два reviewed API modules локально установлены с preimages; receipt `live-promotion/root-install-receipt.json`, SHA76dcca0168f90ebcaa4220f0598e400a3ad8ff3701af14e6a410fe0bca6c3a29. Это только private per-operation schema metadata, без value/result/source cache.
+
+Actual current API132/0/0 PASS15.501s, typecheck2.421s/build2.081s PASS;1461 source pins до/после точны. Receipt `output/matrix-t83-20261018/api-loader-performance-correction/live-api-qualification/first-result.json`, SHA9beca7b407b2a6e68fec031fc9c32f59846dfe3f086d6245fe0dc122e79c13c6. Два предыдущих full132 timeout RED остаются историческими отказами. Actual worker wheel/sdist35 methods each/168modules25rules42inputs PASS39d954 reused; TS-only2 edits вне этой worker closure. Fresh prepared-first PG3 и ordinary homeserver capacity ещё не запускались.
+
+T85 TS genuine retained-original mapping: unmutated fullPD/RD и2 исходных corruption mutations actual3/3 PASS, wall10.188s, max sampled groupRSS408432KiB;324protected/338ownedpins unchanged, private temporary copy удалена. Receipt `output/matrix-t85-20261019/ts-original-materialized-adapter/first-results/outcome.json`, SHA13e1b0b9db7f44d980729738f72c3a76c150c0e11f59ccb884b6d7d6cc4d874c. Это helper reconstruction/error mapping, не fullengine/server authority/runtime/capacity; Node sampledRSS не RLIMIT_AS. Python original3 PASS5cb336 остаётся отдельным доказательством. Accepted-v12 capsule/finalv13policy остаются null.
+
+V5capacity template независимо static reviewed80bd3e58a2628bbeed28f15ea87c922ddaae800ae0ec192062a1cb2059b336de:193runtime/197archive, source-keyed exactID+physicalSHA pages32/139 gate до исходов, прежние55CPU/60wall/512MiB и1.5GiB RAM. Actual archive/selfchecks/remote attempt pending currentPG3. V4 FAILED/UNKNOWN сохранён. T83/T84 aggregate не приняты; стенд T81v11, browser security hold сохраняется. Геопривязка и realQualified0 этими проверками не изменены.
+
+## Обновление 19.10 08:49 МСК — actual installed worker PASS
+
+Свежая квалификация prepared-first: actual wheel и wheel из реально пересобранного sdist установлены в отдельные временные targets вне checkout;35/35 methods в каждой установке PASS.168 source modules,25rules,42 входных pins, все7 полных expected outputs и снимки прежние; реальные installed origins/RECORD проверены, временные targets удалены. Receipt `output/matrix-t83-20261018/prepared-scalar-requalification/installed-package/prepared-first-result.json`, SHA39d954e9a8f92a6d14794d39a129c95ec58c678de5f0b5d7cb77a098301d20c2. Plan28f1ffd62eed4f2181b2ba950c2f79ff3af8163f1dabfc194fd40740acdc5707. Зависимости не загружались, стенд не менялся.
+
+API schema metadata candidate static review PASS, ещё output-only. Следующий actual consumer: unchanged loader19, затем unchanged132+46 direct domain=178; default5000ms/существующие explicit120000ms exact. Два прежних full132 RED сохранены. T84 source-closure168 proposal independently static reviewed, не установлен; T83 aggregate/новый actualPG/current ordinarycapacity остаются впереди. Browser hold без изменений.
+
+## Обновление 19.10 08:42 МСК — worker parity PASS; API timeout остаётся открытым
+
+T83: versioned scalar40+полный139/32 PASS, прежний scalar hashf5823d9223eabe1a022d19b16410544084203f14e6445c26310f37b8c2a2f841. Column operation-local reuse: независимые20 branch cases,13 неизменных domain methods, полный139/32 build и отдельный evidence replay PASS. Receipt `output/matrix-t83-20261018/capacity-diagnosis/column-operation-local-reuse/serial-consumer/first-result.json`, SHA59d699b215af06af45a824558a123cb719001bedb8b1c76063a8c3d1b70e1f6f. Полный column10.243s/wall,10.168sCPU; старый historical engine точен. Локально установлены6 reviewed modifications+2new; closure1461 exact,168 worker modules/25rules. Receipt `output/matrix-t83-20261018/prepared-scalar-requalification/root-install-receipt.json`, SHA44c9b30e5de22d2bc66f90ebb3a15bc47d4eac3e6809d30aa1d2edda27d55afd. Это не стендовая активация.
+
+API: первый полный132 прогон131PASS/1timeout; isolated original case прошёл4.818s при прежнем5000ms. Один свежий full132 снова131PASS/1timeout. Все отказы сохранены, assertions/timeout не повышены. Typecheck/build отдельно PASS, но API-набор не принят. V8 diagnostic подтвердил дорогой retained reconstruction/несколько полных canonical traversals; причина первого превышения не сведена к внешней нагрузке. Готовится bounded schema metadata optimization; production API correction ещё не внесена. Worker wheel/sdist квалификация идёт отдельно под явной поправкой порядка этапов; API PASS остаётся обязательным до freshPG и aggregate.
+
+T85: настоящий materialized Python adapter boundary прошёл3 случая — полный положительный retained PD/RD и две исходные mutations evidenceHash/fact.id. Receipt `output/matrix-t85-20261019/python-v3-serial-independent-consumer/retained-two-corrected/materialized-adapter-consumer/first-materialized-results/outcome.json`, SHA5cb3363455ef3baf2442c365c547ec42f723069e5a7bb03ed278cb92e95ae081.232 protected pins exact, wall10.155s, max childVmHWM197324KiB; без authority mocks. TS original3 остаётся открытым и готовится отдельно. v13 release/seal design reviewed для подготовки; accepted-v12 capsule/final policy пока null. Реальная геопривязка/инженерная корректность этим не подтверждены.
+
+T83/T84 aggregate не приняты, стенд T81v11. Capacityv4 FAILED/UNKNOWN сохранён, повторов нет. Browser security hold сохраняется. Coverage62parameters/70atoms/70unsupported — кандидат архитектурного профиля, не точность на реальном объекте; realQualified0.
+
+## Обновление 19.10 08:28 МСК — полный scalar PASS; подключение и column проверяются
+
+T83 versioned scalar: независимые40 векторов PASS. Полный сохранённый139/32 пакет дал прежний полный scalar hash `f5823d9223eabe1a022d19b16410544084203f14e6445c26310f37b8c2a2f841`,63 результата, без изменения исходников/артефактов/входов. Actual local CPU8.277s/wall8.283s/process VmHWM241385472B. Receipt `output/matrix-t83-20261018/capacity-diagnosis/scalar-versioned-leaf/serial-consumer/source-keyed-pages-corrected/scalar-first-outcome.json`, SHA `bf7bcf0a2e7ead74ced46ab078b6e29842c50712d18fd668f7f79fe40b85b0b3`. Первая попытка отказала до leaf из-за неверного порядка страниц в consumer; она сохранена. Исправленный consumer сверяет sourceID/SHA и полный artifact hash. Это локальная parity, не ordinary homeserver capacity.
+
+Column output-only candidate устраняет повтор retained/current сравнения только при полном совпадении ordered sources внутри одной операции. Static review PASS; независимые20 branch векторов,13 domain methods и полный139/32 build+отдельный evidence replay готовятся к последовательному запуску. Новая current-v12 policy явно добавит3 scalar-поля; historical engine/v11/v9/v4 остаются точными. Live source пока прежний; T83/T84 не приняты, стенд T81v11.
+
+T85 Python: дополнительные2 priority shape-before-association проверки PASS, wall0.251s/222 pins exact. Старый serial21PASS/22RED сохранён; после диагностики materialized adapter consumer проверит реальный mapping seam на положительном retained side и двух исходных corruption mutations. Это ещё не runtime/PG authority. TS21+2 PASS и UI28 unit/SSR остаются; browser security hold сохраняется. Capacityv4 FAILED/UNKNOWN не переименован и не повторён.
+
+## Обновление 19.10 03:49 МСК — T85 фактические границы и T83 оптимизация
+
+T85 TS дополнительные2 priority сценария PASS, <0.3s; старые21 результата сохранены. Pythonv3 actual serial:21 boundary PASS,22-й сценарий RED; дальнейшие3 не запускались. Причина: consumer требует adapter TARGET_UNVERIFIED от прямого strict-helper, который вернул SOURCE_PROVENANCE_UNVERIFIED. Полный итог RED сохранён, ожидаемые значения не переписаны; проверяется настоящий путь преобразования ошибки в adapter. Receipt `output/matrix-t85-20261019/python-v3-serial-independent-consumer/proc-hwm-corrected/first-results/outcome.json`, SHA68e907a0bf7f0257bedec1668268233f17bf5c6676869406386b499500a5db21. Wall4.172s, process VmHWM83700KiB,222 pins exact. Использован `/proc/self/status VmHWM`; inherited ru_maxrss не считается доказательством памяти.
+
+T83: output-only versioned scalar leaf готов и static review matching PASS; historical matrix_engine856b остаётся точным. Новый leaf имеет собственный будущий SHA в childv12, прежние v11/v9/v4 определения не переписываются. Runtime parity/новая квалификация ещё впереди. Второй локальный профиль column подтвердил повтор полного сравнения retained/current внутри одного расчёта; готовится operation-local reuse лишь при полной идентичности источников. Capacity v4 остаётся FAILED/UNKNOWN, T83/T84 не приняты, стенд T81v11. Browser hold сохраняется.
+
+## Обновление 19.10 03:36 МСК — T83 capacity RED, стенд восстановлен
+
+Ordinary homeserver v4: фактический FAILED, SSH255/пустой stderr; last breadcrumb после whole worker54.472602CPU/54.590064wall/RSS278224KiB, затем ENTER rebuild-column-evidence. Точный сигнал/причина обрыва не доказаны. Receipt `output/matrix-t83-20261018/ordinary-capacity/transport-v4-canonical/actual-first-receipt.json`, SHAbb0500f04ad6a36379f965d8775d84841c8b07613686173e46383c7109982731. Один semantic SSH, cleanup удалил только свой private directory; без автоматического повтора. Все6 собственных сервисов восстановлены с теми жеID/images, API/web health200ok;20 соседних точны относительно свежего baseline, исторические3 StartedAt drift явно сохранены. T83 aggregate/T84 остаются непринятыми.
+
+Local cProfile unchanged whole worker PASS по полному прежнему PG hash; это diagnostic, не capacity PASS. Обнаружено9,472,709 `_clean` /3,170,534 `_match` calls; output-only single-module optimization готовится с прежней грамматикой/геометрией/ID и полными ожидаемыми результатами. Profile ru_maxrss1123672KiB не используется как доказательство512MiB. Продуктовые limits55CPU/60wall/512MiB и1.5GiB RAM gate сохраняются.
+
+T85 TS corrected transport/projection/merge21/21 фактический PASS metadata boundaries only (9+6+6), <0.4s, sampled RSS158464KiB. Два original-corruption сценария остаются pending genuine-helper reconstruction; authority/runtime/PG/browser не доказаны. Pythonv3 output copy исправляет полный shape-before-association порядок, ждёт review и исполнения. Live runtime исходники прежние, текущий стенд T81v11.
+
+## Обновление 19.10 03:31 МСК — T85 проверки helpers, ресурсная предпроверка T83
+
+T85 corrected native guard: фактический PASS33 применимых вызовов,1 явно неприменимый Python mapping-subclass. Повтор использовал отдельный builder с исправленным только construction ceiling68,000,023; продуктовые limits и frozen expected прежние. Первая RED попытка сохранена. Receipt `output/matrix-t85-20261019/native-guard-construction-v2-consumer/first-outcome.json`, SHA74df6f6eefc48ad68ca95b3d81902952716005674c17bc57a99cb815de0527cf. Local test-construction RSS602528KiB; это не продуктовая приёмка512MiB. Source-scope projection9/9 PASS, receipt `source-scope-projection-consumer/first-result.json`; authority/DB/runtime этим не доказаны. UI28 unit/SSR PASS остаются действующими; browser hold сохраняется.
+
+T83 own-runtime isolation: первая предпроверка отказала ДО любых изменений и semantic вызовов. Обнаружены3 прежних StartedAt изменения у соседних review-candidates workers22:55/22:58Z; все20 ID/images точны,17 исторических StartedAt точны, все работают. Причина этих прежних рестартов не установлена; отсутствие OOM в ограниченном journal окне не доказывает его отсутствие. Исходный отказ сохранён. ROOT до нового исхода закрепил свежий20-container baseline и явную поправку17+3; проверяется отсутствие изменений во время нашего действия. Только6 собственных runtime roles временно останавливаются с восстановлением тех жеID/images, лимиты55CPU/60wall/512MiB и RAM gate1.5GiB прежние. Старый smoke-VLM исключён; отдельный вопрос пользователю без ответа. Фактический capacity исход ещё не получен. Стенд T81v11; T83 aggregate/T84/T85 runtime не приняты.
+
+## Обновление 19.10 03:13 МСК — T85 unit/SSR и первый native RED
+
+T85 output-only UI: frozen14 boundary vectors, первый фактический прогон22PASS/6FAIL нашёл три причины: нормализация checkId пробелами, принятие лишнего ключа scope, принятие лишнего ключа review. Отдельная исправленная копия `ui-draft-closed-scope` прошла28/28 (14unit+14React SSR), receipt `output/matrix-t85-20261019/ui-scope-boundary-consumer/closed-scope-unit-ssr-result.json`. Live UI не изменён, DOM/browser не исполнялся. Предыдущее static замечание про terminal-LF regex ошибочно: JavaScript без multiline не принял конечный LF; оно отозвано, исходный review сохранён.
+
+Native guard: первый actual consumer завершился RED за7.312s, max sampled RSS616488KiB; причина `CLOSED_BUILDER_INPUT` в сборщике одного последующего сценария, не memory/cpu/wall gate. Предыдущие case-result сохранены; повтор не запускался. Receipt `output/matrix-t85-20261019/native-guard-independent-consumer/first-outcome.json` (19a93c32bb366da4d17aac8e5eecb3b62ae599424713a78c600aa801b2758949). Это отдельная local native проверка с заранее указанным test-construction budget, не ordinary-capacity доказательство.
+
+T83 actual PostgreSQL3 PASS и cleanup0 остаются действующими. Remote capacity v4 не запускался, gate RAM последнего чтения ниже1.5GiB; вопрос о временной остановке старого smoke-VLM ещё без ответа, контейнеры не менялись. Стенд T81v11; T83 aggregate/T84 installation/T85 runtime не приняты. Browser hold сохраняется. Работа по v13 server/worker связи продолжается output-only.
+
+## Обновление 19.10 03:03 МСК — T83 PostgreSQL принят локально
+
+Свежий canonical-first actual PostgreSQL: 3/3 PASS, 1013.20 s, natural exit0. Подтверждены пять обычных графов по10 jobs, OCR unconfigured/output0, полные оригиналы139/32 страниц,14 новых native evidence; synthetic assertions, realQualifiedPairs0. Проверка после завершения: собственных QA DB0, процессов0; исходники до/после совпали. Receipt: `output/matrix-t83-20261018/canonical-optimized-requalification/actual-pg/qa-canonical-first-PASS-receipt.json` (4845f2ce100ddf9ae755d95a6a5821b10cba2c27532a35ecc784eba655ed99c9).
+
+Capacity v4: заморожен текущий пакет196 entries/192runtime;18 local bootstrap selfchecks PASS; независимая финальная static review PASS. Actual remote semantic ещё НЕ запускался. Свежая read-only RAM-проверка00:00Z:1,440,680KiB, ниже неизменного порога1,572,864KiB. Прежний вопрос пользователю про временную остановку только старого smoke-VLM остаётся без ответа; контейнеры не менялись. T83 aggregate/T84 installation ещё НЕ приняты; текущий стенд T81v11. Browser security hold сохраняется.
+
+T85: output-only UI draft и native/runtime drafts не считаются installed/runtime proof. Первоначальный static terminal-LF finding отозван после прямой проверки JavaScript; актуальные unit/SSR и native результаты приведены выше.
+
+Дополнение 19.10 02:46 МСК: две узкие оптимизации canonical strings реализованы
+в Python: тот же stdlib encoder и проверка surrogate регулярным выражением.
+На неизменных 131 ручном векторе / 279 вызовах baseline 18.706s, candidate 6.431s;
+это замер отдельных helpers на локальной машине. Независимый domain replay
+13 методов PASS, полные прежние результаты и ошибки совпали. Новые wheel/sdist
+вне checkout: по35 методов PASS; 167 модулей/25 ресурсов точны, остальные165
+модулей и все прежние эталоны сохранены. Итоговые129 API-тестов, typecheck/build PASS.
+Свежий actual PG3 canonical-first запущен19.10 02:39МСК и ещё выполняется;
+исходники/тесты заморожены. Новая policy честно связывает новые2source pins.
+После естественного завершения нужны новый capacity packet и ordinary homeserver
+проверка с прежними55CPU/60wall/512MiB и RAM gate1.5GiB; прежний SSH255 остаётся
+FAILED/UNKNOWN. T83/T84 пока не приняты, установлен T81v11. T85 подготовлены
+15 полных wire-сценариев +3 CAS и43 дополнительных ручных вектора; runtime ещё
+не подключён. Реальные qualified pairs0, browser hold сохраняется.
+
+Дополнение 19.10 02:26МСК: LOCAL phase diagnostic PASS за38.849с CPU38.841с,
+maxRSS277568KiB (271.06МиБ). Все11 frozen hashes и полные результаты совпали:
+63 scalar/70 outputs/62 parameters/70 partial atoms/70 UNSUPPORTED, qualified0.
+Это локальный Ryzen7940H, не приёмка homeserver. Первая remote SSH255 причина
+UNKNOWN, повтор ниже memory gate не запускается. В работе только2 Python
+canonical string leaves: fixed surrogate regex и тот же stdlib string encoder;
+независимый before-code review PASS,131 ручной native vector заморожен.
+До изменения выполняется baseline; затем те же vectors/domain/installed,
+новая честная PG policy/capture и новый capacity packet с прежними лимитами.
+T85 wire design принят до кода, runtime ещё не подключён. T83/T84 не приняты,
+стенд T81v11; browser hold сохраняется. Лимиты и исторические эталоны прежние.
+
+Текущий срез19.10 02:10МСК: actual PostgreSQL transcript-first завершён естественно:
+3/3 PASS, пять immutable job graphs, исходники точны, временная БД удалена.
+Первая ordinary-capacity попытка homeserver FAILED: SSH255, пустой вывод,
+свой временный каталог удалён. Причина UNKNOWN; замеров времени/CPU/RSS нет.
+Первый отказ сохранён; готовится отдельная наблюдаемая попытка с прежними
+55CPU/60wall/512MiB. T83 не принят, T84 не установлен, стенд остаётся T81v11.
+Метаданные homeserver: свободно1.30GiB (<1.5GiB gate), в ограниченном kernel
+окне OOM записей не найдено; это не доказывает отсутствие OOM. T85 бетон стен:
+pure TS/Python PASS; wire contract проходит независимую проверку до кода.
+
+Предыдущий срез19.10 01:40МСК: Inspector v12 остаётся локальным кандидатом,
+стенд T81v11. Новый operation-local full SELECT saved-read boundary прошёл
+129 focused tests/typecheck/build/independent review; actual PG3 transcript-first
+идёт, лимит55s прежний. Предыдущий actual2PASS/1RED сохранён (excluded
+SOURCE_REVIEW_REFERENCE_CHANGED, не restored candidate; reapproval не достигнут).
+Capacity и T84 установка ещё не выполнялись. T85 бетон стен: TS/Python pure
+whole32/grammar14 PASS и read-only adapter plan; runtimefalse/realpairs0.
+
 # Статус реализации
+
+## Продолжение 18 октября 2026, T82 принят локально; T83 выполняется
+
+T79 принят локально: полный large vertical source audit проходит очередь, PostgreSQL, storage/cache и UI. Реальные PDF: 139/32 страницы, 27522/10303 native строк; фактические 9 jobs, seal/reopen, 12 независимых PG/API методов, 174 UI-проверки, wheel/sdist PASS. [Приёмка T79](operations/MATRIX_T79_LARGE_VERTICAL_AUDIT_20261018.md), `output/matrix-t79-20261018/acceptance.json`. Source-only этап coverage не увеличивает.
+
+T80 принят ROOT: 94 API-проверки, 19 независимых методов (9 PostgreSQL), сборка/typecheck и две установленные поставки worker PASS. Исторические v9/v10 сохраняют точные определения; новые запуски и запись результатов архивного runtime отклоняются, terminal replay сохранён. Отдельный v11 связывает текущий reader/wrapper. Приёмка `output/matrix-t80-20261018/acceptance.json`, SHA `507647353da092900a7d0b66dbb89edd2c14aa185b5d1536238bf7f2235e1986`.
+
+T81 принят: обычный homeserver работает на v11. Три сверки по 761 историческому ответу совпали; семь новых проверок прошли 63 jobs, отдельный реальный большой audit сохранил полные 139/32 страницы после restart. Installed pins четырёх workers/API/web совпали; двадцать соседних контейнеров прежние. [Приёмка T81](operations/MATRIX_T81_STAND_LARGE_V11_20261018.md), SHA `efa434913fe1e0666c9e61d4f75fc415ead6e8436ad983f1db8f02c52102fffd`.
+
+T82 принят локально: один v2 контракт для literal/native выбора размеров, строгий wire, независимые 32 полных эталона, append-only журнал и миграция 044. TS10/PY5, actual HTTP/PostgreSQL3, миграция PostgreSQL4, ROOT20 API, UI93, typecheck/build и wheel/sdist PASS. Приёмка `output/matrix-t82-20261018/acceptance.json`, SHA `e51e6a0aa28b19613cc7585b426c8a7673f924ef26ba2afb2252d7f2ae6db200`; [границы доказательства](operations/MATRIX_T82_COLUMN_PYLON_REVIEW_20261018.md). Код T82 ещё не установлен на стенд. Coverage 61/69/71, qualified real pairs 0, browser hold сохраняется.
+
+T83 выполняется: typed KR-060 в обычном запуске с неизменяемым снимком последних пар и отдельнымv12. Pure TS/Python, SQL045, wrapper и установленные wheel/sdist по35 методов прошли. На полных139/32 оригиналах loader, Python70 outputs/coverage62-70-70 и положительный complete/seal прошли; saved-read67.978s и UNKNOWNseal69.528s дали настоящий RED по55s budget. ROOT убрал только повторный semantic replay C с полным свежим fingerprint данных/прав; независимые design/code review без подтверждённых дефектов, новые56/focused107/typecheck/build PASS. Реальный PostgreSQL повтор ещё нужен: ускорение и end-to-end не приняты. Сохранённый UI проверен unit/source/SSR, browser hold. [Текущие задачи](../output/matrix-t83-20261018/tasks.md).
+
+
+## Продолжение 18 октября 2026, T78 принят; T79 выполняется
+
+T78 принят ROOT: пять независимых PDF, полные реальные оригиналы 139/32 страницы, точные 274 строки контрольной страницы, actual TS/Python и установленные wheel/sdist PASS. [Доказательства T78](operations/MATRIX_T78_VERTICAL_SOURCE_20261018.md). Приёмка SHA `5e30dfbe14e8b854a455a368cef38f0245854ee544c74ab6792bc294b83a6d10`. Вертикальный текст восстановлен native whole-line анализом без ручной склейки символов.
+
+T79: отдельный большой source audit интегрируется в API, очередь, PostgreSQL, cache и UI; независимые wire8 и owner9 прошли, isolated PostgreSQL и worker проверки продолжаются. Стенд T75 v10, 61/69/71; source-only код coverage не увеличивает. Реальные qualified pairs 0, browser hold. Работа продолжается без остановки между этапами.
+
+## Продолжение 18 октября 2026, T77 принят; T78/T79 выполняются
+
+T77 принят ROOT: actual TS6/Python6, полные источники 139/32 страницы и 6/0 исходных строк, full API/contracts typecheck и API build PASS. Wheel/sdist проверены вне checkout: по 160 модулей, 24 ресурса, QA6 и оба полных артефакта. Приёмка: `output/matrix-t77-20261018/acceptance.json`, SHA `c3b1ac426072904cdddfb8fcada64adba2f9f9ed30bf01da62b85b1d7631d7f4`. Это source-only извлечение; member/area authority не подтверждена, вероятность null, coverage не увеличена.
+
+T78: независимые пять PDF и 12 проверок зафиксированы до кода; TS/Python предложения проходят приёмку. T79: архитектурный план полного HTTP/queue/cache/storage/UI пути готов; отдельный обработчик передачи прошёл первые 8 независимых проверок с границами 32M/1.5M/depth68. Runtime пока T75 v10, 61/69/71. Browser hold сохраняется. Работа продолжается без паузы между этапами.
+
+
+## Проверенное продолжение 18 октября 2026, T76; T77–T79 продолжаются
+
+T76 принят: новый explicit large-source reader/producer, 32M canonical bytes / 1.4M nodes, прежний default 8M/200k сохранён. Actual полные оригиналы: 139/32 страницы и 37064/15470 строк совпали целиком с прежними captures за исключением actual producer/profile identity; TS/Python whole hashes совпали. QA16 + 126 neighbors, actual installed wheel/sdist по 9 методов / 159 sources / 24 resources PASS. [Приёмка T76](operations/MATRIX_T76_LARGE_SOURCE_20261018.md). T77 source literals уже в TS/Python: actual 12 методов, оба текущих полных источника: 6/0, full API typecheck/build PASS; installed 160 proof продолжается. T78: пять authored original PDF и whole manual frozen before code, firstRED сохранён; TS proposal 6 PASS, PYproposal ещё впереди. T79 готовит explicit LARGE_VERTICAL HTTP/queue/cache/storage/UTF8 путь; старый SOURCE_AUDIT_V3 и текущий стенд не расширяются этим source-only кодом. Runtime остаётся принятый T75 v10 61/69/71; реальные qualified pairs 0; browser hold.
+
+## Проверенное продолжение 18 октября 2026, T75
+
+Обычный homeserver v10 принят ROOT: 7 FULL запусков / 63 SUCCEEDED jobs, 6 сценариев source/applicability review, restart семи ролей и три серии по 747 исторических HTTP-чтений PASS. Установленные API/worker/HTTP assets и 42 миграции точны; 20 соседних контейнеров сохранены. Активный стенд **61 параметр / 69 частичных атомов / 71 UNSUPPORTED**, реальные qualified pairs0, вероятность кандидатов null. [Приёмка T75](operations/MATRIX_T75_V10_STAND_20261018.md), `output/matrix-t75-20261018/acceptance.json`. Browser pending по прежнему security hold. Без паузы T76: actual large-source capacity, полные оригиналы 139/32 страницы, wheel/sdist; затем T77 исходные размеры колонн/пилонов. Новый reader меняет source pin, поэтому исторический config v10 не переименовывается и не принимается как новый.
+
+## Проверенное продолжение 18 октября 2026, T73/T74
+
+T73 полностью принят локально, включая actual offline installed wheel/sdist: по 9 Pilot v10, 9 release вызовов, 5 snapshots, 104 прежних вызова и два original PDF replay; 159 Python sources/24 resources точны. T74 UI принят: source/member mapping с исходными страницами, отдельный applicability журнал и immutable evidence; ROOT18 + independent14, итог с соседними workflows257/257, typecheck/build PASS. [T74](operations/MATRIX_T74_STEEL_UI_20261018.md). Сразу T75 ordinary homeserver rollout. Стенд пока v9 60/68/72; локальный v10 61/69/71; реальные qualified pairs0, calibratedProbability null. Browser pending по прежнему hold. Следом T76 source-linked KR060 foundation с адресной проверкой реальных оригиналов.
+
+## Проверенное продолжение 18 октября 2026, T73
+
+Локальное durable ядро v10 принято: 43 TS, 11 Python owner, 38 neighbors, 9 ROOT helper methods и independent actual PG3/3. Снимок последних pair decisions, stale exclusion без fallback, loader v6, original PDF checks, completion/seal/historical read/submission проверены. Typecheck/build PASS. 61 частично реализованный параметр / 69 атомов / 71 UNSUPPORTED в synthetic original-backed сценарии; реальные qualified pairs0. [Приёмка](operations/MATRIX_T73_STEEL_DURABLE_20261018.md), `output/matrix-t73-20261018/core-acceptance.json`. Стенд пока v9 60/68/72. T74 UI проходит независимую проверку; installed package и T75 rollout продолжаются, browser pending по hold.
+
+## Проверенное продолжение 18 октября 2026, T72
+
+Отдельный журнал применимости пары ПД/РД принят: 34 focused + независимые stable actual PG4/4, typecheck/build PASS. Свежие права перед replay, два source refs, пара CAS, отдельные projection/journal hashes, terminal historical withdrawal, latest-before-status и append-only проверены. [Приёмка](operations/MATRIX_T72_STEEL_APPLICABILITY_20261018.md), `output/matrix-t72-20261018/acceptance.json`. Без остановки T73: immutable run snapshot и ordinary durable v10; runtime стенда пока 60/68/72.
+
+## Проверенное продолжение 18 октября 2026, T71
+
+Source review стали подключён к API/PostgreSQL: сервер реконструирует exact old-producer snapshots из полного оригинального v2, поддерживает наследование, explicit empty withdrawal и общий CAS. Старые хеши при отсутствии поля сохранены. Independent actual PG5/5, focused18 и neighbors274, typecheck/build PASS; закрыт подтверждённый replay после отзыва доступа. [Приёмка](operations/MATRIX_T71_STEEL_SOURCE_REVIEW_20261018.md), `output/matrix-t71-20261018/acceptance.json`. Без паузы T72: отдельное authenticated решение о применимости конкретной пары, затем durable v10 и UI. Runtime стенда пока 60/68/72.
+
+## Проверенное продолжение 18 октября 2026, T70
+
+Typed KR-056 execution принят в TS/Python: шесть операций, 9 полных сценариев, 12 integrity-отказов и 3 null-registry отказа. Полные outputs совпали; installed wheel/sdist выполнили по 104 вызова и по два original-PDF replay. Найденный None/default дефект закрыт, первые RED сохранены. Синтетический кандидат имеет 13 evidence fragments, вероятность null; остальные 131 coverage строки точны. [Приёмка](operations/MATRIX_T70_STEEL_EXECUTION_20261018.md), `output/matrix-t70-20261018/acceptance.json`. Runtime стенда пока v9 60/68/72. Продолжается T71: authenticated source-review journal, серверная реконструкция snapshots и CAS; затем pair applicability и durable execution.
+
+## Проверенное продолжение 18 октября 2026, T69
+
+KR-056 pure comparison принят в TS/Python: 33 полных примера и 35 вызовов в каждом языке, точное совпадение результатов, входы неизменны. Actual offline wheel/sdist и два синтетических оригинальных PDF воспроизведены вне проекта. Поддержан только явный С345/С245 для согласованной физической конструкции с отдельным решением о применимости; CANDIDATE/null. 631 прежний файл сохранён, первый RED и эталоны неизменны. [Приёмка](operations/MATRIX_T69_STEEL_COMPARISON_20261018.md), `output/matrix-t69-20261018/acceptance.json`. Стенд v9 пока 60/68/72; без паузы T70 typed execution и durable review/loader.
+
+## Проверенное продолжение 18 октября 2026, T67–T68 на стенде
+
+На обычном homeserver принят v9: **60 параметров / 68 частичных атомов / 72 UNSUPPORTED**. Настоящий HTTP и очередь: 36 заданий, 36 попыток, один source audit и три обычные проверки. Кандидат, отзыв с ABSTAIN, восстановленный кандидат; native evidence 2/0/2, вероятность null. После restart семи ролей новые три matrix/submission ответа побайтно неизменны. Сохранены прежние 66 выбранных snapshots, 203 targets, 132 legacy targets, одно review, FAILED response, полные v3 artifacts и 20 прочих контейнеров. Установленные API/worker файлы и HTTP web assets совпали с freeze. T68: 55 новых тестов, 359 регрессий, 32 проверки confidence после исправления пояснения; typecheck и production build PASS. Реальных квалифицированных пар 0; browser pending по прежнему hold. [Приёмка](operations/MATRIX_T67_T68_V9_20261018.md), `output/matrix-t67-20261018/acceptance.json`. Goal active; сразу T69 KR-056: существующие steel declarations, явная привязка конструкции и отдельная проверка применимости пары.
+
+## Проверенное продолжение 18 октября 2026, T65–T67
+
+T65 typed освещение принято: 48 методов, 14 полных операций TS/Python, installed wheel/sdist 23 ресурса. T66 source audit и append-only разметка приняты: 57 boundary/neighbor, 2 public route, 4 PostgreSQL сценария. [T65](operations/MATRIX_T65_TYPED_LIGHTING_20261018.md), [T66](operations/MATRIX_T66_LIGHTING_REVIEW_20261018.md).
+
+T67 actual v9 локально: пять typed пакетов плюс scalar engine, независимые PG3/3 PASS, 60 параметров / 68 частичных атомов / 72 UNSUPPORTED. Подмена исходников, отзыв/восстановление, исторические чтения и reopen проверены. Полный стенд пока T62:59/67/73, реальные квалифицированные пары0. Продолжаются installed-package проверка, transport checks, T68 UI и установка на feedback стенд. Confidence-v2 строго >80% готова; без калибровки выводы остаются кандидатами. OCR CPU benchmark на трёх реальных страницах завершён; ошибки повёрнутых размеров запрещают повышать достоверность чисел. Browser pending по прежнему security hold.
+
+## Проверенное продолжение 18 октября 2026, T64
+
+Принят pure directed ZU-130 comparator TS/Python поверх полного originalv3: только ПДLED заменён вРД наFLUORESCENT/INCANDESCENT, разные оригинальныеSHA, явное physical-position mapping и frozen reviewed electrical scope.39whole outputs/lang,36methods, installed33+6outputs иAPItypecheck/buildPASS; всеRED сохранены,937pins. Кандидат/null, реальныйF0161UNBOUND; runtime/coverage59/67/73 прежние. [T64](operations/MATRIX_T64_LIGHTING_COMPARISON_20261018.md), output/matrix-t64-20261018/acceptance.json. Без паузы T65 typed execution, затем review/v3loader/v9runtime/UI. Параллельно strict>80confidence-v2.
+
+## Проверенное продолжение 18 октября 2026, T63
+
+Принят pure full-v3 lighting source consumer в TS/Python: точные raw/native paths, lossless grammar view/codepoint ranges,3явных типа света, named/group scope. Independent139methodsPASS,30whole manual output/hash parity, actualauthenticatedreal38 и installedwheel/sdist31whole+8guards/22resourcesPASS; APItypecheck/build/webtypecheckPASS. Три guard дефекта закрыты с сохранением первого RED.922pins/895старых+разрешённыйtypeexport. РеальныйF0161 остаётся LED/UNBOUND/null/UNVERIFIED;coverage59/67/73 прежнее. [T63](operations/MATRIX_T63_LIGHTING_V3_SOURCE_20261018.md), output/matrix-t63-20261018/acceptance.json. Сразу T64: направленное сравнение именованных позиций ПД/РД, затем durable integration.
+
+## Проверенное продолжение 18 октября 2026, T62
+
+На обычном homeserver установлен durable source-audit v3: полный original PDF, immutable artifact/cache, authenticated full-source endpoint и поиск по raw native paths. Реальный F0161:38pages/4207located/2unlocated; новый явный stable traversal устранил process-specific grouping порядок, старые profiles/artifacts сохранены. Installedwheel/sdist+fencedHTTP, independent39+35PY/81TS, root20API/6PG, typecheck/buildPASS. После установки и restart7ролей66snapshots/203targets/132legacy/1review/FAILED bytes и оба полных v3 artifacts сохранены;20прочихконтейнеров прежние. Coverage59/67/73,qualified0/nullprobability. Browser pending по hold. [T62](operations/MATRIX_T62_DURABLE_TEXT_V3_20261018.md), output/matrix-t62-stable-20261018/acceptance.json. Сразу T63: разбор явных технологий освещения поверх полного оригинального v3, затем directed ZU-130 comparison.
+
+## Проверенное продолжение 18 октября 2026, T61
+
+Принят явный analyzed-Form профиль v3 с полными native paths. 74 TS/36 Python/26 neighbors, 53 whole reader cases/lang, пять новых whole original replays, installed wheel/sdist17originals/9expected refusals/22resources PASS. Полный реальный F0161:38pages/4207located/2unlocated, whole TS/PY hash parity. Стандартный профиль прежний. 873pins,855из859 прежних сохранены, изменены четыре разрешённых файла. Исходный текст внутри Form может быть скрыт renderer clipping: видимость/полнота/уверенность не подтверждены. Runtime и coverage59/67/73 прежние,qualified0/null. [T61](operations/MATRIX_T61_FORM_TEXT_PROFILE_20261018.md), output/matrix-t61-20261018/acceptance.json. Без паузы T62: отдельный durable source-audit профиль v3/cache/admission/PG/UI, далее явные v3 consumers и lighting comparison.
+
+## Проверенное продолжение 18 октября 2026, T60
+
+Принята pure foundation `document-text-v3`: полные raw строки, located/unlocated каналы, точная десятичная геометрия, полный профиль/hash и независимые readers. 61 TS/25 Python/26 neighbors, 40 whole reader cases, 11PDF/14pages и installed wheel/sdist PASS. 859pins; из828 прежних изменён только разрешённый type-only export. Полный F0161 пока честно `UNSUPPORTED_TEXT_LAYOUT` на вложенном Form страницы13; artifact не создан, runtime не обновлён. Coverage59/67/73, qualified0/null прежние. [T60](operations/MATRIX_T60_DOCUMENT_TEXT_V3_20261018.md), output/matrix-t60-20261018/acceptance.json. Без паузы T61: явный analyzed-Form профиль с полными native paths; затем durable API/cache/UI и lighting comparison.
+
+## Проверенное продолжение 18 октября 2026, T59
+
+Принят source-only repair нулевой native text geometry.26 QA+14 root methods,36 old/new full artifacts,12PDF/13pages tripleparity, installed wheel/sdist5originals/22resources и cache MISS/HIT PASS.828pins, прежние817primary+2dependencies сохранены. ПолныйF0161 честно FAILED: настоящие положительные строки высотой0.00012pt нельзя представить milli-point. RED и correction rootoracle сохранены; рамки не подменены. Runtime не обновлён до следующего v3 канала raw unlocated text. Coverage59/67/73 прежнее,qualified0/null. [T59](operations/MATRIX_T59_TEXT_GEOMETRY_20261018.md), output/matrix-t59-20261018/acceptance.json. Без паузы T60: located/unlocated fullartifact с durable audit и явным consumer gate, далее lightingcomparison.
+
+## Проверенное продолжение 18 октября 2026, T58
+
+Принят source-only извлекатель явного типа света в TS/Python.12 авторских PDF/13pages; TS60tests/Python14methods с43wholecases, neighbors367/224,45wholeoutput/hash parity и installedwheel/sdist22resources PASS; workspace typecheck/build PASS.817pins/780 прежних сохранены. Полный реальныйF0161 дал честныйABSTAIN: текущий producer испускает2нулевые рамки на других страницах. Первоначальный semanticoracle/RED сохранён, валидаторы не ослаблены. Coverage59/67/73 прежнее, runtime ещё не подключён. [T58](operations/MATRIX_T58_LIGHTING_SOURCE_20261018.md), output/matrix-t58-20261018/acceptance.json. Без паузы T59: исправить общий text-layer geometryproducer, затем directed ZU-130 comparator.
+
+## Проверенное продолжение 18 октября 2026, T57
+
+Приняты точные source-declared заметки о системе координат, высот и масштабе рядом с preview геопривязки. Реальный PDF13: две строки/три заметки/три точных перехода; содержание исключено, недостающая line geometry не подменяется block bbox. Authority SOURCE_DECLARED_UNVERIFIED, probabilitynull, arithmetic T55 прежняя. Web933PASS/72files, independent31+53neighbors, typecheck/buildPASS. После web-only restart66snapshots/203targets/132legacy/1review/FAILED bytes сохранены;6backend+20containers прежние. Coverage59/67/73 прежнее. [T57](operations/MATRIX_T57_COORDINATE_REFERENCE_NOTES_20261018.md), output/matrix-t57-20261018/acceptance.json. Browser pending по существующему hold. Сразу T58: буквальные типы источников света, затем направленное сравнение ZU-130.
+
+## Проверенное продолжение 18 октября 2026, T56
+
+Принято read-only объяснение сохранённых решений выбранного scalar факта: source revision/approval/section/link, current/historical binding, контексты/table/PZ pointer и точный переход ID+SHA. Saved result и latest decision отдельно; UNKNOWN/NOT_CHECKED не повышаются. Web902PASS/70files, independent63included, typecheck/buildPASS. ActualHTTP15real+8controlled views/23callbacks, после web-only restart66snapshots/203targets/132legacy/1review/FAILED bytes сохранены;6backend+20containers прежние. Coverage59/67/73, realqualified0/nullprobability прежние. [T56](operations/MATRIX_T56_STORED_FACT_REVIEW_20261018.md), output/matrix-t56-20261018/acceptance.json. Browser pending по существующему hold; сразу T57 exact-page source-declared coordinate reference notes.
+
+## Проверенное продолжение 18 октября2026, T55
+
+Предварительная привязка к напечатанным координатам реализована и проверена на полном реальном ПЗУ18страниц, PDF13. Отдельный authenticated stateless preview,3FIT+1HOLDOUT; ошибка0.0113173761067 в явно заявленных единицах, strict0.005ABSTAIN. Никакой независимой геодезической authority, probabilitynull/facts[]. API3874PASS, web832PASS, actualPG129PASS/44files; typecheck/buildPASS. API/web установлены и перезапущены на обычном homeserver;66snapshots/203oldtargets/132legacy/1review/FAILED bytes сохранены. Coverage59/67/73 прежнее. [T55](operations/MATRIX_T55_REAL_COORDINATE_DRAFT_20261018.md), output/matrix-t55-20261018/acceptance.json. Browser pending по действующему hold; немедленно T56 source-review explanation.
+
+## Проверенное продолжение 18 октября 2026, T53
+
+Backend v8 сравнения вводного узла ХВС принят на обычном homeserver RTX2080SUPER.59параметров с67частичными атомами,73UNSUPPORTED из132; это техническое покрытие, не полнота параметров. API3831PASS/141skip, worker2401PASS/17skip, actualPostgreSQL127PASS/43files/0skip, installedwheel/sdist22ресурса, typecheck/buildPASS. Контрольный цикл0/1/0/1 кандидатов и15originalfragments; реальный CHK-66354F71:161страница/15facts/63scalar/4unbound,qualified0,sourceapprovalUNKNOWN,probabilitynull. После окончательного restart65snapshots/203targets/132legacy/1review/FAILED сохранены;20другихконтейнеров иweb прежние. [T53](operations/MATRIX_T53_WATER_NODE_EXECUTION_20261018.md), `output/matrix-t53-20261018/acceptance.json`; browser pending по существующему security hold. Без паузы T54: исходные листы, явная разметка узла и просмотр15фрагментов вUI.
+
+## Проверенное продолжение 18 октября 2026, T52
+
+Принят отдельный pure comparator ZU-129 для именованного общедомового вводного узла ХВС.40 whole comparison+8review outputs совпали PY/TS; installed package,72TSfocused/576neighbors,166PYmethods,12independentprobes и typecheck/build PASS. Проверяются все retained origins и claims до выбора identity/approval, затем явные ZU/IOS2/link/mapping/completeness. Результат только CANDIDATE/null probability. Coverage58/66/74 пока прежнее: runtime не подключён. [T52](operations/MATRIX_T52_WATER_NODE_COMPARISON_20261018.md), `output/matrix-t52-20261018/acceptance.json`. Сразу T53: server review/materialization/loader/pinned execution и feedback-стенд.
+
+## Проверенное продолжение 18 октября 2026, T51
+
+Отдельное чтение буквального состава общедомового вводного узла ХВС принято source-only.20 независимых authored PDF,53 whole goldens и хеши совпали в PY/TS; installed wheel+sdist PASS. API3682PASS/134skip, worker2365PASS/17skip, typecheck/build PASS.653 прежних pins сохранены. Это foundation частичного ZU-129, runtime dispatch/coverage58/66/74 не менялись, реальных qualified pairs0. [T51](operations/MATRIX_T51_WATER_NODE_SOURCE_20261018.md), `output/matrix-t51-20261018/acceptance.json`. Без паузы T52: отдельное сравнение явно согласованных составов ПД/РД; manual projections и ожидаемые complete outputs до comparator code.
+
+## Проверенное продолжение 18 октября 2026, T50
+
+Фильтры наличия исходных фактов и stable optional sort внедрены на feedback web. По умолчанию63 результата в прежнем порядке;2 имеют факты обеих стадий,4 одной,57 без фактов. Неподтверждённые ссылки видны при каждом фильтре. Общий source chooser требует явный current ID+SHA, не назначает пару/стадию/approval.
+
+Web686PASS/60files, focused83PASS, typecheck/buildPASS; actual13GET+8pureSSRviews сохранили матрицу/submission/targets/files. Обновлён только web,6 прочих ролей и20 других контейнеров прежние;60snapshots/203targets/132legacy/1review/FAILED run сохранены. Backend принят05:16UTC; browser pending, DOM/bundle не исполнены. Машинное покрытие58/66/74 и calibrated probabilitynull неизменны. [T50](operations/MATRIX_T50_REVIEW_PRIORITY_20261018.md), `output/matrix-t50-20261018/acceptance.json`. Без паузы выполняется T51: отдельная source grammar cold-water inlet-node по независимым authored PDF/full-artifact goldens; новый coverage пока не присваивается.
+
+## Проверенное продолжение 18 октября 2026, T48–T49
+
+T48 подтвердил свежий реальный v7 запуск CHK-5752877C из полных F0106/F0139:161страница/15facts/63scalar results/15targets. T49 добавил явный read-only поиск по всему сохранённому исходному тексту и открытие точной строки на PDF. ActualHTTP до/после restart подтвердил все139+22 страницы, исходные raw строки и геометрию2PNG. Отдельный full-source read budget устранил404 большого документа; review command limits и machine profiles не менялись.
+
+T49: API3611PASS/131skip, web633PASS, actual PostgreSQL120PASS/41files/0skip; typecheck/build PASS. API/outbox/web обновлены на обычном homeserver RTX2080SUPER;60snapshots/203oldtargets/132legacytargets/1localreview/failedrun сохранены,4worker и20другихконтейнеров прежние. Backend принят; browser pending по действующему security hold, unit/SSR/HTTP не заменяют browser. Coverage58/66/74, scalar55/63/77, realqualified0/approvalUNKNOWN/calibrated probabilitynull прежние. [T49](operations/MATRIX_T49_SOURCE_TEXT_20261018.md), `output/matrix-t49-20261018/acceptance.json`. Немедленно выполняется [T50](operations/MATRIX_T50_REVIEW_PRIORITY_20261018.md): фильтры наличия фактов и явная навигация к исходникам.
+
+## Проверенное продолжение 18 октября 2026, T47
+
+На обычном homeserver принят backend T47: scalar fact targets доступны для конечных профилей v1–v7, исторические адреса сохраняются без replay сегодняшнего engine. Очередь отказов открывает точный исходный факт, правило и источник по ID+SHA; подтверждения инспектора автоматически не выставляются. API3605PASS/131skip, web591PASS, actual PostgreSQL117PASS/40files/0skip, typecheck/build PASS. После обновления и restart сохранены59 запусков,203 текущих target responses,132 legacy targets,1local review и failed-run bytes. Полный реальный пакет161страница/15facts проверен через HTTP, source approval UNKNOWN, qualified0.
+
+Машинное покрытие T46 не расширялось:58параметров/66частичных атомов/74UNSUPPORTED из132, scalar55/63/77; полнота целого параметра не утверждается. Геопривязка и calibrated probability не подтверждены. Браузерная приёмка остаётся pending по существующему security hold; API/SSR её не заменяют. Детали и receipt: [T47](operations/MATRIX_T47_IMPLEMENTATION_20261018.md), `output/matrix-t47-20261018/acceptance.json`. Без паузы выполняется [T48](operations/MATRIX_T48_REAL_V7_20261018.md): свежий полный реальный v7 запуск с независимой проверкой всех15 адресов фактов.
 
 Базовый аудит выполнен 17 сентября 2026 на commit `8200a03`; backend-срез identity/durable commands зафиксирован 18 сентября в `a85047f`, authoritative finalization — в `a93bc99`, отзыв и canonical JSON artifacts — в `303e22e`. B07 продолжен коммитами `4f72350` (durable jobs/outbox/relay), `b568f54` (heartbeat/cancellation), `770f502` (relay health/metrics), `ac30f70` (persisted stage dependencies), `7ab4015` (terminal failure propagation), `cbe0998` (PDF text-layer artifacts), `50e0985` (page text-layer qualification) и `967b327` (provider-neutral analysis scaffold). Основание — [аудит](AUDIT_REPORT_2026-09-17.md), включая исходные команды и ограничения окружения.
 
@@ -1492,3 +2014,164 @@ CSRF/idempotency и прочёл его обратно. Изолированны
 пересобрал API и web, оба healthy. В браузере `127.0.0.1:38081` кабинет
 открылся без формы входа, список существующих объектов показан, форма
 «Новый объект проверки» доступна. Это не проверка homeserver или H100.
+
+
+T54 2026-10-18 06:51 UTC: UI_ACCEPTED_BROWSER_PENDING. Water-node source review/comparison UI installed on ordinary homeserver, web774/774PASS, independent81 included.65snapshots/203scalar targets/132legacy targets/1local review/FAILED response unchanged. Only web replaced;6backend and20other containers unchanged. v8 coverage remains59parameters/67partial atoms/73UNSUPPORTED, realqualified0/nullprobability. Evidence: output/matrix-t54-20261018/acceptance.json. T55 real printed-coordinate preview starts immediately; browser hold remains explicit.
+
+### 19.10 15:47 MSK — T83 aggregate accepted; continuing T84/T85
+
+Actual ROOT v5 builder+acceptor exited 0. Acceptance `6dd3217ffa51dd69efd7e5b279453811dbabe07f686257d404a8e7c8534b656e`; evidence manifest `88e62b28ca689bc79779176df149ad166b8aa881c3a42738e7d2b83c958fa7ca`; source1461 freeze `e62c7b422114cba6bacae1fbfb2cc7f14898a046460e566931c73d2b2f45f6db`. Genuine local PG3/API/installed checks and ordinary homeserver sample accepted together. Runtime preservation mode NO_SERVICE_MUTATION: all26 exact before/after, lifecycle calls0, restoration unnecessary (false/null); historical StartedAt drift not requalified. Stand remains T81, browser security hold remains, real qualified pairs0/calibrated probability null.
+
+T85 budget consumer V1 compiler RED (test array annotation) and V2 mock RED (stub returned wrong review ID before budget charge) retained separately. V3 corrects only stub to frozen manual [67108864,1]; one bounded compiler/mock1/realPG4 run in progress, no automatic retry. Targets/review/steel source proposals remain output-only pending full integration. T84 fresh seven-role rollout and finite genuine accepted-base capsule preparation now unblocked. Goal remains active.
+
+### 19.10 15:53 MSK — T85 preparation checks progressed
+
+Budget V3 independent consumer actually passed focused noEmit/mock1/realPG4 (outcome `545644bdc9cd48e6870986e5541ed5bf2ac3622b553076529c57641b638b39da`), own database remaining0, all protected inputs exact. Corrected targets/review/steel API composition V3 full API+contracts noEmit PASS (`87c33cb9b8c1127563e652deedd3b8ecb460ab7fba92d46803788315b79840ad`), build only, no runtime authority. Prior V2 typing RED retained.
+
+UI whole floor scopes/editor state/strict confidence ReactSSR58 passed (`bc6f7deb7d7b99eec1e97da571bd773d43bf893c4b1b26e99020211d0ee50b3e`); complete web+contracts noEmit then passed (`54b2717d54ee59c12c4b9b6f2c4561749741991ba8d4696d4b2334b93ff66fea`). First web check omitted genuine transitive files in private copy; correction adds exact imports without changing DUT/tests/config/resource limits, first RED retained. No browser or mounted interaction proof.
+
+Finite genuine accepted-base capsule and fresh T84 rollout preparation continue. Wall source proposals remain output-only. Generic v13 fact-target/origin support is an explicit next functional gap: current wall-only reader must not be treated as complete annotation coverage for other parameters. Real qualified pairs0, calibrated probabilitynull.
+
+
+### 2026-10-19: steel preparation limits and genuine accepted-base composition
+
+Actual supplemental steel consumer: noEmit + mock1 + genuine PostgreSQL3 PASS in9.398s; fixed512MiB/55CPU/60wall limits unchanged. Outcome `output/matrix-t85-20261019/steel-admission-precharge-v13-v1/independent-consumer-v2/first-results/after.json` SHA4d217aa00875f3c4f1b9df8859879a3aed914b70da8c1b9f0eee6dce0d179380. Default-forks V1 RSS first RED retained; V2 only selects threads, expectations/DUT/runner exact. Normal ownDB cleanup0 and all protected inputs unchanged. Resource tests grant no source/release/actor authority.
+
+ROOT independently reviewed four whole finite historical definitions, genuine accepted v12 config10a652…7bf2,52 unchanged source/resource pins and identical API/worker capsule0632bc…f9e39. Output composition ready9a7b28…233a1 has final6 actual worker hashes and explicit API catalog COPY; no live promotion/runtime acceptance.
+
+T84 reviewed9 output-harness promotions archived old bytes; fresh freeze6e1be45a02b870171e44d8f88e53a5f599ead0a95d78002a7f44d0672fc1c937 contains1051files including overlay. Auth-refresh failed locally beforeSSH/POST because expected ephemeral credential file is absent. Existing identity-only recovery preparation underway; stand still old v11. Reminder removed, homeserver available, no browser proof, real qualified0/probability null.
+
+### 2026-10-19 16:14 MSK — T84 fresh existing identity and preflight
+
+Existing actor session recovered by one audited open-workspace POST, usersCreated0/permissionWideningfalse/memberships exact. Fresh preflight PASS: all27 containers running, activeRuns/jobs0, old43 migration checksums and source inputs unchanged,20 unrelated runtime tuples exact. Historical785GET preservation is in progress before build/activation. Stand remains v11; no T84 runtime acceptance yet.
+
+### 2026-10-19 16:20 MSK — T84 activated, installed pins PASS
+
+Historical785GET before deployment PASS83af9969…e9d1a. Three serial image groups built, only additive044/045 applied; old43 exact. Seven named roles recreated. Actual installed probe PASS:168 modules and25 rules in each of4 workers, API/outbox source pins, genuine v12 policy10a652…7bf2 and3 served asset hashes exact. This is installed-code proof; post-deploy historical785GET preservation is running, normal queue79 jobs/restart/final acceptance still pending. Browser proof absent.
+
+
+### 19 октября, 20:17 MSK — установка исправления и UI3
+
+- На обычном homeserver установлено исправление повторного чтения происхождения пары. Проверка установленных модулей и все785 исторических HTTP/SQL результатов прошли;20 соседних контейнеров сохранены относительно фиксированной исходной точки.
+- UI3 V3: два TypeScript build check, Vite build и123 pure SSR теста в пяти файлах PASS;29 собранных assets зарегистрированы. Это не браузерная проверка взаимодействий.
+- Полный combined104 regression пока не принят: после35 успешных runtime фаз отказал PUBLIC_TARGETS. Отдельный diagnostic36 подтвердил совпадение сохранённой/текущей конфигурации; отказ возникает при чтении исходных scalar фактов. Исходные результаты RED сохранены, причина исследуется.
+- Продолжение T84 первоначально остановилось до POST из-за неверного SQL-поля в consumer precheck. Consumer-only correction читает projection_json.status; исходные ключ/тело/assertions неизменны. Продолжение выполняется отдельным первым запуском.
+
+Доказательства: output/matrix-t85-20261019/combined-ui3-consumer-preparation-v3/root-actual-acceptance.json; output/matrix-t84-20261018/pair-deadline-runtime-amendment-v1/preservation-after-deploy.json; output/matrix-t85-20261019/combined-targets-first-red-diagnosis-v1/diagnostic-consumer-v1/first-results/outcome.json.
+
+### 19 октября, 20:32 MSK — реальный positive run T84 завершён
+
+На обычном homeserver исходный pair-positive POST завершился201; normal run CHK-E09624DF завершён и запечатан. Whole comparison/evidence14/coverage/OCR/job assertions прошли. Проверка submission остановилась на старом ожидании пустых значений: действующий formatter сохраняет площади кандидата 900000 мм² и750000 мм² при COMPARISON_IMPOSSIBLE, evidence[] и calibrated probability null. Готовится отдельный consumer-only verification fix с literal whole-row oracle; повторный pair/run POST запрещён, уже завершённый positive будет проверен чтением. Оставшиеся5 сценариев ещё не запускались.
+
+Гарантированное несоответствие canonical domain T85 исправлено в output-кандидате: raw provenance содержит confidence threshold0.8, тогда как старый V7 canonicalizer допускает только целые числа. V7 contract сохранён, выбран существующий V13 native canonicalizer с прежними капами. Exact full94 first corrected run выполняется отдельно; захваченный exception пока не установлен, runtime PASS не заявляется.
+
+### 19 октября, 20:42 MSK — positive readback принят; два следующих ограничения
+
+T84 positive CHK-E09624DF полностью проверен GET/SELECT, HTTPPostCalls0; повторных pair/run POST нет. Затем pair-unknown записан DONE/UNKNOWN, run-unknown ещё не создан. Чтение полного PDF139pages/23871472bytes остановилось на SSH75s. Следующий отдельный bounded SSH true тоже завершился ConnectTimeout8/exit255; причина исходного чтения не установлена как один только объём передачи. Начата consumer-only подготовка полного remote GET SHA+byte-count proof без передачи PDFbase64, с прежними пределами размера/времени. Старые RED/receipts неизменны.
+
+T85 raw scalar canonical correction: actual build и5 pure node:test vectors PASS за7.56s, исходный порог0.8/V7 reject/целочисленный канон/изменение хеша/не-native types. Полный corrected94 остановился раньше TARGETS: RULE_EVALUATION COMPLETE8 API RSS537149440>536870912, cleanup0/ownDBdropped/privategone/sourcepins exact. Лимиты не подняты; исследуются удержание preparation A во время C и нужные canonical materializations.
+
+Snapshot helper:6 synthetic fixture cases PASS за0.097s, whole literal manifest/copy/ошибочныеpins/unsafe paths/existing target/детерминированный source drift cleanup. Это только packaging proof, реальный финальный snapshot ещё не собран.
+
+### 2026-10-19 20:57 MSK: память и транспорт
+
+- Новый v13 compact preparation прошёл прежние места отказа RSS и BOOTSTRAP_TARGETS. Full94 остановлен после 38 успешных runtime-фаз на WRONG_FLOOR_SOURCE_ROLE: API MATRIX_FACT_TARGET_MISMATCH, ожидание MATRIX_FACT_RULE_MISMATCH. Полный набор ещё не принят; исходный отказ сохранён, идёт проверка контракта. Лимиты прежние, максимум пройденных runtime-фаз 495652864 bytes. Owned DB удалена, private526 убраны, protected pins exact.
+- Whole-content transport: 14 закрытых локальных fixture-проверок PASS, outcome d80f42cf5408c2dca09fd8d845dd8f03fd13de0b5ff242f98a89ef08e77300ea. Проверены EOF/64KiB/32MiB/+1/truncation/hash/status/redirect/deadline. Это не доказательство реального server GET. V2 parent receipt bug сохранён отдельно.
+- SSH восстановлен; новый прогон на homeserver не запускался: MemAvailable1405860 KiB ниже1572864 KiB. Соседние сервисы не менялись. Асинхронно запрошена координация памяти; локальная работа продолжается.
+
+### 2026-10-19 21:50 MSK: текущая политика, реальные чтения и продолжение T84
+
+- Current-policy parity: actual TypeScript build и14 genuine вызовов PASS (`d6d68232ff99bc0f9cc5efa84fe1ba0aac8ed52d0960f46a2fb4831cb0eee159`); whole v13 policy/definitions/installed identity и finite v9–v12 проверены. Все111 импортированных/проверенных файлов exact относительно104V5; это не полный PostgreSQL или browser gate.
+- T84 unknown CHK-9164FA62 принят целиком: journal, полные original PDF GET/hash/bytes, matrix/submission/SQL/OCR,10 задач с первой попытки. Исходный unknown pair POST не повторён. Контроллер70457 затем потерян без exit status; withdrawn CHK-7698418C уже terminal/sealed, все10 задач SUCCEEDED/attempt1, но его whole verification тогда ещё отсутствовала. Причина потери контроллера UNKNOWN.
+- Новый104V5 full94 сначала оставил68 успешных phase receipts, включая WRONG_FLOOR_SOURCE_ROLE; после потери процесса тестовая БД удалена отдельным bounded cleanup, private526 убраны. Полного PASS нет. Отдельный явно принятый повтор сохранил RED BOOTSTRAP_08_WORK: API467034112 + Python69926912 =536961024 bytes, выше512MiB на90112 bytes. Outcome `0ea1f0f6e848672ddda4acb23e589e251f3ae6823cc003e90ce54b334e96d8eb`; cleanup0/DB dropped/private gone/protected exact. Лимиты не менялись, автоматического повтора нет; исследуется удержание полного preparation при worker GET.
+- Existing-user renewal реально PASS: один public endpoint POST, usersCreated0, permissionWideningfalse, whole memberships exact; новая сессия до20.10 02:47:51 UTC. Пакет `output/matrix-t84-20261018/existing-session-renewal-20261019-v1/`.
+- После fresh active0/auth2h/MemAvailable1818436KiB запущен отдельный controller `done-withdrawn-handle-recovery-v1`: GET-only whole withdrawn readback, затем только ещё не выданные reapproved/stale/freshapproval. Старые DONE POST повторять запрещено; новый aggregate и postflight ещё не приняты.
+
+Фактическое v12 покрытие остаётся62 параметра/70 partial atoms/70 UNSUPPORTED; real qualified pairs0, calibrated probability null. UI123 SSR не заменяет browser proof; browser security hold сохраняется. H100 и соседние сервисы не использовались.
+
+
+## 19.10 22:07 МСК — продолжение приёмки, V13 worker memory
+
+Завершённый withdrawn `CHK-7698418C` проверен целиком:9 GET,0 POST, исходные PDF, журнал, matrix/submission и SQL/OCR checks PASS. SHA отчёта `11733525e625e9cd56f90d0564ea447d45beccf1bd7d4bfa126a948e85c27381`. Контроллер затем завершился exit1 на RAM gate1.5GiB ДО выдачи reapproved; три следующих сценария не выдавались, PENDING нет. Старые DONE команды не повторяются.
+
+Полный104V5 прогон сохранил firstRED BOOTSTRAP_08_WORK:536961024 bytes при лимите536870912; cleanup0, owned DB удалена, private copies удалены, защищённые pins exact. Подготовлен104V6: полный снимок A в worker GET освобождается отдельной областью владения после COMMIT; до PDF B и полного свежего C остаются только fingerprint и detached four-field references. Полные проверки C и V7 canonicalization сохранены. ROOT проверил diff,6 случаев и828 pins; полный94 сейчас выполняется отдельным процессом с durable terminal, исходные лимиты/оракулы/cleanup без изменений. Runtime PASS пока не заявлен.
+
+Для обычного стенда подготовлены конкретные immutable build contexts и7 новых image tags, API opt-in V13; новые image IDs ещё не существуют. Standalone read-only collector реализован, не выполнен:27 контейнеров/45 checksums/конфигурация/OCR/785 whole HTTP и15 исторических SQL. Snapshot и установка ждут фактической приёмки T84 и104V6. Напоминание о доступе homeserver ранее удалено. Browser security hold сохраняется.
+
+
+### 2026-10-19 22:21 MSK — T84 reapproved принят;104V7 проверяется
+
+T84 reapproved CHK-A062D46A проверен целиком, SHA8696e6ba81bae0b3b6a306582f7954c88a9de937f92717ae5032eb6412fbdb9b; все10 заданий SUCCEEDED/attempt1. Контроллер tail-three-after-capacity-v2 завершился exit1 на следующем RAM gate1.5GiB; stale/freshapproval ещё не выданы,16 операций DONE, PENDING нет. Повторы завершённых команд не выполняются. Соседние сервисы сохраняются; запрошена координация памяти для продолжения двух оставшихся сценариев.
+
+104V6 полный прогон сохранил RED REVIEWED_08_WORK: API474591232+Python70266880=544858112 bytes при лимите536870912.68 этапов с BUILD_ONLY прошли; cleanup0/owned DB удалена/private gone/protected pins exact. Outcome0a63c9cce8e612c3b68e0df6590c90616fdd82311d604df1aa17863f82c2994c.
+
+104V7 сохраняет полную native admission и прежние canonical UTF-8 bytes; SHA вычисляется порциями без итоговой объединённой строки в scalar-origin fingerprint. Старый canonical string API и лимиты сохранены. Изолированные10 literal preimages/30 отказов PASS; current-policy build+14 genuine calls PASS, outcome29ea7a96557e1d37a29d409996956efd49c698e0cb9a9c73c2fa8980e995f1c1. Полный прежний94 набор запущен после ROOT review855 pins; первые42 runtime-фазы прошли, окончательная приёмка ещё отсутствует.
+
+На homeserver реально проверен whole Compose render: меняются только7 image/build contexts и API V13 opt-in; OCR, mounts, networks и прочие настройки без изменений. Сохранены фактические policy/config inputs27 контейнеров/45 migrations/2 provider stages. Это metadata-only proof: при снимке активна работа, RAM ниже gate; fresh collector PASS не заявлен. Конкретный конечный build/adopt executor проверен ROOT статически;2 inert CLI refusal PASS. Реальная сборка/установка V13 ждёт T84 final и full94. Browser security hold сохранён.
+
+104V7 actual full94 завершился firstRED REVIEWED_08_WORK:537882624>536870912 bytes;68 этапов с BUILD_ONLY PASS, cleanup0/ownedDB dropped/private gone/protected exact. Outcome 9fd744acff3e5d3d0f06ed4551c6b454e8abb3c5445db055fcbb615837e316aa. Порог/оракулы не менялись; BOOTSTRAP_08_WORK прошёл492941312 bytes. Начат разбор оставшегося удержания данных; полного94 PASS и разрешения на сборку нет.
+
+
+### 2026-10-19 22:51 MSK — stale принят; V9 канонический SHA проверен
+
+T84 stale CHK-56A94455 полностью проверен:10 jobs SUCCEEDED/attempt1, PARTIAL/sealed/completed,7 typed+63 scalar outputs,70 UNSUPPORTED, evidence0 и probability null. Whole receipt6d68860a243ebb1e070e2068a6e20737d9882c2d14e11123d921624c71c26f01. После этого tail-two завершился exit1 на RAM gate. Отдельный tail-one также остановился на повторном RAM gate ДО выдачи freshapproval: свежий grant отсутствует, pair/run операции отсутствуют, private state остаётся c2e4969dd458b8e2a3f3a83af2787423d002857487b1cfcfd55f525ebe33f204. Шесть normal whole-сценариев приняты; freshapproval, postflight/restart и T84 final ещё не приняты. Соседние20 сервисов не менялись.
+
+104V8 полный94 сохранил RED REVIEWED_08_WORK:573272064>536870912 bytes, из них API503017472 и Python70254592.68 успешных этапов с BUILD_ONLY; cleanup0/ownedDB dropped/private gone/protected exact. Outcome fb4c0f42c0dae324695dba6849752712aca0186b0b0039d2f351f9ce5cf2ef99. Точное место пикового выделения не доказано.
+
+104V9 меняет только способ вычисления SHA полного scalar-preparation envelope: прежние целочисленные V7 canonical bytes поступают в SHA порциями. Состав metadata/scalarInput/proofs/references и все пределы, классы/приоритеты отказов сохранены; original V7 canonical string API неизменён. API/contracts build реально PASS (bfa111bce9dd49db2377e521c65d6bb6ce9d0d17e87f81c67abc2975c67f5cba). Отдельный pure consumer PASS:21 допустимых V7 случаев,50 точных отказов, прежние10/30 проверки V13; границы64MiB/4500018 nodes/depth69/32768 members/Unicode проверены. Outcome30136b74ff366720ab7f46528584d510572694852a2d4c35aba8c7f2743537ce; max group RSS484016128, cleanup/protected pins exact. Два устаревших поля byte-count исправлены отдельным immutable map bca0027f6ffd9a89cfeb32bb1d08bc928c5ecf8d439d47f5496a7788e51f259c до binding; исходные файлы/хеши/старые receipts сохранены.
+
+Полный94 на104V9 выполняется отдельно с прежним runner306b/all94 oracles/caps/cleanup; результат пока неизвестен. Новый current-policy112/14 consumer подготовлен, ещё не выполнялся. V13 source promotion/build/adoption не выполнены. Browser security hold сохраняется.
+
+
+### 2026-10-19 23:05 MSK — точная граница памяти и политика V9
+
+104V9 actual full94 сохранил firstRED REVIEWED_08_WORK:544362496>536870912 bytes; API474075136/Python70287360.68 успешных шагов с BUILD, cleanup0/ownedDB dropped/private copies gone/protected exact. Outcome694925143f5e35435cde5711d8c2a53ec8eb5e442142ada2f25d046971b37bf5. Отдельный metadata-only diagnostic того же исходного prefix и прежних caps подтвердил: историческая материализация/полная native SHA validation/emission завершились; последний HISTORICAL_SHA_EMIT_DONE RSS376131584. Затем до следующего SQL group вырос до544124928/API473968640/Python70156288. Diagnostic outcomeeee0a98b9e8abc34906c5e7e9c57e162352cdae3b6e85bbc929ef0b59c0b0d89; cleanup0/private gone/protected exact. Это не qualification PASS. Последующий статический путь начинается с полного portableEvidenceHash(artifact), который строит tagged tree и полную JSON строку даже для неиспользованного selector при submitted target. Готовится устранение этой аллокации с сохранением полного проверяемого portable hash; причина пика ещё не подтверждена успешным исправленным прогоном.
+
+Current-policy112 V3 реально PASS: build+14 genuine calls,4.899311s, max246325248 bytes; outcome d89301e03913ae7d51cd92c899549a3be9053e9110556e059e8478142b16a2fa. Private cleanup и protected pins exact. Installed-proof V2 прошёл ROOT whole static review,19 stdlib helper cases и inert unbound CLI refusal; реальный installed probe ещё не запускался. Новый wall-only controlled packet READY793b2dccbdd4365a0aaa16a9c83bb218cf064c5c2f972e5ad8be33e1194aeb30 подготовлен, ещё не ROOT принят/не выполнен. Пакет честно ограничивает независимые goldens двумя KR055 rows, other61/global acceptance не заявляет.
+
+Homeserver доступен;23:02 MSK MemAvailable1408216KiB ниже неизменного gate1572864KiB. T84 freshapproval и дальнейшая установка не запускались. Соседние сервисы не менялись. Напоминание уже удалено. Browser security hold сохраняется.
+
+
+### 2026-10-19 23:16 MSK — portable SHA: реальные полные артефакты PASS
+
+Новый native-only portable SHA вычисляет прежние typed bytes потоково, сохраняя IEEE754 number encoding и полный admission. Старые public V7/V13 bodies и caps неизменны. Pure actual outcome8182ed10ae9d9fe2ea805a164817d3ffb89aa9d04269f139c66c3fae7825e999: BUILD+11 runtime phases PASS,22 независимых literal hashes/7 boundary recipes/48 native refusals плюс прежние V7/V13 проверки; полные ПД139/РД32 дали прежние фиксированные SHA. Max groupRSS488640512 bytes относится к старому V7 bytes test; новый portable bytes103628800, фактические PD191733760/RD194465792. Cleanup/private/protected exact. Независимое static v3 review0feea4065adbfd87c92ee9f7cd74d88f608123fdbb107f6611f736f003806305:348 pins, литералы/рецепты и третий retained-pair diff проверены без DUT.
+
+Source104V10 map b34c84d3fb5fff5ffa0317b48ec089c5b89cd278bfac3c5ac2731e7491ef8cae,19changed/85exact: lazy selector плюс streaming full artifact hashes только в admitted V13 private paths. Никакой подмены hash/source proof/trusted flag. Full94 запущен отдельно с прежним runner306b/oracles/caps/cleanup; BOOTSTRAP08WORK уже PASS479457280 bytes, полный результат ещё не известен. Политика V4 статически проверена, ещё не выполнена.
+
+Controlled ordinary packet793b2dcc прошёл ROOT whole static review и реальный inert unbound refusal b89690048e5785fc83d1f4ee972e9ed5e8c141f3d1f28b5a8c65e7d558f5ab8c:0HTTP/0POST. Реальные сценарии/installed proof пока не запущены. На homeserver23:12MSK MemAvailable1286008KiB ниже gate1572864; соседние20 сервисов не трогались.
+
+### 2026-10-19 23:24 MSK — V10 full94 RED preserved; policy V4 PASS
+
+The V10 complete portable evidence streaming helper passed independent literal/boundary/native-error and whole 139/32 PDF hash checks. Full94 passed BUILD and 68 successful steps, then REVIEWED_08_WORK reached group RSS 541646848 bytes against the unchanged 536870912-byte cap. At that peak API RSS was 382423040 and Python RSS 159223808; the previous API allocation peak has moved to the worker. Outcome `6e5cabe86418a93b2a6dbf631d21a769c0904b0e93c67df5403c737858269470` is preserved, cleanup passed, and full94 remains unqualified. Diagnostic-only Python boundaries are being prepared before any further product change.
+
+Current-policy V4 build and all 14 genuine TS calls passed (`7b0b51573aceb2cec55cc608d0efcf101432b9d4354680323ca3bd23f49005f1`); the 200-case worker package proof is reused byte-exactly. No new worker, stand, or browser acceptance follows from that result. Read-only homeserver capacity at 20:24 UTC was 1457324 KiB available, below the unchanged 1572864 KiB runtime gate; freshapproval remains unissued.
+
+### 2026-10-19 23:36 MSK — worker diagnostic overhead isolated; wider corpus located
+
+The diagnostic-only global Python profile changed no product sources but reached the original 55-second group CPU cap during BOOTSTRAP_08_WORK, before REVIEWED_08_WORK. Its first failure (`421e4168635dfd7447d1fa4d9d55588e88c7bc61d6791f7569b46144291e79db`) and all 58 numeric markers are retained; cleanup and all protected pins passed. This does not identify the reviewed-path allocation cause. The next diagnostic uses a one-shot lazy-import trigger followed by finite function-boundary wrappers, avoiding permanent profile overhead. No cap change or automatic retry.
+
+Read-only homeserver metadata confirms additional public originals: F0136–F0145 are ten RD sets /194 pages, and F0117 is a 58-page PD fire-safety volume. Source payload SHA values remain manifest-derived, with current ZIP entry/path metadata checked separately. A bounded pass read 135 complete cached pages; this is text evidence only, not independent source approval or a new KR-066 qualified pair. Remaining named cached pages are being reviewed under a separate fixed budget. Homeserver available RAM was1413536 KiB at20:33:57 UTC, still below1572864; no freshapproval POST or neighboring lifecycle action occurred.
+
+
+### 2026-10-19 23:45 MSK — Python portable-tree peak identified; full RD text pass
+
+Diagnostic V2 preserved the original BOOTSTRAP success and reached REVIEWED_08_WORK. It failed at group RSS546770944 bytes (API394293248 + Python152477696), CPU13.36 seconds. The last numeric markers place execution inside the second original portable_evidence_json call under retained _integrity; no return was observed before the RSS kill. Outcome `c8bc6b65d378fae9f7b944a731278d854380e4514c47902f020f646b2df68dac`; ROOT review `0294032ed91ac2a7d29fb465cad70fa84060f7652dd10b3beaf0367c5147510d`. Database cleanup, private removal and945 protected pin slots were verified. This is diagnostic evidence, not full94 acceptance. Next correction targets whole portable tree/string allocation in the private V13 Python path while preserving hash bytes, original public pair behavior and all caps/oracles.
+
+The bounded second text pass completed117 remaining pages using11184283 compressed+decoded bytes, below16MiB. Combined: all194 RD JSON pages (181 text candidates,13 OCR_REQUIRED) plus58 PD fire-safety JSON pages. No same-element fire-protection replacement pair was established; KR066 remains ABSTAIN. Isolated drawing R-number labels were not admitted as fire-resistance properties. OCR13 preparation is restricted to F0138 physical pages3–15. ROOT text review `da684e064ddd113cd09e4333d1192ef1d67eb63b4b5dc9d70950aa3017119a1f`.
+
+Homeserver20:44:33UTC MemAvailable1449760KiB remains below the unchanged1572864KiB gate. T84 freshapproval still unissued; no neighbor lifecycle change.
+
+
+### 2026-10-19 23:59 MSK — Python streaming pure14 PASS; package preflight preserved
+
+Source104V11 adds bounded native admission and streaming typed portable SHA only in the private V13 Python execution path; the original public native/pair APIs and all hash encodings, limits and refusal precedence are preserved. Independent Python pure14 actually passed:22 fixed literal hashes,7 boundary recipes, hostile builtin-subclass refusal/callback0, byte/node/depth/container/Unicode boundaries and complete original PD139/RD32 hashes. Outcome `b7118be53a34fc655769c931c63b0702a2160918723513308f36ba98b0115cc1`; ROOT review `4b7f59c45f09f4bdc4b0d3a4c960a0db326ba4f25de720f0e838aaddf9bc2248`. MaxRSS131325952 bytes; summed phase wall11.2356s;58 protected pins rehashed and private copies removed. This is pure-helper proof, not full94/installed/server acceptance. Full94 is prepared with original94 order/oracles/consumers and only two count guards19/85 to22/82; current policy14/package proofs remain prerequisites.
+
+Fresh worker200 package V1 stopped in preflight before first-results/DUT/compiler/build because all six previously pinned pip HTTP-cache wheel files were absent. Exact first failure is retained in `current-worker200-stream-reproof-v1/root-actual-review.json`; source2354/copy2191 pins and exact original scripts/cases were independently verified. Recovery is restricted to exact six original wheel versions/hashes, with a separate future packet; no silent retry or tool-version replacement.
+
+Existing OCR CPU provider passed one read-only health/profile/eslav metadata probe. The planned13-page inference remains deferred: available335368192 bytes after1GiB reserve is below observed lifetime peak-growth638091264. No OCR/render/POST/model initialization occurred. Bounded source-data gate for SPZU039 will use existing F0138 cached text and F0121 drainage fragments; no feature-type/source-role substitution or real pair is asserted. Homeserver20:54:02UTC MemAvailable1358744KiB remains below1572864; T84 freshapproval still unissued.
+
+### 20 октября 00:12 МСК — текущие проверки V11
+
+- Python pure14 PASS; worker200/API и фактические wheel/sdist установки PASS (200 source pins, не 200 сценариев); current-policy14 V5 PASS.
+- Полный original94 V11: 67 runtime шагов PASS, первый RED на REVIEWED_08_WORK: совместный RSS 540610560 B при фиксированном лимите 512 MiB; API 390037504 B + Python 150573056 B. Лимиты и ожидаемые результаты сохранены.
+- Cleanup PASS: временная БД удалена; защищённые исходники, оригиналы и tooling повторно сверены ROOT. V11 не принят как полный regression PASS; автоматического повтора нет.

@@ -19,7 +19,7 @@
 
 [Открыть ключевой review screen в Mobbin](https://mobbin.com/screens/d6fa70dc-46b6-41e0-9771-d61e758980a3).
 
-[Изображение не включено в публичный снимок.]
+![Airwallex review bill](assets/mobbin/airwallex-review-bill.jpg)
 
 Сильные решения:
 
@@ -40,7 +40,7 @@
 
 [Открыть split review screen в Mobbin](https://mobbin.com/screens/ed82aafc-c4dc-442d-87fc-359f7347f940).
 
-[Изображение не включено в публичный снимок.]
+![Semrush content diff](assets/mobbin/semrush-content-diff.jpg)
 
 Сильные решения:
 
@@ -62,7 +62,7 @@
 
 [Открыть Vanta Tests screen в Mobbin](https://mobbin.com/screens/d33c50cb-a1db-4dbd-a420-49bbf678ba3d).
 
-[Изображение не включено в публичный снимок.]
+![Vanta tests dashboard](assets/mobbin/vanta-tests-dashboard.jpg)
 
 Сильные решения:
 
@@ -83,7 +83,7 @@
 
 [Открыть AWS upload status screen в Mobbin](https://mobbin.com/screens/d0b2a1fa-99a9-4c29-ba83-f77a3f850d40).
 
-[Изображение не включено в публичный снимок.]
+![AWS upload status](assets/mobbin/aws-upload-status.jpg)
 
 Сильные решения:
 

@@ -1,0 +1,285 @@
+{
+  "schema_version": "ecc.agent-architecture-audit.report.v1",
+  "created_at": "2026-10-17T17:39:03.522204+00:00",
+  "planning_timezone": "Europe/Moscow",
+  "deadline": "2026-10-20T23:59:00+03:00",
+  "feature_freeze": "2026-10-20T12:00:00+03:00",
+  "executive_verdict": {
+    "overall_health": "functional_coverage_limited",
+    "primary_failure_mode": "Durable pilot ceiling plus gated/incomplete fact extraction, not GPU capacity alone.",
+    "most_urgent_fix": "Shared executable registry and source-to-fact pipeline."
+  },
+  "scope": {
+    "target_name": "Inspector AI Hackaton normal architecture",
+    "model_stack": [
+      "local document-ai",
+      "local Qwen3-VL-4B",
+      "deterministic typed comparators"
+    ],
+    "layers_to_audit": [
+      "tool_selection",
+      "tool_execution",
+      "tool_interpretation",
+      "answer_shaping",
+      "persistence"
+    ],
+    "production_code_changes_this_audit": false
+  },
+  "current": {
+    "catalog": 132,
+    "partial_pilot": 7,
+    "fully_qualified_in_inspected_runs": 0,
+    "unsupported": 125,
+    "unsupported_generic_definition_only": 45,
+    "unsupported_unresolved": 80,
+    "generic_definition_count_including_two_pilot_codes": 47,
+    "unresolved_reasons": {
+      "GEOMETRY_OR_TOPOLOGY": 20,
+      "APPROVAL_OR_CONTEXT": 8,
+      "SOURCE_TRIGGER_CONFLICT": 1,
+      "COMPOSITE_TRIGGER": 35,
+      "NORMATIVE_OR_APPLICABILITY": 10,
+      "PUBLIC_MAPPING_CONFLICT": 2,
+      "EXTERNAL_REGISTRY": 4
+    },
+    "all_47_real_preview_rows_blocked_by_source_review": true
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "title": "Seven-code coverage ceiling",
+      "mechanism": "Pilot seal writes PARTIAL only for seven literal parameter codes; every other row is UNSUPPORTED.",
+      "source_layer": "persistence",
+      "root_cause": "Pilot seal writes PARTIAL only for seven literal parameter codes; every other row is UNSUPPORTED.",
+      "evidence_refs": [
+        "apps/api/src/postgres-repository.ts:6730",
+        "migrations/013_pilot_rule_results.sql:27"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Registry-driven atomic execution and coverage projection."
+    },
+    {
+      "severity": "high",
+      "title": "Candidate definitions are non-executing",
+      "mechanism": "47 candidate definitions and comparator previews do not create durable rule results.",
+      "source_layer": "tool_execution",
+      "root_cause": "47 candidate definitions and comparator previews do not create durable rule results.",
+      "evidence_refs": [
+        "services/worker/rules/parameter-candidate-rules-v1.json",
+        "services/worker/inspector_worker/family_rule_evaluator.py:271"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Wire verified shared extractors/comparators and generic server verification."
+    },
+    {
+      "severity": "high",
+      "title": "Source review stops observation discovery",
+      "mechanism": "All 47 real FULL preview rows abstain on unresolved source revision before any eligible reviewed source.",
+      "source_layer": "tool_selection",
+      "root_cause": "All 47 real FULL preview rows abstain on unresolved source revision before any eligible reviewed source.",
+      "evidence_refs": [
+        "output/feedback-20261017/real-full-pilot-results.json",
+        "services/worker/inspector_worker/candidate_family_observations.py:154"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Extract observations independently; retain revision/approval gates for qualified conclusions."
+    },
+    {
+      "severity": "high",
+      "title": "Visual classification is radiator-specific",
+      "mechanism": "VLM answers only RADIATOR/OTHER/ABSTAIN; FULL is not a 132-rule analyzer.",
+      "source_layer": "tool_interpretation",
+      "root_cause": "VLM answers only RADIATOR/OTHER/ABSTAIN; FULL is not a 132-rule analyzer.",
+      "evidence_refs": [
+        "services/worker/inspector_worker/visual_vlm.py:39"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Rule-targeted structured extraction using text/table/vector first and VLM fallback."
+    },
+    {
+      "severity": "high",
+      "title": "Release profiles do not compose naturally",
+      "mechanism": "Multiple specialized review profiles are mutually exclusive; shared facts are not a common execution substrate.",
+      "source_layer": "tool_selection",
+      "root_cause": "Multiple specialized review profiles are mutually exclusive; shared facts are not a common execution substrate.",
+      "evidence_refs": [
+        "apps/api/src/postgres-repository.ts:976"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Composable capability registry with common typed fact/evidence contracts."
+    },
+    {
+      "severity": "high",
+      "title": "No calibrated violation confidence",
+      "mechanism": "OCR line score and model label do not estimate end-to-end discrepancy correctness.",
+      "source_layer": "answer_shaping",
+      "root_cause": "OCR line score and model label do not estimate end-to-end discrepancy correctness.",
+      "evidence_refs": [
+        "apps/api/src/pilot-candidate.ts:200",
+        "services/worker/inspector_worker/visual_vlm.py:129",
+        "packages/contracts/src/index.ts:96"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Separate machine warning/candidate/human decision and calibrate on object-held-out labeled examples."
+    },
+    {
+      "severity": "medium",
+      "title": "Absolute-registration requirement was overgeneralized",
+      "mechanism": "Independent survey document is required for external absolute verification, but local document registration can use validated printed axes/dimensions.",
+      "source_layer": "tool_interpretation",
+      "root_cause": "Independent survey document is required for external absolute verification, but local document registration can use validated printed axes/dimensions.",
+      "evidence_refs": [
+        "docs/operations/FEEDBACK_GEOMETRY_PROVENANCE_20261017.md",
+        "output/feedback-planning-20261017/geometry-coordinate-probe.json"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct code and saved run inspection; product calibrated probability is not measured by this audit.",
+      "recommended_fix": "Add local registration with documented frame, held-out correspondences and uncertainty; preserve absolute trust-store path."
+    },
+    {
+      "severity": "high",
+      "title": "Machine submission unconditionally unavailable",
+      "mechanism": "Postgres getSubmission returns INCOMPLETE_ANALYSIS for every accessible NORMAL check; review export is a different artifact.",
+      "source_layer": "answer_shaping",
+      "root_cause": "Frozen prediction read-model and official-schema adapter not wired.",
+      "evidence_refs": [
+        "apps/api/src/postgres-repository.ts:11969",
+        "apps/api/src/app.ts:1912",
+        "schemas/official-submission-20260811.schema.json"
+      ],
+      "confidence": null,
+      "confidence_basis": "Direct implementation read; no product probability inferred.",
+      "recommended_fix": "Implement immutable machine export and schema validation with explicit partial coverage and versioned parameter/file identity mapping."
+    }
+  ],
+  "ordered_fix_plan": [
+    {
+      "order": 1,
+      "goal": "Shared registry and outcome contract",
+      "why_now": "Remove explicit ceiling before adding rules",
+      "expected_effect": "Composable rule activation and honest coverage"
+    },
+    {
+      "order": 2,
+      "goal": "Metadata and typed facts",
+      "why_now": "Current real pairs have zero eligible reviewed observations",
+      "expected_effect": "Visible values and explicit unresolved metadata"
+    },
+    {
+      "order": 3,
+      "goal": "Numeric and class vertical slices",
+      "why_now": "Broadest reuse of existing code",
+      "expected_effect": "28 target codes then 14 extensions, subject to real inputs"
+    },
+    {
+      "order": 4,
+      "goal": "Confidence envelope and validation",
+      "why_now": "User requests 0.80 warning split",
+      "expected_effect": "Calibrated warning routing with null fallback"
+    },
+    {
+      "order": 5,
+      "goal": "Frozen machine prediction export",
+      "why_now": "Current submission path is a stub despite available schema.",
+      "expected_effect": "Validated machine response independent of inspector review, with declared partial coverage."
+    },
+    {
+      "order": 6,
+      "goal": "Local registration and specification comparison",
+      "why_now": "Unblocks selected dimensional/composite rules",
+      "expected_effect": "Bounded geometry and equipment/layer comparisons"
+    },
+    {
+      "order": 7,
+      "goal": "Release acceptance and submission package",
+      "why_now": "Preserve deadline buffer",
+      "expected_effect": "Frozen tested result by October 20 20:00 MSK"
+    }
+  ],
+  "input_sha256": {
+    "services/worker/rules/parameter_catalog_132.jsonl": "c6b73dffbea6bb366fc50f08392522c390bdf7b19420051802bd0bcbd32b4e4f",
+    "services/worker/rules/parameter-family-registry-v1.json": "fdc6a69544e06513ee37baa20ad21a1c5c1bc711b04907491becc3283604a87a",
+    "services/worker/rules/parameter-candidate-rules-v1.json": "5e59fe040872e82959401ce7361f4716fe484d26575bd8390d8fc834d0618ac0",
+    "docs/operations/unresolved-parameter-strategy-v1.json": "0e9519b426c93fa9eaefe7416d6ced893c212ff3deb198d87e70eedf884d5514",
+    "apps/api/src/postgres-repository.ts": "a36bd0ba3efe1b72ff9bdb4c924f8270bf4bb50f33b88ff813f2c4a74458b25b",
+    "services/worker/inspector_worker/family_rule_evaluator.py": "9551e71632c9dcd414de7e754e57d7b71ab8580a64d947403939066a7c4dc1bf",
+    "services/worker/inspector_worker/candidate_family_observations.py": "78115ead75ca7180390ae8a2c7d504de00d08c17f804a7b4bf46e6319448d805",
+    "services/worker/inspector_worker/visual_vlm.py": "f6b0a7279a7e8b1a18f6d603e8d448a6ee2e0ec5ffc363f960de95db4fc3f3ad",
+    "infra/docker-compose.feedback.yml": "dff89e69b89a5d2f191299db93ddd321c78ca92506ecf3c1cccb8507f2f24b57",
+    "output/feedback-20261017/real-full-pilot-results.json": "f4b98c9f2f0f729f9b080485f39fec529753ac04dd82ed8d7f986d4ed82b5f04",
+    "schemas/official-submission-20260811.schema.json": "f5be0fd5c983d9a600ce739a23dbbd90615f570a47a37c12dd8e870f8b70554f",
+    "docs/operations/DELIVERY_PLAN_20261020.md": "f1ee0157714d15b2cfce37302b5bff6a0b1843afe7c0009c93be86a6acc904da",
+    "docs/operations/PARAMETER_DELIVERY_AUDIT_20261017.csv": "524d0c357b30c0082885b4a18053b4bf8dd3b464e3f71c5d395ccae66001d610",
+    "output/feedback-planning-20261017/geometry-coordinate-probe.json": "a73db4fdc2e828d6ebe01a0fbac9bf21a53e01f348b35138c82abf59a05dda4b"
+  },
+  "planning_targets": {
+    "wave1_count": 28,
+    "wave2_additional_count": 14,
+    "wave1_codes": [
+      "KR-055",
+      "KR-058",
+      "KR-059",
+      "KR-061",
+      "KR-062",
+      "KR-067",
+      "PPM-103",
+      "PZ-002",
+      "PZ-004",
+      "PZ-007",
+      "PZ-008",
+      "PZ-010",
+      "PZ-012",
+      "PZ-014",
+      "PZ-015",
+      "PZ-016",
+      "PZ-017",
+      "PZ-018",
+      "PZ-021",
+      "PZ-022",
+      "PZ-023",
+      "SPZU-024",
+      "SPZU-025",
+      "SPZU-037",
+      "ZU-124",
+      "ZU-126",
+      "ZU-128",
+      "ZU-131"
+    ],
+    "wave2_codes": [
+      "AR-040",
+      "AR-041",
+      "AR-049",
+      "AR-050",
+      "IOS2-071",
+      "IOS3-074",
+      "ODI-118",
+      "POD-093",
+      "POS-082",
+      "PPM-104",
+      "PPM-105",
+      "PPM-107",
+      "SM-132",
+      "SPZU-030"
+    ],
+    "not_a_runtime_coverage_claim": true
+  },
+  "sources": {
+    "gdal_pdf": "https://gdal.org/en/stable/drivers/raster/pdf.html",
+    "qgis_georeferencer": "https://doc.qgis.org/3.44/en/docs/user_manual/managing_data_source/georeferencer.html",
+    "opencv_transform_estimation": "https://docs.opencv.org/4.13.0/d9/d0c/group__calib3d.html",
+    "confidence_calibration": "https://proceedings.mlr.press/v70/guo17a.html"
+  },
+  "matrix_revision_crosscheck": {
+    "path": "datasets/reference_methodology/tz_substantive_revision_20260817/05_Матрица_132_параметра_существенная_редакция.xlsx",
+    "sha256": "e0947d790a293abb2f53aef075ea835bfd0580706e98925d900fe503a1ad0ed3",
+    "rows": 132,
+    "content_fields_equal_to_runtime_catalog": true,
+    "code_mapping": "parameter_id maps M-NNN to dataset section code; old immutable rows unchanged."
+  }
+}

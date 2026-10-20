@@ -1,0 +1,494 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:inspector-ai:document-text-v4",
+  "title": "Complete versioned text-layer candidate with located and unlocated original lines",
+  "$ref": "#/definitions/artifact",
+  "definitions": {
+    "nativeDecimal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:e[+-]?[0-9]+)?$"
+    },
+    "nativeBox": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/nativeDecimal"
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "sourcePath": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 32767
+      },
+      "minItems": 1,
+      "maxItems": 64
+    },
+    "extractorProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "textLayerSourceSha256",
+        "documentTextV4SourceSha256",
+        "pdfminerVersion",
+        "geometryPolicyVersion",
+        "cropPolicyVersion",
+        "traversalPolicyVersion",
+        "qualityPolicyVersion"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-extractor-profile-v1"
+        },
+        "textLayerSourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "documentTextV4SourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfminerVersion": {
+          "const": "20260107"
+        },
+        "geometryPolicyVersion": {
+          "const": "document-text-v4-decimal-half-even-v1"
+        },
+        "cropPolicyVersion": {
+          "const": "visible-crop-contained-epsilon-1e-6-v1"
+        },
+        "traversalPolicyVersion": {
+          "enum": [
+            "pdfminer-top-level-whole-lines-v1",
+            "pdfminer-analyzed-figures-whole-lines-v1",
+            "pdfminer-analyzed-figures-boxes-flow-none-v1",
+            "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1"
+          ]
+        },
+        "qualityPolicyVersion": {
+          "const": "document-text-quality-v4"
+        }
+      }
+    },
+    "qualityMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locatedLineCount",
+        "unlocatedLineCount",
+        "locatedNonWhitespaceCharacters",
+        "unlocatedNonWhitespaceCharacters",
+        "replacementCharacters",
+        "disallowedControlCharacters",
+        "cidPlaceholders"
+      ],
+      "properties": {
+        "locatedLineCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unlocatedLineCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "locatedNonWhitespaceCharacters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unlocatedNonWhitespaceCharacters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "replacementCharacters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "disallowedControlCharacters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cidPlaceholders": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "reasonCodes",
+        "metrics"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "TEXT_LAYER_CANDIDATE",
+            "PARTIAL_TEXT_LAYER",
+            "OCR_REQUIRED"
+          ]
+        },
+        "reasonCodes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "NO_LOCATED_TEXT",
+              "TEXT_DECODING_ANOMALY",
+              "UNLOCATED_TEXT_PRESENT"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "metrics": {
+          "$ref": "#/definitions/qualityMetrics"
+        }
+      }
+    },
+    "nativeFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coordinateSystem",
+        "visibleBoxPointStrings"
+      ],
+      "properties": {
+        "coordinateSystem": {
+          "const": "PDFMINER_LAYOUT_POINTS"
+        },
+        "visibleBoxPointStrings": {
+          "$ref": "#/definitions/nativeBox"
+        }
+      }
+    },
+    "locatedLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "rawText",
+        "nativeBoxPointStrings",
+        "bboxMilliPoints"
+      ],
+      "properties": {
+        "sourcePath": {
+          "$ref": "#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000000
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "#/definitions/nativeBox"
+        },
+        "bboxMilliPoints": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "unlocatedLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "rawText",
+        "nativeBoxPointStrings",
+        "reasonCode"
+      ],
+      "properties": {
+        "sourcePath": {
+          "$ref": "#/definitions/sourcePath"
+        },
+        "rawText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000000
+        },
+        "nativeBoxPointStrings": {
+          "$ref": "#/definitions/nativeBox"
+        },
+        "reasonCode": {
+          "enum": [
+            "NATIVE_ZERO_AREA",
+            "MILLI_POINT_COLLAPSE"
+          ]
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageNumber",
+        "widthMilliPoints",
+        "heightMilliPoints",
+        "nativeFrame",
+        "locatedLines",
+        "unlocatedLines",
+        "quality"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "widthMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "heightMilliPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "nativeFrame": {
+          "$ref": "#/definitions/nativeFrame"
+        },
+        "locatedLines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/locatedLine"
+          },
+          "minItems": 0,
+          "maxItems": 32768
+        },
+        "unlocatedLines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/unlocatedLine"
+          },
+          "minItems": 0,
+          "maxItems": 32768
+        },
+        "quality": {
+          "$ref": "#/definitions/quality"
+        }
+      }
+    },
+    "qualitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidatePages",
+        "partialPages",
+        "ocrRequiredPages"
+      ],
+      "properties": {
+        "candidatePages": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "partialPages": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "ocrRequiredPages": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "sourceFileId",
+        "inputSha256",
+        "coordinateSystem",
+        "pageCount",
+        "locatedTextPageCount",
+        "unlocatedTextPageCount",
+        "extractorProfile",
+        "extractorProfileHash",
+        "qualitySummary",
+        "pages"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "document-text-v4"
+        },
+        "sourceFileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "coordinateSystem": {
+          "const": "PDF_BOTTOM_LEFT_MILLI_POINTS"
+        },
+        "pageCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "locatedTextPageCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "unlocatedTextPageCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "extractorProfile": {
+          "$ref": "#/definitions/extractorProfile"
+        },
+        "extractorProfileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "qualitySummary": {
+          "$ref": "#/definitions/qualitySummary"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/page"
+          },
+          "minItems": 1,
+          "maxItems": 1024
+        }
+      }
+    }
+  },
+  "x-semantic-contract": {
+    "sourceIdentity": {
+      "sourceFileId": "Unicode scalar string 1..200 codepoints; Python strip unchanged; no controls; no aliases",
+      "inputSha256": "lowercase ASCII hex64"
+    },
+    "portableCanonical": "Exact JSON data only; Unicode scalars, ASCII/codepoint key order, ensure_ascii false, compact separators; safe integers only; no floating JSON numbers. Native decimal values are strings. TS descriptor-first/proxy rejection; Python exact builtins; validate before hashing.",
+    "profileHash": "SHA256(UTF8(portableCanonical({hashDomain:document-text-extractor-profile-v1,profile:extractorProfile})))",
+    "contentHash": "SHA256(UTF8(portableCanonical({hashDomain:document-text-v4-content-v1,artifact:fullArtifact})))",
+    "sourcePath": {
+      "shape": "Old top-level profile: [topLayoutIndex,lineChildIndex] for immediate original LTTextLine; [topLayoutIndex] only original LTTextLine or original text-container leaf. Analyzed-figures profile: complete native child-index ancestry from LTPage to each original whole LTTextLine or supported original text-container leaf after pinned pdfminer Form analysis; no synthetic joins.",
+      "indices": "nonnegative safe integers <=32767; exact original enumeration BEFORE filtering/sorting",
+      "ordering": "each output array lexicographic numeric sourcePath order, shorter prefix first",
+      "uniqueness": "no duplicate or prefix-overlapping sourcePath anywhere in the same page across BOTH arrays",
+      "claim": "one visited wholly-contained original line/leaf produces exactly one record; no glyph joins or synthetic line regrouping; arrays do not certify unseen PDF operators",
+      "profileLengths": "Old top-level profile accepts only path lengths1..2; analyzed-figures profile accepts1..64. Every index is original enumeration after selected pinned library layout analysis and BEFORE filtering/sorting. Explicit boxes-flow-none profile accepts1..64 from its own selected native layout; historical profile paths are not migrated or reinterpreted. Explicit boxes-flow-none-vertical profile independently accepts1..64 from its own native vertical-writing-aware layout; its paths never replace old committed paths."
+    },
+    "rawText": "Exact original get_text() including all original LF/separators/trailing whitespace; nonempty Unicode scalar string <=2000000 codepoints. Never strip, normalize, concatenate separate original lines, or publish a second semantic text field. LTAnno retained verbatim; its absence of geometry is not an invalid glyph.",
+    "nativeDecimalStrings": {
+      "maxCodepoints": 64,
+      "grammar": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:e[+-]?[0-9]+)?$",
+      "valueConstraints": "finite exact decimal, abs<=1000000000; explicit exponent if present in [-324,308]; negative zero accepted; producer uses repr(float(native value)) with lowercase e",
+      "order": "native x0<=x1 and y0<=y1, never swap inverted edges",
+      "validation": "no epsilon used for native positive vs zero classification"
+    },
+    "geometry": {
+      "quantization": "Parse native repr decimal strings exactly (Decimal/rational); round-half-even(edge delta*1000) for every edge and dimension. No binary-float arithmetic in v3 quantization; v2 float-round unchanged.",
+      "frameDimensions": "width=roundHalfEven((frame.x1-frame.x0)*1000), height analogous; both positive safe integers; reject collapsed/unsafe native frame",
+      "crop": "A whole original line native box must be within visible frame with inclusive exact-decimal epsilon 0.000001 point. Wholly outside or partially crossing this containment policy is excluded exactly as legacy visible CropBox policy. Clamp already-contained rounding edges into [0,width/height]. No clipping text to manufacture an in-frame statement. No claim all off-crop raw retained.",
+      "located": "native line strictly positive and quantized bbox x0<x1,y0<y1; all safe integer edges in page frame",
+      "NATIVE_ZERO_AREA": "native width==0 OR native height==0; original whole line retained unlocated; no located bbox key",
+      "MILLI_POINT_COLLAPSE": "native strictly positive; exact quantization/clamp produces x0==x1 OR y0==y1; unlocated native strings must independently prove this reason",
+      "invalid": "nonfinite/inverted native boxes; zero parent containing positive child; positive whole line with any native zero-area LTChar; inconsistent glyph/line native positivity => whole extraction ValueError(INVALID_NATIVE_TEXT_GEOMETRY). No glyph millipoint-area gate, no deletion/splicing of invisible glyph.",
+      "unsupported": "Bounded traversal of nontext layout containers detects visible/intersecting LTChar/LTTextLine/text container outside supported immediate whole-line traversal => whole extraction ValueError(UNSUPPORTED_TEXT_LAYOUT). Pure image/vector primitives ignored; nested Form glyphs are NOT grouped into invented lines. Entirely offcrop unsupported text can be excluded."
+    },
+    "qualityRules": {
+      "metrics": "Recompute from exact rawText across both arrays. No host Unicode category/alphanumeric/isalnum matching.",
+      "whitespaceCodepoints": [
+        "0009..000D",
+        "001C..0020",
+        "0085",
+        "00A0",
+        "1680",
+        "2000..200A",
+        "2028",
+        "2029",
+        "202F",
+        "205F",
+        "3000"
+      ],
+      "nonWhitespace": "count Unicode scalar codepoints outside above fixed whitespace set in each array",
+      "replacement": "count U+FFFD in both arrays",
+      "disallowedControls": "count U+0000..001F except U+0009/U+000A/U+000D, and U+007F..009F, in both arrays (even if whitespace); fixed Cc ranges, no host category APIs",
+      "reasonOrder": [
+        "NO_LOCATED_TEXT",
+        "TEXT_DECODING_ANOMALY",
+        "UNLOCATED_TEXT_PRESENT"
+      ],
+      "reasons": "NO_LOCATED_TEXT iff locatedNonWhitespaceCharacters==0; TEXT_DECODING_ANOMALY iff replacementCharacters>0 OR disallowedControlCharacters>0 OR cidPlaceholders>0; UNLOCATED_TEXT_PRESENT iff unlocatedLineCount>0; exact reasonOrder",
+      "disposition": "OCR_REQUIRED if NO_LOCATED_TEXT or TEXT_DECODING_ANOMALY; otherwise PARTIAL_TEXT_LAYER if UNLOCATED_TEXT_PRESENT; otherwise TEXT_LAYER_CANDIDATE. Punctuation-only can be CANDIDATE; this is no readability, semantic, geometric completeness or confidence certificate.",
+      "qualitySummaryExactKeys": [
+        "candidatePages",
+        "partialPages",
+        "ocrRequiredPages"
+      ],
+      "counts": "summary sums page dispositions; locatedTextPageCount counts page with locatedNonWhitespaceCharacters>0; unlocatedTextPageCount counts page with unlocatedLineCount>0; pages all contiguous1..N",
+      "cidPlaceholders": "Count nonoverlapping ASCII \\(cid:[0-9]+\\) matches within each individual whole rawText, summed across both arrays; no cross-line concatenation"
+    },
+    "limits": {
+      "utf8SerializedBytes": 8000000,
+      "nativeNodes": 200000,
+      "depth": 64,
+      "containerItems": 32768,
+      "stringCodepoints": 2000000,
+      "pages": 1024,
+      "combinedLineRecords": 100000,
+      "pathLengthMax": 64,
+      "scope": "one whole artifact, including every page and both record arrays; reject never truncate",
+      "pathLengthByProfile": {
+        "pdfminer-top-level-whole-lines-v1": 2,
+        "pdfminer-analyzed-figures-whole-lines-v1": 64,
+        "pdfminer-analyzed-figures-boxes-flow-none-v1": 64,
+        "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1": 64
+      }
+    },
+    "readerSafety": "VALID requires whole artifact native/schema/geometry/reason/profilehash/quality validation. It returns no v2 block facade. Future source consumers must explicitly accept v3 and treat relevant unlocated lines or unlocated competing full-page anchors as abstention. Source authority, measurement unit, identity and confidence never inferred.",
+    "legacyPreservation": "All v1/v2 artifacts/readers/profiles and T59 text_layer.py bytes unchanged. Historical/default v3 top-level behavior and old manuals unchanged. New analyzed-figures profile is explicit opt-in; old v3 readers may reject this new policy. No implicit v2 coercion or release activation in T60/T61.",
+    "traversalProfiles": {
+      "pdfminer-top-level-whole-lines-v1": "Historical/default producer behavior unchanged; do not call Form analysis. Visible unsupported nested primitives cause UNSUPPORTED_TEXT_LAYOUT.",
+      "pdfminer-analyzed-figures-whole-lines-v1": "Explicit opt-in only. Preflight native figure topology before recursive library analysis: page depth0, maximum native depth64, at most200000 native objects per page across analyzed figure subtrees; fail INPUT_LIMIT, never RecursionError/truncate. Call pinned pdfminer LTFigure.analyze(LAParams(all_texts=True)) exactly once on each outermost figure, never re-analyze page or descendants. Enumerate original analyzed subtrees without manual glyph grouping. Full native paths1..64. Ignore image/vector-only primitives. Same invalid-glyph, visible CropBox, raw, decimal geometry and quality policies. LTFigure bbox is not renderer clipping authority; no visibility/occlusion/completeness certificate.",
+      "pdfminer-analyzed-figures-boxes-flow-none-v1": "Explicit opt-in only. Initial page analysis uses pinned pdfminer LAParams(boxes_flow=None, all_texts=False); existing visible CropBox/CTM and vector suppression remain identical. Preflight native figure topology with the existing depth64 and200000 figure-object limits, then invoke each outermost LTFigure.analyze(LAParams(boxes_flow=None, all_texts=True)) once. Library groups original glyphs into whole lines/textboxes as before, but disables id(object)-tied hierarchical textbox grouping. Pinned library stable textbox ordering is used directly, including stable input order for geometric ties; never reorder/rename committed native paths. Full ancestry1..64 before filtering, rawText/native geometry/quality/visibility limits unchanged. No guarantee of semantic reading order, renderer visibility or completeness.",
+      "pdfminer-analyzed-figures-boxes-flow-none-vertical-v1": "Explicit opt-in only, default and historical three profiles unchanged. Initial page analysis uses pinned pdfminer20260107 LAParams(boxes_flow=None, all_texts=False, detect_vertical=True); visible CropBox/actual interpreter CTM and vector suppression identical to old stable mode. Before recursive library analysis preflight original topology: page depth0, depth maximum64 and total at most200000 native objects per page across outermost figure subtrees. Fail INPUT_LIMIT before analyze, never truncate. Invoke each outermost LTFigure.analyze(LAParams(boxes_flow=None, all_texts=True, detect_vertical=True)) once; descendants analyzed only by pinned library recursion. Enumerate exact resulting native children before filtering, maximum path64/index32767. Whole original LTTextLine.get_text() retained including LF and library child order; no manual glyph join/reversal, sorting or native-path renaming. Vertical-writing grouping is a source text heuristic, not numeric/unit/rectangle/area/member/applicability/rendered visibility authority. Same whole artifact standard/large resource policies, invalid-glyph/quantization/visible containment/quality rules. No durable audit/cache/default/profile release activation by this extension."
+    }
+  },
+  "x-reader-contract": {
+    "extract_pdf_text_artifact_v3": "(path: Path, source_file_id: str, input_sha256: str, *, traversal_policy_version: str=pdfminer-top-level-whole-lines-v1) -> dict; verifies original SHA before parsing; exact supported selector only; unknown selector ValueError(EXTRACTOR_PROFILE_MISMATCH); complete artifact or ValueError(reasonCode)",
+    "read_document_text_v4_artifact": "(value: object) -> {status: VALID, contentHash: sha64} | {status: ABSTAIN, reasonCode: INVALID_INPUT|INPUT_LIMIT|INVALID_TEXT_ARTIFACT}; validates all pages/profile/quality before VALID; no runtime-current SHA equality for historical artifacts",
+    "document_text_v4_content_hash": "(value: object) -> sha64; native/whole semantic validation first; invalid raises ValueError; no custom serialization callbacks",
+    "get_document_text_v4_extractor_profile": "(*, traversal_policy_version: str=pdfminer-top-level-whole-lines-v1) -> exact profile with selected approved traversal policy, actual installed producer/text_layer source SHA and pdfminer.six version; unknown selector/version ValueError(EXTRACTOR_PROFILE_MISMATCH)"
+  },
+  "x-oracle-rule": "Manual historical profile and full body frozen before implementation. Producer replay substitutes only actual installed extractorProfile and independently derived profile/content hashes; raw/path/geometry/quality remain immutable.",
+  "x-profile-trust": "Schema-valid historical profile and matching profile hash establish shape/integrity only; future admission MUST compare explicit approved release tuple. No authentication/qualification/visual completeness is certified."
+}

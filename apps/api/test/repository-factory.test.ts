@@ -8,6 +8,17 @@ import type { AuditedMutationCommand, JobAttemptInput,
   VisualProposalReviewInput, ReviewCandidateDecisionInput } from "../src/repository.js";
 
 describe("routed durable visual reads", () => {
+  it("routes rendered artifacts and scoped actors to the durable NORMAL cache", async () => {
+    const key = { protocolId: "PR-NORMAL", format: "pdf" as const, templateVersion: "appendix-2-report-v1", snapshotHash: "a".repeat(64) };
+    const content = { ...key, bytes: Buffer.from("%PDF-fixture"), contentHash: "b".repeat(64), mediaType: "application/pdf" };
+    const normal = { getRenderedProtocolArtifact: vi.fn().mockResolvedValue(content), saveRenderedProtocolArtifact: vi.fn().mockResolvedValue(content) } as unknown as PostgresInspectionRepository;
+    const routed = new RoutedInspectionRepository(await InspectorStore.create(), normal);
+    const actor = {} as AuthenticatedActor;
+    expect(await routed.getRenderedProtocolArtifact(key, actor)).toBe(content);
+    expect(normal.getRenderedProtocolArtifact).toHaveBeenCalledWith(key, actor);
+    expect(await routed.saveRenderedProtocolArtifact(content, actor)).toBe(content);
+    expect(normal.saveRenderedProtocolArtifact).toHaveBeenCalledWith(content, actor);
+  });
   it("does not expose the public training seed from a running repository", async () => {
     const repository = await createInspectionRepositoryFromEnv({});
     expect(await repository.listObjects()).toEqual([]);
@@ -46,6 +57,15 @@ describe("routed durable visual reads", () => {
     const actor = {} as AuthenticatedActor;
     expect(await routed.getPilotResults("CHK-NORMAL", actor)).toEqual(expected);
     expect(normal.getPilotResults).toHaveBeenCalledWith("CHK-NORMAL", actor);
+  });
+
+  it("forwards immutable fact targets through the running NORMAL repository", async () => {
+    const expected = { checkId: "CHK-NORMAL", executionContentHash: "a".repeat(64), items: [] };
+    const normal = { getMatrixFactTargets: vi.fn().mockResolvedValue(expected) } as unknown as PostgresInspectionRepository;
+    const routed = new RoutedInspectionRepository(await InspectorStore.create(), normal);
+    const actor = {} as AuthenticatedActor;
+    expect(await routed.getMatrixFactTargets("CHK-NORMAL", actor)).toBe(expected);
+    expect(normal.getMatrixFactTargets).toHaveBeenCalledWith("CHK-NORMAL", actor);
   });
 
   it("forwards a NORMAL check to PostgreSQL", async () => {

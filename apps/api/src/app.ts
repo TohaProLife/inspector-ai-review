@@ -1,3 +1,33 @@
+import { registerSourceOcrImportRoutes } from "./source-ocr-import-routes.js";
+import { finalizedObjectReason, readObjectPermissions } from "./object-permissions.js";
+import { registerNativeAirflowRoutes } from "./native-airflow-routes.js";
+import { registerNativeCapacityRoutes } from "./native-capacity-routes.js";
+import { parseDocumentTextV4FullCompletion } from "./document-text-v4-full-wire.js";
+import { documentTextV4FullPageBatch } from "./document-text-v4-full-batch.js";
+import {parseSteelApplicabilityReviewInput,SteelApplicabilityReviewValidationError} from "./matrix-steel-applicability-review.js";
+import {assertSteelComparisonReviewNative,SteelComparisonReviewValidationError} from "./matrix-steel-review.js";
+import {matrixLightingTechnologySelectionSchema} from '@inspector-ai/contracts';
+import {LightingTechnologyReviewValidationError} from './matrix-lighting-technology-review.js';
+import {assertWaterNodeReviewNative,WaterNodeReviewValidationError} from './matrix-water-node-review.js';
+import {matrixWaterNodeInventorySelectionSchema} from '@inspector-ai/contracts';
+import {assertRailInventoryReviewNative,RailInventoryReviewValidationError} from './matrix-rail-inventory-review.js';
+import {matrixRailInventorySelectionSchema} from '@inspector-ai/contracts';
+import {assertCallInventoryReviewNative,CallInventoryReviewValidationError} from './matrix-call-inventory-review.js';
+import {matrixCallInventorySelectionSchema} from '@inspector-ai/contracts';
+import { Readable } from "node:stream";
+import { z } from "zod";
+import { assertInventoryReviewNative, validateInventoryReviewJsonBytes, InventoryReviewValidationError } from "./matrix-inventory-review.js";
+import { matrixInventorySelectionSchema } from "@inspector-ai/contracts";
+import {canonicalJson,sha256} from "./canonical-json.js";
+import {parseDocumentTextV3LargeCompletion} from "./document-text-v3-large-wire.js";
+import { loadTrustedGeometryRegistration } from "./geometry-trust-store.js";
+import { readVerifiedOriginalPdf } from "./verified-pdf-storage.js";
+import { registerLocalRegistrationRoutes } from "./local-registration-routes.js";
+import { registerDocumentCoordinateRoutes } from "./document-coordinate-routes.js";
+import { registerDrainageSourceRoutes } from "./drainage-source-routes.js";
+import { registerPpm113SourceRoutes } from "./ppm113-source-routes.js";
+import { registerColumnPylonSectionV2Routes, ColumnPylonSectionWireError } from "./column-pylon-section-v2-routes.js";
+import type { PostgresLocalRegistrationService } from "./postgres-local-registration.js";
 import cookie from "@fastify/cookie";
 import { timingSafeEqual } from "node:crypto";
 import cors from "@fastify/cors";
@@ -43,8 +73,11 @@ import type {
 } from "./repository.js";
 import { createObjectStorageFromEnv, type ObjectStorage } from "./storage.js";
 import { InspectorStore } from "./store.js";
+import { registerProtocolReportRoutes } from "./protocol-report-routes.js";
+import { registerIaisPullRoutes } from "./iais-pull-routes.js";
 
 interface AppOptions {
+  localRegistrationService?: PostgresLocalRegistrationService;
   repository?: InspectionRepository;
   store?: InspectorStore;
   storage?: ObjectStorage;
@@ -118,6 +151,52 @@ function canRevokeProtocol(actor: AuthenticatedActor): boolean {
   return actor.roles.some((role) => role === "SUPERVISOR" || role === "ADMIN");
 }
 
+async function inventoryReviewPreParsing(request:FastifyRequest,_reply:FastifyReply,payload:NodeJS.ReadableStream){
+  const chunks:Buffer[]=[];let length=0;
+  for await(const chunk of payload){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);length+=bytes.length;
+    if(length>524288)throw new InventoryReviewValidationError("INPUT_LIMIT","Inventory review exceeds512KiB request limit");chunks.push(bytes);}
+  const bytes=Buffer.concat(chunks);validateInventoryReviewJsonBytes(bytes);
+  const parsed:unknown=JSON.parse(bytes.toString('utf8'));assertCallInventoryReviewNative(parsed);assertWaterNodeReviewNative(parsed);
+  // Fastify AJV may remove additional properties. Reject them before that lossy step.
+  if(request.routeOptions.url?.endsWith('/source-inventory-preview'))
+    z.object({sourceFileId:z.string().min(1).max(200),selection:matrixInventorySelectionSchema}).strict().parse(parsed);
+  else if(request.routeOptions.url?.endsWith('/call-inventory-preview'))z.object({selection:matrixCallInventorySelectionSchema}).strict().parse(parsed);
+  else if(request.routeOptions.url?.endsWith('/rail-inventory-preview'))z.object({selection:matrixRailInventorySelectionSchema}).strict().parse(parsed);
+  else if(request.routeOptions.url?.endsWith('/water-node-preview'))z.object({selection:matrixWaterNodeInventorySelectionSchema}).strict().parse(parsed);
+  else if(request.routeOptions.url?.endsWith('/lighting-technology-preview'))z.object({selection:matrixLightingTechnologySelectionSchema}).strict().parse(parsed);
+  else if(request.routeOptions.url?.endsWith('/source-audit-v3')||request.routeOptions.url?.endsWith('/source-audit-v3-large-vertical-v1')||request.routeOptions.url?.endsWith('/source-audit-v4-full-source-v1'))z.object({}).strict().parse(parsed);
+  else {assertSteelComparisonReviewNative(parsed);const stages=(parsed as Record<string,any>).pageStages;if(stages&&Object.keys(stages).some(k=>!(/^[1-9][0-9]{0,15}$/.test(k)&&Number.isSafeInteger(Number(k)))))throw new CallInventoryReviewValidationError('INVALID_INPUT','Некорректный номер страницы');sourceReviewSchema.parse(parsed);}
+  const stream=Readable.from([bytes]) as Readable&{receivedEncodedLength:number};stream.receivedEncodedLength=bytes.length;return stream;
+}
+
+async function steelApplicabilityReviewPreParsing(_request:FastifyRequest,_reply:FastifyReply,payload:NodeJS.ReadableStream){
+  const chunks:Buffer[]=[];let length=0;
+  for await(const chunk of payload){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);length+=bytes.length;
+    if(length>524288)throw new SteelApplicabilityReviewValidationError('INPUT_LIMIT','Превышен объём решения пары');chunks.push(bytes);}
+  const bytes=Buffer.concat(chunks);validateInventoryReviewJsonBytes(bytes);
+  let parsed:unknown;try{parsed=JSON.parse(bytes.toString('utf8'));}catch{throw new SteelApplicabilityReviewValidationError('INVALID_INPUT','Некорректный JSON решения пары');}
+  parseSteelApplicabilityReviewInput(parsed);
+  const stream=Readable.from([bytes]) as Readable&{receivedEncodedLength:number};stream.receivedEncodedLength=bytes.length;return stream;
+}
+
+async function largeSourceCompletionPreParsing(_request:FastifyRequest,_reply:FastifyReply,payload:NodeJS.ReadableStream){
+  const chunks:Buffer[]=[];let length=0;
+  for await(const chunk of payload){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);length+=bytes.length;
+    if(length>33554432)throw Object.assign(new Error("Превышен объём результата большого аудита"),{statusCode:413});chunks.push(bytes);}
+  const bytes=Buffer.concat(chunks),read=parseDocumentTextV3LargeCompletion(bytes);
+  if(read.status!=="VALID")throw Object.assign(new Error(read.reasonCode==="INPUT_LIMIT"?"Превышены пределы результата большого аудита":"Некорректный JSON результата большого аудита"),{statusCode:read.reasonCode==="INPUT_LIMIT"?413:400});
+  const stream=Readable.from([bytes]) as Readable&{receivedEncodedLength:number};stream.receivedEncodedLength=bytes.length;return stream;
+}
+
+async function fullSourceCompletionPreParsing(_request:FastifyRequest,_reply:FastifyReply,payload:NodeJS.ReadableStream){
+  const chunks:Buffer[]=[];let length=0;
+  for await(const chunk of payload){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);length+=bytes.length;
+    if(length>33554432)throw Object.assign(new Error("Превышен объём результата большого аудита"),{statusCode:413});chunks.push(bytes);}
+  const bytes=Buffer.concat(chunks),read=parseDocumentTextV4FullCompletion(bytes);
+  if(read.status!=="VALID")throw Object.assign(new Error(read.reasonCode==="INPUT_LIMIT"?"Превышены пределы результата большого аудита":"Некорректный JSON результата большого аудита"),{statusCode:read.reasonCode==="INPUT_LIMIT"?413:400});
+  const stream=Readable.from([bytes]) as Readable&{receivedEncodedLength:number};stream.receivedEncodedLength=bytes.length;return stream;
+}
+
 export async function buildApp(options: AppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: options.logger ?? false });
   const store: InspectionRepository = options.repository ?? options.store ?? (await InspectorStore.create());
@@ -134,7 +213,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     origin: options.allowedOrigins ?? ["http://localhost:5173", "http://localhost:8080"],
     credentials: true,
     allowedHeaders: ["Content-Type", "If-Match", "Idempotency-Key", "X-CSRF-Token"],
-    exposedHeaders: ["ETag", "Idempotency-Replayed", "X-Content-SHA256"],
+    exposedHeaders: ["ETag", "Idempotency-Replayed", "X-Content-SHA256", "X-Protocol-Snapshot-SHA256", "X-Protocol-Template-Version", "X-Protocol-Validity"],
   });
   await app.register(rateLimit, { global: false });
   await app.register(multipart, {
@@ -146,8 +225,21 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       parts: uploadPolicy.maxFiles + 10,
     },
   });
+  const inventoryRequests=new Set<AbortController>();
+  app.addHook("onClose",async()=>{for(const controller of inventoryRequests)controller.abort();});
+  async function inventoryRequest<T>(request:FastifyRequest,reply:FastifyReply,operation:(signal:AbortSignal)=>Promise<T>|T):Promise<T>{
+    const controller=new AbortController();inventoryRequests.add(controller);
+    const aborted=()=>controller.abort();
+    const closed=()=>{if(!reply.raw.writableFinished)controller.abort();};
+    request.raw.once("aborted",aborted);reply.raw.once("close",closed);
+    if(request.raw.aborted)controller.abort();
+    try{return await operation(controller.signal);}finally{
+      request.raw.removeListener("aborted",aborted);reply.raw.removeListener("close",closed);inventoryRequests.delete(controller);
+    }
+  }
   if (store.close) app.addHook("onClose", async () => store.close?.());
   if (identity) app.addHook("onClose", async () => identity.close());
+  if (options.localRegistrationService) app.addHook("onClose", async () => options.localRegistrationService!.close());
 
   const requireActor = async (
     request: FastifyRequest,
@@ -218,6 +310,13 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     userAgent: request.headers["user-agent"]?.slice(0, 1000),
   });
 
+  registerLocalRegistrationRoutes(app, { service: options.localRegistrationService, storage,
+    requireActor, verifyCsrf, requireIdempotencyKey, auditedCommand });
+  registerDocumentCoordinateRoutes(app, { service: options.localRegistrationService, storage, requireActor, verifyCsrf });
+  registerDrainageSourceRoutes(app, { service: options.localRegistrationService, requireActor, verifyCsrf });
+  registerPpm113SourceRoutes(app, { service: options.localRegistrationService, requireActor, verifyCsrf });
+  registerColumnPylonSectionV2Routes(app, { repository: store, requireActor, verifyCsrf, requireIdempotencyKey, auditedCommand });
+
   const resolveScopedRead = async <T>(
     request: FastifyRequest,
     reply: FastifyReply,
@@ -254,6 +353,15 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   };
 
   app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof ColumnPylonSectionWireError) return reply.status(error.code === "INPUT_LIMIT" ? 413 : 400)
+      .send({ error: `KR060_${error.code}`, message: "Некорректное решение пары сечений или превышен его объём" });
+    if(error instanceof SteelApplicabilityReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`STEEL_APPLICABILITY_${error.code}`,message:error.message});
+    if(error instanceof RailInventoryReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`RAIL_INVENTORY_${error.code}`,message:error.message});
+    if(error instanceof WaterNodeReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`WATER_NODE_${error.code}`,message:error.message});
+    if(error instanceof SteelComparisonReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`STEEL_COMPARISON_${error.code}`,message:error.message});
+    if(error instanceof LightingTechnologyReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`LIGHTING_TECHNOLOGY_${error.code}`,message:error.message});
+    if(error instanceof CallInventoryReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:`CALL_INVENTORY_${error.code}`,message:error.message});
+    if(error instanceof InventoryReviewValidationError)return reply.status(error.code==="INPUT_LIMIT"?413:400).send({error:(error.code.startsWith("INVENTORY_")?error.code:`INVENTORY_${error.code}`),message:error.message});
     if (error instanceof FileIngestError) {
       return reply.status(error.statusCode).send({ error: error.code, message: error.message });
     }
@@ -419,6 +527,158 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical, "utf8"));
     },
   );
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/water-node-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobWaterNodeReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobWaterNodeReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobWaterNodeReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/steel-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobSteelReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobSteelReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobSteelReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/column-pylon-section-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobColumnPylonSectionReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobColumnPylonSectionReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobColumnPylonSectionReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/concrete-wall-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobConcreteWallReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobConcreteWallReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobConcreteWallReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/lighting-technology-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobLightingTechnologyReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobLightingTechnologyReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobLightingTechnologyReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
+  app.get<{Params:{id:string};Querystring:JobAttemptInput}>(
+    "/api/internal/v1/jobs/:id/rail-reviewed-inventory-comparison-inputs",
+    {schema:fastifySchemaFor("downloadJobRailReviewedInventoryComparisonInputs"),preValidation:async(request,reply)=>{
+      const names=[...new URL(request.raw.url??"/","http://internal.invalid").searchParams.keys()];
+      if(names.length!==2||new Set(names).size!==2||names.some(name=>name!=="attemptId"&&name!=="fencingToken"))
+        return reply.status(400).send({error:"INVALID_INPUT",message:"Требуются только attemptId и fencingToken"});
+    }},
+    async(request,reply)=>{
+      if(!requireWorker(request,reply))return;
+      if(!store.getJobRailReviewedInventoryComparisonInputs)return reply.status(503).send({error:"WORKER_CONTROL_UNAVAILABLE",message:"Inventory inputs недоступны"});
+      const result=await inventoryRequest(request,reply,signal=>store.getJobRailReviewedInventoryComparisonInputs!(request.params.id,request.query,{signal}));
+      if(result.kind==="not_found")return reply.status(404).send({error:"NOT_FOUND",message:"Inventory inputs отсутствуют"});
+      if(result.kind==="stale_attempt")return reply.status(409).send({error:"STALE_ATTEMPT",message:"Attempt или fencing token устарел"});
+      if(result.kind==="already_terminal")return reply.status(409).send({error:"JOB_TERMINAL",message:"Job уже завершён"});
+      if(result.kind==="integrity_error")return reply.status(503).send({error:"ARTIFACT_INTEGRITY_ERROR",message:"Исходные данные не прошли проверку целостности"});
+      reply.header("Content-Length",String(result.byteSize));reply.header("X-Content-SHA256",result.contentHash);
+      reply.header("X-Artifact-Schema-Version",result.schemaVersion);reply.header("X-Input-Manifest-SHA256",result.inputManifestHash);
+      reply.header("Cache-Control","private, no-store");return reply.type("application/json; charset=utf-8").send(Buffer.from(result.canonical,"utf8"));
+    });
   app.get<{ Params: { id: string }; Querystring: JobAttemptInput }>(
     "/api/internal/v1/jobs/:id/ocr-layout-artifact",
     { schema: fastifySchemaFor("downloadJobOcrLayoutArtifact") },
@@ -459,7 +719,51 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       if (!store.completeJob) {
         return reply.status(503).send({ error: "WORKER_CONTROL_UNAVAILABLE", message: "Durable jobs не поддерживаются" });
       }
-      const result = await store.completeJob(request.params.id, request.body);
+      const result = await inventoryRequest(request,reply,signal=>store.completeJob!(request.params.id, request.body,{signal}));
+      if (result.kind === "not_found") return reply.status(404).send({ error: "NOT_FOUND", message: "Job не найден" });
+      if (result.kind === "stale_attempt") {
+        return reply.status(409).send({ error: "STALE_ATTEMPT", message: "Attempt или fencing token устарел" });
+      }
+      if (result.kind === "invalid_state") {
+        return reply.status(409).send({ error: result.code, message: result.message });
+      }
+      if (result.kind === "already_terminal") return { status: "ALREADY_TERMINAL", state: result.state };
+      if (result.replayed) reply.header("Idempotency-Replayed", "true");
+      return { status: "COMPLETED", check: result.check, replayed: result.replayed };
+    },
+  );
+  app.post<{ Params: { id: string }; Body: JobCompleteInput }>(
+    "/api/internal/v1/jobs/:id/complete-source-audit-v3-large-v1",
+    { schema: fastifySchemaFor("completeSourceAuditV3Large"), bodyLimit: 33554432, preParsing: largeSourceCompletionPreParsing,
+      onRequest: async(request,reply)=>{if(!requireWorker(request,reply))return reply;} },
+    async (request, reply) => {
+      if (!requireWorker(request, reply)) return;
+      if (!store.completeJob) {
+        return reply.status(503).send({ error: "WORKER_CONTROL_UNAVAILABLE", message: "Durable jobs не поддерживаются" });
+      }
+      const result = await inventoryRequest(request,reply,signal=>store.completeJob!(request.params.id, request.body,{signal,sourceAuditProfileVersion:"SOURCE_AUDIT_V3_LARGE_VERTICAL_V1"}));
+      if (result.kind === "not_found") return reply.status(404).send({ error: "NOT_FOUND", message: "Job не найден" });
+      if (result.kind === "stale_attempt") {
+        return reply.status(409).send({ error: "STALE_ATTEMPT", message: "Attempt или fencing token устарел" });
+      }
+      if (result.kind === "invalid_state") {
+        return reply.status(409).send({ error: result.code, message: result.message });
+      }
+      if (result.kind === "already_terminal") return { status: "ALREADY_TERMINAL", state: result.state };
+      if (result.replayed) reply.header("Idempotency-Replayed", "true");
+      return { status: "COMPLETED", check: result.check, replayed: result.replayed };
+    },
+  );
+  app.post<{ Params: { id: string }; Body: JobCompleteInput }>(
+    "/api/internal/v1/jobs/:id/complete-source-audit-v4-full-source-v1",
+    { schema: fastifySchemaFor("completeSourceAuditV4Full"), bodyLimit: 33554432, preParsing: fullSourceCompletionPreParsing,
+      onRequest: async(request,reply)=>{if(!requireWorker(request,reply))return reply;} },
+    async (request, reply) => {
+      if (!requireWorker(request, reply)) return;
+      if (!store.completeJob) {
+        return reply.status(503).send({ error: "WORKER_CONTROL_UNAVAILABLE", message: "Durable jobs не поддерживаются" });
+      }
+      const result = await inventoryRequest(request,reply,signal=>store.completeJob!(request.params.id, request.body,{signal,sourceAuditProfileVersion:"SOURCE_AUDIT_V4_FULL_SOURCE_V1"}));
       if (result.kind === "not_found") return reply.status(404).send({ error: "NOT_FOUND", message: "Job не найден" });
       if (result.kind === "stale_attempt") {
         return reply.status(409).send({ error: "STALE_ATTEMPT", message: "Attempt или fencing token устарел" });
@@ -655,7 +959,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       );
       if (!resolved) return;
       if (!resolved.value) return reply.status(404).send({ error: "NOT_FOUND", message: "Объект не найден" });
-      return resolved.value;
+      return resolved.actor ? { ...resolved.value, ...await readObjectPermissions(store, resolved.value, resolved.actor) } : resolved.value;
     },
   );
   app.get<{ Params: { id: string } }>(
@@ -671,17 +975,17 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       if (!files || files === "AUTH_REQUIRED") {
         return reply.status(404).send({ error: "NOT_FOUND", message: "Объект не найден" });
       }
-      const [upload, review, run] = await Promise.all([
-        store.hasObjectPermission(request.params.id, actor, "UPLOAD"),
-        store.hasObjectPermission(request.params.id, actor, "REVIEW_DECIDE"),
-        store.hasObjectPermission(request.params.id, actor, "RUN"),
-      ]);
+      const object = await store.getObject(request.params.id, actor);
+      if (!object || object === "AUTH_REQUIRED") return reply.status(404).send({ error: "NOT_FOUND", message: "Объект не найден" });
+      const access = await readObjectPermissions(store, object, actor);
       return {
         items: files,
+        inspectionLifecycle: access.inspectionLifecycle,
+        ...(access.readOnlyReason ? { readOnlyReason: access.readOnlyReason } : {}),
         permissions: {
-          upload: upload && canOperateInspection(actor, "DOCUMENT_UPLOAD"),
-          review: review && actor.capabilities.includes("SOURCE_REVIEW"),
-          run: run && canOperateInspection(actor, "RUN_START"),
+          upload: access.permissions.upload,
+          review: access.permissions.review,
+          run: access.permissions.run,
         },
       };
     },
@@ -718,7 +1022,31 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       }
     },
   );
-  app.get<{ Params: { id: string; sourceFileId: string; pageNumber: string }; Querystring: { crop?: string } }>(
+  app.get<{ Params: { id: string; sourceFileId: string; registrationId: string } }>(
+    "/api/objects/:id/files/:sourceFileId/geometry-registrations/:registrationId",
+    { schema: fastifySchemaFor("getGeometryRegistration") },
+    async (request, reply) => {
+      const actor = await requireActor(request, reply);
+      if (!actor) return;
+      const file = await store.getSourceFileContent?.(request.params.id, request.params.sourceFileId, actor);
+      if (!file || file === "AUTH_REQUIRED") return reply.status(404).send({ error: "NOT_FOUND", message: "Источник недоступен" });
+      if (!process.env.GEOMETRY_TRUST_STORE) return reply.status(503).send({ error: "TRUSTED_CONTROL_SOURCE_UNAVAILABLE",
+        message: "Независимый источник контрольных точек не настроен; положение здания не установлено" });
+      try {
+        const sourceBytes = await readVerifiedOriginalPdf({ storage, storageKey: file.storageKey,
+          expectedSha256: file.sha256, expectedByteSize: file.byteSize, expectedMediaType: "application/pdf" });
+        const result = await loadTrustedGeometryRegistration({ directory: process.env.GEOMETRY_TRUST_STORE,
+          registrationId: request.params.registrationId, organizationId: actor.organizationId,
+          objectId: request.params.id, sourceFileId: request.params.sourceFileId, sourceSha256: file.sha256, sourceBytes });
+        reply.header("Cache-Control", "private, no-store");
+        return result;
+      } catch {
+        return reply.status(422).send({ error: "GEOMETRY_REGISTRATION_UNVERIFIED",
+          message: "Не подтверждены подпись, происхождение, исходный SHA или ошибка геопривязки; предметный вывод недоступен" });
+      }
+    },
+  );
+  app.get<{ Params: { id: string; sourceFileId: string; pageNumber: string }; Querystring: { crop?: string; resolution?: number } }>(
     "/api/objects/:id/files/:sourceFileId/pages/:pageNumber/preview",
     { schema: fastifySchemaFor("previewSourcePdfPage") },
     async (request, reply) => {
@@ -745,7 +1073,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
           stored.body.destroy();
           return reply.status(503).send({ error: "STORAGE_INTEGRITY_ERROR", message: "Размер исходного файла не совпал" });
         }
-        const image = await renderVerifiedPdfPage(stored.body, file, Number(request.params.pageNumber), crop);
+        const image = await renderVerifiedPdfPage(stored.body, file, Number(request.params.pageNumber), crop, request.query.resolution ?? 1200);
         reply.header("Cache-Control", "private, no-store");
         reply.header("X-Content-Type-Options", "nosniff");
         reply.header("Content-Length", String(image.byteLength));
@@ -784,6 +1112,8 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       }
       const idempotencyKey = resolved.actor ? requireIdempotencyKey(request, reply) : undefined;
       if (resolved.actor && !idempotencyKey) return;
+      if (resolved.value.inspectionLifecycle === "FINALIZED" || resolved.value.status === "FINALIZED")
+        return reply.status(409).send({ error: "INSPECTION_FINALIZED", message: finalizedObjectReason });
       const stage = uploadStageSchema.parse(request.query.stage);
       if (!request.isMultipart()) {
         return reply.status(415).send({
@@ -808,9 +1138,32 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       return reply.status(201).send(result.upload);
     },
   );
+  app.get<{Params:{id:string}}>("/api/objects/:id/steel-applicability-reviews",
+    {schema:fastifySchemaFor('getSteelApplicabilityReviews')},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      if(!store.getSteelApplicabilityReviews)return reply.status(503).send({error:'STEEL_APPLICABILITY_UNAVAILABLE',message:'Хранилище решений недоступно'});
+      const result=await store.getSteelApplicabilityReviews(request.params.id,actor);
+      if(!result)return reply.status(404).send({error:'NOT_FOUND',message:'Объект или проверенный журнал не найден'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.post<{Params:{id:string}}>("/api/objects/:id/steel-applicability-reviews",
+    {schema:fastifySchemaFor('recordSteelApplicabilityReview'),bodyLimit:524288,preParsing:steelApplicabilityReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      if(!actor.capabilities.includes('SOURCE_REVIEW')||!(await store.hasObjectPermission(request.params.id,actor,'REVIEW_DECIDE')))
+        return reply.status(403).send({error:'FORBIDDEN',message:'Нет права оценивать применимость пары'});
+      const idempotencyKey=requireIdempotencyKey(request,reply);if(!idempotencyKey)return;
+      if(!store.recordSteelApplicabilityReviewCommand)return reply.status(503).send({error:'STEEL_APPLICABILITY_UNAVAILABLE',message:'Хранилище решений недоступно'});
+      const input=parseSteelApplicabilityReviewInput(request.body);
+      const result=await store.recordSteelApplicabilityReviewCommand(request.params.id,input,auditedCommand(request,actor,idempotencyKey));
+      if(result.kind==='not_found')return reply.status(404).send({error:'NOT_FOUND',message:'Объект не найден либо недоступен'});
+      if(result.kind==='forbidden')return reply.status(403).send({error:'FORBIDDEN',message:'Нет права оценивать применимость пары'});
+      if(result.kind==='idempotency_conflict')return reply.status(409).send({error:'IDEMPOTENCY_CONFLICT',message:'Ключ повтора уже использован'});
+      if(result.kind==='invalid_state')return reply.status(409).send({error:result.code,message:result.message});
+      if(result.replayed)reply.header('Idempotency-Replayed','true');return reply.status(201).send(result.value);
+    });
   app.post<{ Params: { id: string; sourceFileId: string } }>(
     "/api/objects/:id/files/:sourceFileId/source-review",
-    { schema: fastifySchemaFor("recordSourceReview") },
+    { schema: fastifySchemaFor("recordSourceReview"),bodyLimit:524288,preParsing:inventoryReviewPreParsing },
     async (request, reply) => {
       const actor = await requireActor(request, reply);
       if (!actor || !verifyCsrf(request, reply, actor)) return;
@@ -823,6 +1176,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       if (!store.recordSourceReviewCommand) {
         return reply.status(503).send({ error: "SOURCE_REVIEW_UNAVAILABLE", message: "Хранилище решений недоступно" });
       }
+      assertInventoryReviewNative(request.body);
       const input = sourceReviewSchema.parse(request.body);
       const result = await store.recordSourceReviewCommand(
         request.params.id, request.params.sourceFileId, input,
@@ -874,10 +1228,21 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       return resolved.value;
     },
   );
-  app.post<{ Params: { id: string } }>(
+  app.get<{ Params: { id: string } }>("/api/objects/:id/checks", { schema: fastifySchemaFor("listObjectChecks") }, async (request, reply) => {
+    const actor = await requireActor(request, reply);
+    if (!actor) return;
+    const items = await store.listObjectChecks?.(request.params.id, actor);
+    if (!items || items === "AUTH_REQUIRED") return reply.status(404).send({ error: "NOT_FOUND", message: "История проверок недоступна" });
+    return { items };
+  });
+  app.post<{ Params: { id: string }; Body: { analysisMode?: "SAMPLE" | "FULL" } | undefined }>(
     "/api/objects/:id/checks",
     { schema: fastifySchemaFor("startCheck") },
     async (request, reply) => {
+      if (request.body !== undefined && (!request.body || typeof request.body !== "object"
+        || Array.isArray(request.body) || Object.keys(request.body).some(key => key !== "analysisMode")
+        || (request.body.analysisMode !== undefined && !["SAMPLE", "FULL"].includes(request.body.analysisMode))))
+        return reply.status(400).send({ error: "INVALID_ANALYSIS_MODE", message: "Выберите SAMPLE или FULL" });
       const resolved = await resolveScopedRead(
         request,
         reply,
@@ -914,6 +1279,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
         const result = await store.startCheckCommand(
           request.params.id,
           auditedCommand(request, resolved.actor, idempotencyKey),
+          request.body?.analysisMode ? { analysisMode: request.body.analysisMode } : undefined,
         );
         if (result.kind === "idempotency_conflict") {
           return reply.status(409).send({
@@ -942,6 +1308,54 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       return reply.status(201).send(result);
     },
   );
+  app.post<{Params:{id:string}}>('/api/objects/:id/source-audit-v3',
+    {schema:fastifySchemaFor('startSourceAuditV3'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      z.object({}).strict().parse(request.body);
+      if(!canOperateInspection(actor,'RUN_START'))return reply.status(403).send({error:'FORBIDDEN',message:'Роль не разрешает запуск проверки'});
+      if(!await store.hasObjectPermission(request.params.id,actor,'RUN'))return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      const idempotencyKey=requireIdempotencyKey(request,reply);if(!idempotencyKey)return;
+      if(!store.startCheckCommand)return reply.status(503).send({error:'COMMAND_RECEIPTS_UNAVAILABLE',message:'Надёжный запуск недоступен'});
+      const result=await store.startCheckCommand(request.params.id,auditedCommand(request,actor,idempotencyKey),{sourceAuditV3:true});
+      if(result.kind==='idempotency_conflict')return reply.status(409).send({error:'IDEMPOTENCY_CONFLICT',message:'Idempotency-Key уже использован для другой команды'});
+      if(result.kind==='forbidden')return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      if(result.kind==='not_found')return reply.status(404).send({error:'NOT_FOUND',message:'Объект не найден'});
+      if(result.kind==='invalid_state')return reply.status(409).send({error:result.code,message:result.message});
+      if(result.replayed)reply.header('Idempotency-Replayed','true');
+      reply.header('Cache-Control','private, no-store');return reply.status(201).send(result.value);
+    });
+  app.post<{Params:{id:string}}>('/api/objects/:id/source-audit-v3-large-vertical-v1',
+    {schema:fastifySchemaFor('startSourceAuditV3LargeVertical'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      z.object({}).strict().parse(request.body);
+      if(!canOperateInspection(actor,'RUN_START'))return reply.status(403).send({error:'FORBIDDEN',message:'Роль не разрешает запуск проверки'});
+      if(!await store.hasObjectPermission(request.params.id,actor,'RUN'))return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      const idempotencyKey=requireIdempotencyKey(request,reply);if(!idempotencyKey)return;
+      if(!store.startCheckCommand)return reply.status(503).send({error:'COMMAND_RECEIPTS_UNAVAILABLE',message:'Надёжный запуск недоступен'});
+      const result=await store.startCheckCommand(request.params.id,auditedCommand(request,actor,idempotencyKey),{sourceAuditV3Large:true});
+      if(result.kind==='idempotency_conflict')return reply.status(409).send({error:'IDEMPOTENCY_CONFLICT',message:'Idempotency-Key уже использован для другой команды'});
+      if(result.kind==='forbidden')return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      if(result.kind==='not_found')return reply.status(404).send({error:'NOT_FOUND',message:'Объект не найден'});
+      if(result.kind==='invalid_state')return reply.status(409).send({error:result.code,message:result.message});
+      if(result.replayed)reply.header('Idempotency-Replayed','true');
+      reply.header('Cache-Control','private, no-store');return reply.status(201).send(result.value);
+    });
+  app.post<{Params:{id:string}}>('/api/objects/:id/source-audit-v4-full-source-v1',
+    {schema:fastifySchemaFor('startSourceAuditV4FullSource'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      z.object({}).strict().parse(request.body);
+      if(!canOperateInspection(actor,'RUN_START'))return reply.status(403).send({error:'FORBIDDEN',message:'Роль не разрешает запуск проверки'});
+      if(!await store.hasObjectPermission(request.params.id,actor,'RUN'))return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      const idempotencyKey=requireIdempotencyKey(request,reply);if(!idempotencyKey)return;
+      if(!store.startCheckCommand)return reply.status(503).send({error:'COMMAND_RECEIPTS_UNAVAILABLE',message:'Надёжный запуск недоступен'});
+      const result=await store.startCheckCommand(request.params.id,auditedCommand(request,actor,idempotencyKey),{sourceAuditV4Full:true});
+      if(result.kind==='idempotency_conflict')return reply.status(409).send({error:'IDEMPOTENCY_CONFLICT',message:'Idempotency-Key уже использован для другой команды'});
+      if(result.kind==='forbidden')return reply.status(403).send({error:'FORBIDDEN',message:'Нет права запускать проверку объекта'});
+      if(result.kind==='not_found')return reply.status(404).send({error:'NOT_FOUND',message:'Объект не найден'});
+      if(result.kind==='invalid_state')return reply.status(409).send({error:result.code,message:result.message});
+      if(result.replayed)reply.header('Idempotency-Replayed','true');
+      reply.header('Cache-Control','private, no-store');return reply.status(201).send(result.value);
+    });
   app.get<{ Params: { id: string } }>(
     "/api/checks/:id",
     { schema: fastifySchemaFor("getCheck") },
@@ -1063,7 +1477,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
         const body = request.body;
         const fields = ["schemaVersion", "candidateId", "artifactHash", "decision", "note"];
         if (body && typeof body === "object" && !Array.isArray(body)
-          && JSON.stringify(Object.keys(body).sort()) !== JSON.stringify(fields.sort())) {
+          && Object.keys(body).some(key => ![...fields, "details", "expectedDecisionHash"].includes(key))) {
           return reply.status(400).send({ error: "VALIDATION_ERROR", message: "Недопустимые поля решения" });
         }
       } },
@@ -1519,13 +1933,131 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       const resolved = await resolveScopedRead(
         request,
         reply,
-        (actor) => store.getCoverage(request.params.id, actor),
+        (actor) => inventoryRequest(request,reply,signal=>store.getCoverage(request.params.id, actor,{signal})),
       );
       if (!resolved) return;
       if (!resolved.value) return reply.status(404).send({ error: "NOT_FOUND", message: "Проверка не найдена" });
       return { items: resolved.value };
     },
   );
+  app.get<{ Params: { id: string } }>("/api/checks/:id/matrix-execution",
+    { schema: fastifySchemaFor("getCheckMatrixExecution") }, async (request, reply) => {
+      const actor = await requireActor(request, reply);
+      if (!actor) return;
+      const result = await inventoryRequest(request,reply,signal=>store.getMatrixExecution?.(request.params.id, actor,{signal}));
+      if (!result || result === "AUTH_REQUIRED")
+        return reply.status(404).send({ error: "NOT_FOUND", message: "Результат отсутствует или недоступен" });
+      reply.header("Cache-Control", "private, no-store");
+      reply.header("ETag", `"${result.contentHash}"`);
+      return result;
+    });
+  app.get<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/call-inventory-pages',
+    {schema:fastifySchemaFor('getMatrixCallInventorySourcePages')},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getMatrixCallInventorySourcePages?.(request.params.id,request.params.sourceFileId,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.post<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/call-inventory-preview',
+    {schema:fastifySchemaFor('previewMatrixCallInventorySource'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      assertCallInventoryReviewNative(request.body);const input=z.object({selection:matrixCallInventorySelectionSchema}).strict().parse(request.body);
+      const result=await store.previewMatrixCallInventorySource?.(request.params.id,request.params.sourceFileId,input.selection,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.get<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/water-node-pages',
+    {schema:fastifySchemaFor('getMatrixWaterNodeSourcePages')},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getMatrixWaterNodeSourcePages?.(request.params.id,request.params.sourceFileId,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.post<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/water-node-preview',
+    {schema:fastifySchemaFor('previewMatrixWaterNodeSource'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      assertWaterNodeReviewNative(request.body);const input=z.object({selection:matrixWaterNodeInventorySelectionSchema}).strict().parse(request.body);
+      const result=await store.previewMatrixWaterNodeSource?.(request.params.id,request.params.sourceFileId,input.selection,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.get<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/rail-inventory-pages',
+    {schema:fastifySchemaFor('getMatrixRailInventorySourcePages')},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getMatrixRailInventorySourcePages?.(request.params.id,request.params.sourceFileId,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.post<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/rail-inventory-preview',
+    {schema:fastifySchemaFor('previewMatrixRailInventorySource'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      assertRailInventoryReviewNative(request.body);const input=z.object({selection:matrixRailInventorySelectionSchema}).strict().parse(request.body);
+      const result=await store.previewMatrixRailInventorySource?.(request.params.id,request.params.sourceFileId,input.selection,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.post<{Params:{id:string;sourceFileId:string}}>('/api/checks/:id/source-files/:sourceFileId/lighting-technology-preview',
+    {schema:fastifySchemaFor('previewMatrixLightingTechnologySource'),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      assertInventoryReviewNative(request.body);const input=z.object({selection:matrixLightingTechnologySelectionSchema}).strict().parse(request.body);
+      const result=await store.previewMatrixLightingTechnologySource?.(request.params.id,request.params.sourceFileId,input.selection,actor);
+      if(!result||result==='AUTH_REQUIRED')return reply.status(404).send({error:'NOT_FOUND',message:'Исходный текст отсутствует или недоступен'});
+      reply.header('Cache-Control','private, no-store');return result;
+    });
+  app.get<{Params:{id:string};Querystring:{sourceFileId:string}}>("/api/checks/:id/source-text-v3",
+    {schema:fastifySchemaFor("getDocumentTextV3Source")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getDocumentTextV3Source?.(request.params.id,request.query.sourceFileId,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+  app.get<{Params:{id:string};Querystring:{sourceFileId:string}}>("/api/checks/:id/source-text-v3-large-v1",
+    {schema:fastifySchemaFor("getDocumentTextV3LargeSource")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getDocumentTextV3LargeSource?.(request.params.id,request.query.sourceFileId,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+  app.get<{Params:{id:string};Querystring:{sourceFileId:string}}>("/api/checks/:id/source-text-v4-full-source-v1",
+    {schema:fastifySchemaFor("getDocumentTextV4FullSource")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getDocumentTextV4FullSource?.(request.params.id,request.query.sourceFileId,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+  app.get<{Params:{id:string};Querystring:{sourceFileId:string;startPage:number;pageLimit:number;expectedArtifactContentHash?:string}}>("/api/checks/:id/source-text-v4-full-source-v1/pages",
+    {schema:fastifySchemaFor("getDocumentTextV4FullSourcePageBatch")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const source=await store.getDocumentTextV4FullSource?.(request.params.id,request.query.sourceFileId,actor);
+      if(!source||source==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      const result=documentTextV4FullPageBatch(source,request.query);
+      if(!result)return reply.status(409).send({error:"SOURCE_PAGE_BATCH_MISMATCH",message:"Пакет вне диапазона или изменился hash полного артефакта"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+
+  app.get<{Params:{id:string};Querystring:{sourceFileId:string}}>("/api/checks/:id/source-inventory-pages",
+    {schema:fastifySchemaFor("getMatrixInventorySourcePages")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getMatrixInventorySourcePages?.(request.params.id,request.query.sourceFileId,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+  app.post<{Params:{id:string}}>("/api/checks/:id/source-inventory-preview",
+    {schema:fastifySchemaFor("previewMatrixInventorySource"),bodyLimit:524288,preParsing:inventoryReviewPreParsing},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor||!verifyCsrf(request,reply,actor))return;
+      assertInventoryReviewNative(request.body);
+      const input=z.object({sourceFileId:z.string().min(1).max(200),selection:matrixInventorySelectionSchema}).strict().parse(request.body);
+      const result=await store.previewMatrixInventorySource?.(request.params.id,input.sourceFileId,input.selection,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Исходный текст отсутствует или недоступен"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
+  app.get<{Params:{id:string}}>("/api/checks/:id/matrix-fact-targets",
+    {schema:fastifySchemaFor("getMatrixFactTargets")},async(request,reply)=>{
+      const actor=await requireActor(request,reply);if(!actor)return;
+      const result=await store.getMatrixFactTargets?.(request.params.id,actor);
+      if(!result||result==="AUTH_REQUIRED")return reply.status(404).send({error:"NOT_FOUND",message:"Факты отсутствуют или недоступны"});
+      reply.header("Cache-Control","private, no-store");return result;
+    });
   app.get<{ Params: { id: string } }>(
     "/api/checks/:id/pilot-results",
     { schema: fastifySchemaFor("getCheckPilotResults") },
@@ -1877,7 +2409,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       const resolved = await resolveScopedRead(
         request,
         reply,
-        (actor) => store.getSubmission(request.params.id, actor),
+        (actor) => inventoryRequest(request,reply,signal=>store.getSubmission(request.params.id, actor,{signal})),
       );
       if (!resolved) return;
       const result = resolved.value;
@@ -1891,8 +2423,10 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
           message: "Нельзя экспортировать результат: исполняемые правила ещё не подключены",
         });
       }
+      const bytes=canonicalJson(result);
       reply.header("Content-Disposition", `attachment; filename=submission-${request.params.id}.json`);
-      return result;
+      reply.header("X-Content-SHA256",sha256(bytes));
+      return reply.type("application/json").send(bytes);
     },
   );
   app.get<{ Params: { id: string } }>(
@@ -1938,6 +2472,11 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       return reply.type("application/octet-stream").send(content.bytes);
     },
   );
+  registerProtocolReportRoutes(app, { repository: store, resolveScopedRead });
+  registerNativeAirflowRoutes(app, { repository: store, requireActor, verifyCsrf, requireIdempotencyKey, auditedCommand });
+  registerSourceOcrImportRoutes(app, { repository: store, requireActor, verifyCsrf, requireIdempotencyKey, auditedCommand });
+  registerNativeCapacityRoutes(app, { repository: store, requireActor, verifyCsrf, requireIdempotencyKey, auditedCommand });
+  registerIaisPullRoutes(app, { repository: store, requireActor, schema: fastifySchemaFor("getIaisProtocolPull") });
   app.get("/api/parameters", { schema: fastifySchemaFor("listParameters") }, async () => ({
     items: await store.getParameters(),
   }));

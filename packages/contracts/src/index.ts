@@ -1,4 +1,31 @@
+export * from "./native-airflow-comparison.js";
+export * from "./native-airflow-record.js";
+import {matrixSteelComparisonScopeInputSchema} from "./matrix-steel-review.js";
+export * from "./native-capacity-comparison.js";
+export * from "./native-capacity-record.js";
+import type {SteelComparisonScopeDecision} from "./matrix-steel-comparison.js";
+export * from "./machine-confidence-v2.js";
+export * from "./matrix-lighting-technology-api.js";
+export * from "./matrix-lighting-technology-execution.js";
+export * from "./matrix-lighting-technology-review.js";
+import {matrixLightingTechnologyScopeInputSchema,type MatrixLightingTechnologyScopeDecision} from "./matrix-lighting-technology-review.js";
+export * from "./matrix-water-node-execution.js";
+export * from "./matrix-water-node-review.js";
+import {matrixWaterNodeScopeInputSchema,type MatrixWaterNodeScopeDecision} from "./matrix-water-node-review.js";
+export * from "./matrix-rail-inventory-review.js";
+import {matrixRailInventoryScopeInputSchema,type MatrixRailInventoryScopeDecision} from "./matrix-rail-inventory-review.js";
+export * from "./matrix-inventory-review.js";
+export * from "./matrix-inventory-execution.js";
+export * from "./matrix-call-inventory-execution.js";
+export * from "./matrix-rail-inventory-execution.js";
+export * from "./matrix-call-inventory-review.js";
+import { matrixInventoryScopeInputSchema, type MatrixInventoryScopeDecision } from "./matrix-inventory-review.js";
+import { matrixCallInventoryScopeInputSchema, type MatrixCallInventoryScopeDecision } from "./matrix-call-inventory-review.js";
 import { z } from "zod";
+import { matrixSourceScopeSchema } from "./matrix-source-scope.js";
+export * from "./matrix-source-scope.js";
+export * from "./matrix-fact-scope.js";
+export * from "./local-document-registration.js";
 
 export const documentStages = ["PD", "RD", "ID", "RD_ID_MIXED", "UNKNOWN"] as const;
 export type DocumentStage = (typeof documentStages)[number];
@@ -51,6 +78,10 @@ export interface CheckStats {
 }
 
 export interface InspectionObject {
+  inspectionLifecycle?: "OPEN" | "FINALIZED";
+  permissions?: InspectionObjectPermissions;
+  readOnlyReason?: string;
+  revokeUnavailableReason?: string;
   id: string;
   name: string;
   address: string;
@@ -62,6 +93,14 @@ export interface InspectionObject {
   pageCount: number;
   activeCheckId: string | null;
   stats: CheckStats;
+}
+
+export interface InspectionObjectPermissions {
+  upload: boolean;
+  review: boolean;
+  run: boolean;
+  finalize: boolean;
+  revoke: boolean;
 }
 
 export interface EvidenceRef {
@@ -104,7 +143,16 @@ export interface Finding {
   decision: InspectorDecision | null;
 }
 
+export interface VisualRunProgress {
+  mode: "SAMPLE" | "FULL"; documentCount: number; completedDocuments: number;
+  scannedPages: number; skippedPages: number; eligible: number; selected: number; processed: number; failed: number;
+}
+
 export interface CheckRun {
+  purpose?: "SOURCE_AUDIT_ONLY";
+  sourceAuditProfileVersion?: "SOURCE_AUDIT_V3_LARGE_VERTICAL_V1" | "SOURCE_AUDIT_V4_FULL_SOURCE_V1";
+  failure?: { jobType: string; code: string; message: string };
+  visualProgress?: VisualRunProgress;
   id: string;
   objectId: string;
   status: ObjectStatus;
@@ -125,7 +173,8 @@ export interface ParameterCoverageItem {
   parameterId: number;
   parameterCode: string;
   parameterName: string;
-  executionStatus: "UNSUPPORTED" | "PARTIAL";
+  executionStatus: "UNSUPPORTED" | "PARTIAL" | "PENDING" | "EVALUATED" | "TECHNICAL_FAILURE";
+  atomic?: import("./matrix-execution.js").MatrixCoverage;
   reason: string;
 }
 
@@ -244,6 +293,7 @@ export interface ProtocolExport {
   schemaVersion: "1.0";
   protocol: ProtocolVersion;
   findings: Finding[];
+  candidateReview?: { artifact: Record<string, unknown>; decisions: import("./inspector-review.js").CandidateReviewEvent[] };
   snapshotHash?: string;
   validity?: "DRAFT" | "VALID" | "REVOKED";
   revocation?: ProtocolRevocationSummary | null;
@@ -281,6 +331,10 @@ export type UploadStage = z.infer<typeof uploadStageSchema>;
 
 export const uploadPolicy = {
   acceptedExtensions: [".pdf", ".docx", ".xml", ".dwg"],
+  availableExtensions: [".pdf", ".docx", ".xml"],
+  unavailableFormats: {
+    ".dwg": "Проверка структуры DWG пока недоступна. Экспортируйте чертёж в PDF и загрузите его.",
+  },
   maxFileBytes: 100 * 1024 * 1024,
   maxUploadBytes: 200 * 1024 * 1024,
   maxFiles: 1000,
@@ -323,10 +377,24 @@ export const sourceReviewSchema = z.object({
   sectionCode: z.enum(sourceSectionCodes).nullable().optional(),
   pageStages: z.record(z.string().regex(/^[1-9][0-9]*$/), z.enum(sourcePageStages)),
   basis: z.object({ reference: z.string().trim().min(8).max(1000) }).strict(),
+  matrixScope: matrixSourceScopeSchema.optional(),
+  inventoryScope: matrixInventoryScopeInputSchema.optional(),
+  callInventoryScope: matrixCallInventoryScopeInputSchema.optional(),
+  railInventoryScope: matrixRailInventoryScopeInputSchema.optional(),
+  waterNodeScope: matrixWaterNodeScopeInputSchema.optional(),
+  lightingTechnologyScope: matrixLightingTechnologyScopeInputSchema.optional(),
+  steelComparisonScope: matrixSteelComparisonScopeInputSchema.optional(),
+  expectedReviewHash: z.string().regex(/^[a-f0-9]{64}$/u).nullable().optional(),
 }).strict();
 export type SourceReviewInput = z.infer<typeof sourceReviewSchema>;
 
-export interface SourceReviewDecision extends SourceReviewInput {
+export interface SourceReviewDecision extends Omit<SourceReviewInput, "inventoryScope" | "callInventoryScope" | "railInventoryScope" | "waterNodeScope" | "lightingTechnologyScope" | "steelComparisonScope"> {
+  inventoryScope?: MatrixInventoryScopeDecision;
+  callInventoryScope?: MatrixCallInventoryScopeDecision;
+  railInventoryScope?: MatrixRailInventoryScopeDecision;
+  waterNodeScope?: MatrixWaterNodeScopeDecision;
+  lightingTechnologyScope?: MatrixLightingTechnologyScopeDecision;
+  steelComparisonScope?: SteelComparisonScopeDecision;
   sectionCode: SourceSectionCode | null;
   id: string;
   objectId: string;
@@ -360,6 +428,8 @@ export interface SourceFileSummary {
 export interface SourceFileListResponse {
   items: SourceFileSummary[];
   permissions: { upload: boolean; review: boolean; run: boolean };
+  inspectionLifecycle?: "OPEN" | "FINALIZED";
+  readOnlyReason?: string;
 }
 
 export const decisionSchema = z.object({
@@ -408,3 +478,44 @@ export interface ApiError {
   message: string;
   details?: unknown;
 }
+
+export * from "./inspector-review.js";
+
+export * from "./machine-confidence.js";
+export * from "./matrix-execution.js";
+export * from "./matrix-project-constraints.js";
+
+export * from "./matrix-source-declarations.js";
+export type * from "./matrix-steel-comparison.js";
+export {matrixSteelComparisonScopeInputSchema,matrixSteelComparisonScopeDecisionSchema,matrixSteelComparisonIdentitySchema,matrixSteelComparisonTargetSchema,matrixSteelComparisonSourceKeySchema,steelComparisonScopeDecisionToInput} from "./matrix-steel-review.js";
+export type * from "./matrix-steel-execution.js";
+
+export * from "./matrix-source-declarations-v2.js";
+
+export * from "./document-coordinate-preview.js";
+
+export type * from "./document-text-v3.js";
+export * from "./document-text-v3-resource-policy.js";
+export type * from "./column-pylon-dimension-literals.js";
+export type * from "./document-text-v3-audit.js";
+
+export type * from "./matrix-lighting-technology-source-v3.js";
+export type * from "./matrix-lighting-technology-comparison.js";
+
+export {matrixSteelApplicabilityReviewInputSchema,matrixSteelApplicabilityReviewDecisionSchema,STEEL_APPLICABILITY_REVIEW_LIMITS} from "./matrix-steel-applicability-review.js";
+export type {SteelApplicabilityReviewInput,SteelApplicabilityReviewDecision} from "./matrix-steel-applicability-review.js";
+export {matrixSteelApplicabilityRunSnapshotSchema,matrixSteelApplicabilityRunSnapshotEntrySchema} from './matrix-steel-durable.js';
+export type {SteelApplicabilityRunSnapshot,SteelApplicabilityRunSnapshotEntry} from './matrix-steel-durable.js';
+export type { DocumentTextV3LargeAuditRelease, DocumentTextV3LargeAuditResult, DocumentTextV3LargeAuditSourceRead, DocumentTextV3LargeAuditExtractorProfile, DocumentTextV3LargeAuditArtifact, DocumentTextV3LargeAuditCompleteTransportInput, DocumentTextV3LargeAuditWireReadResult, DocumentTextV3LargeAuditCacheRequest, DocumentTextV3LargeAuditCachePayload } from "./document-text-v3-large-audit.js";
+export type * from "./matrix-column-pylon-section-v2.js";
+export type * from "./matrix-column-pylon-section-run-snapshot.js";
+export type * from "./matrix-column-pylon-section-loader.js";
+export type * from "./matrix-column-pylon-section-durable.js";
+export type * from "./matrix-column-pylon-section-execution.js";
+
+export type * from "./document-text-v4.js";
+export type * from "./document-text-v4-full-audit.js";
+export * from "./document-text-v4-resource-policy.js";
+
+export * from "./source-ocr-import.js";
+export * from "./source-ocr-import-record.js";
